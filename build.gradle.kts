@@ -4,6 +4,7 @@ plugins {
     kotlin("plugin.serialization") version "2.0.0"
     id("com.github.gmazzo.buildconfig") version "5.3.5"
     kotlin("jvm") version "2.2.21"
+    application
 }
 
 group = "com.embeddings.rag"
@@ -33,8 +34,18 @@ kotlin {
     jvmToolchain(24)
 }
 
+application {
+    mainClass.set("com.github.mobdev778.aiadventchallenge.app.MainKt")
+}
+
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.withType<JavaExec>().configureEach {
+    if (name == "run") {
+        inputs.property("profile", profile)
+    }
 }
 
 val profile = project.findProperty("profile")?.toString() ?: "dev"

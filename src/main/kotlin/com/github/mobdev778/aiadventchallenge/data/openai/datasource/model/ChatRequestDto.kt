@@ -8,6 +8,10 @@ data class ChatRequestDto(
     /** Название модели, которую нужно использовать для генерации (например, "gpt-4o"). */
     val model: String,
 
+    /** Уровень усилий, затрачиваемых моделью на внутренние рассуждения перед ответом (для моделей o-серии). */
+    @SerialName("reasoning_effort")
+    val reasoningEffort: ReasoningEffortDto? = null,
+
     /** Список сообщений, составляющих историю диалога. */
     val messages: List<MessageDto>,
 

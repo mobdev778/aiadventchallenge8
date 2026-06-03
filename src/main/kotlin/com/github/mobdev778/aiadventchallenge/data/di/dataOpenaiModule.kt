@@ -1,9 +1,11 @@
-package com.github.mobdev778.aiadventchallenge.data.openai
+package com.github.mobdev778.aiadventchallenge.data.di
 
 import com.github.mobdev778.aiadventchallenge.data.openai.datasource.OpenAIRestApi
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.ChatRequestMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.ChatResponseMapper
+import com.github.mobdev778.aiadventchallenge.data.openai.repository.FinishReasonMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.OpenAIRepository
+import com.github.mobdev778.aiadventchallenge.data.openai.repository.ReasoningEffortMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.RoleMapper
 import org.koin.dsl.module
 import retrofit2.Retrofit
@@ -16,14 +18,22 @@ val dataOpenApiModule = module {
     single<RoleMapper> {
         RoleMapper()
     }
+    single<FinishReasonMapper> {
+        FinishReasonMapper()
+    }
+    single<ReasoningEffortMapper> {
+        ReasoningEffortMapper()
+    }
     single<ChatRequestMapper> {
         ChatRequestMapper(
-            roleMapper = get()
+            roleMapper = get(),
+            reasoningEffortMapper = get(),
         )
     }
     single<ChatResponseMapper> {
         ChatResponseMapper(
-            roleMapper = get()
+            roleMapper = get(),
+            finishReasonMapper = get(),
         )
     }
     single<OpenAIRepository> {

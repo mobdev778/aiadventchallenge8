@@ -5,7 +5,7 @@ import com.github.mobdev778.aiadventchallenge.data.openai.datasource.model.ChatR
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-internal interface OpenAIRestApi {
+interface OpenAIRestApi {
 
     @POST("chat/completions")
     suspend fun getChatCompletion(

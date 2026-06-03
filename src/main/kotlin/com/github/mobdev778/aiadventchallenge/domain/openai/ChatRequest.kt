@@ -2,6 +2,7 @@ package com.github.mobdev778.aiadventchallenge.domain.openai
 
 data class ChatRequest(
     val model: String,
+    val reasoningEffort: ReasoningEffort? = null,
     val messages: List<Message>,
-    val temperature: Double = 0.7
+    val temperature: Double = 0.7,
 )

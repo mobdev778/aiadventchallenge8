@@ -7,7 +7,10 @@ import com.github.mobdev778.aiadventchallenge.domain.openai.ChatResponse
 import com.github.mobdev778.aiadventchallenge.domain.openai.Choice
 import com.github.mobdev778.aiadventchallenge.domain.openai.Message
 
-class ChatResponseMapper(private val roleMapper: RoleMapper) {
+class ChatResponseMapper(
+    private val roleMapper: RoleMapper,
+    private val finishReasonMapper: FinishReasonMapper,
+) {
 
     fun map(dto: ChatResponseDto): ChatResponse {
         return ChatResponse(
@@ -19,7 +22,8 @@ class ChatResponseMapper(private val roleMapper: RoleMapper) {
 
     private fun map(choiceDto: ChoiceDto): Choice {
         return Choice(
-            map(choiceDto.message),
+            message = map(choiceDto.message),
+            finishReason = finishReasonMapper.map(choiceDto.finishReason),
         )
     }
 

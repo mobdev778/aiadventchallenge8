@@ -1,8 +1,7 @@
-package com.github.mobdev778.aiadventchallenge.data.common
+package com.github.mobdev778.aiadventchallenge.data.di
 
 import com.embeddings.rag.BuildConfig
 import kotlinx.serialization.json.Json
-import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -12,7 +11,6 @@ import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 
 val networkModule = module {
-
     single {
         Json {
             ignoreUnknownKeys = true
@@ -27,8 +25,14 @@ val networkModule = module {
 
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(600, TimeUnit.SECONDS)
             .addInterceptor(logging)
+            .addInterceptor { chain ->
+                val newRequest = chain.request().newBuilder()
+                    .header("Authorization", "Bearer ${BuildConfig.API_KEY}")
+                    .build()
+                chain.proceed(newRequest)
+            }
             .build()
     }
 

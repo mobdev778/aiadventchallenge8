@@ -5,11 +5,17 @@ import com.github.mobdev778.aiadventchallenge.data.openai.datasource.model.Messa
 import com.github.mobdev778.aiadventchallenge.domain.openai.ChatRequest
 import com.github.mobdev778.aiadventchallenge.domain.openai.Message
 
-class ChatRequestMapper(private val roleMapper: RoleMapper) {
+class ChatRequestMapper(
+    private val roleMapper: RoleMapper,
+    private val reasoningEffortMapper: ReasoningEffortMapper,
+) {
 
     fun map(request: ChatRequest): ChatRequestDto {
         return ChatRequestDto(
             model = request.model,
+            reasoningEffort = request.reasoningEffort?.let {
+                reasoningEffortMapper.map(it)
+            },
             messages = request.messages.map { message ->
                 map(message)
             },
