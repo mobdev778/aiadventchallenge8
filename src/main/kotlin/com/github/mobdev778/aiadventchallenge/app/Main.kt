@@ -17,27 +17,27 @@ fun main() {
         modules(networkModule)
         modules(dataOpenApiModule)
     }
+    lowLevelExample()
+}
 
+private fun lowLevelExample() {
     val retrofit: Retrofit by inject(Retrofit::class.java)
     val api = retrofit.create(OpenAIRestApi::class.java)
 
-    val userPrompt = "Расскажи о преимуществах языка Kotlin для Android-разработки."
-
     runBlocking {
-        for (i in 0..3) {
-            val useStopMarker = (i and 1) != 0
-            val limitTokens = (i shr 1) and 1 != 0
-            println("══════════════════════════════════════════")
-            println("🔓 ЗАПРОС №${i}.\n" +
-                    "Ограничение токенов: ${limitTokens},\n" +
-                    "стоп-маркер: ${useStopMarker}")
-            println("══════════════════════════════════════════")
-            sendRequest(api, buildRequest(userPrompt, limitTokens, useStopMarker))
-        }
+        println("══════════════════════════════════════════")
+        println("🔓 ЗАПРОС БЕЗ ОГРАНИЧЕНИЙ")
+        println("══════════════════════════════════════════")
+        sendRequest(api, buildRequest(userPrompt, limited = false))
+
+        println("\n══════════════════════════════════════════")
+        println("🔒 ЗАПРОС С ОГРАНИЧЕНИЯМИ (API + промпт)")
+        println("══════════════════════════════════════════")
+        sendRequest(api, buildRequest(userPrompt, limited = true))
     }
 }
 
-private fun buildRequest(userRequest: String, limitTokens: Boolean, useStopMarker: Boolean): ChatRequestDto {
+private fun buildRequest(userRequest: String, limited: Boolean): ChatRequestDto {
     val systemPrompt = MessageDto(
         role = RoleDto.System,
         content = """
@@ -61,21 +61,20 @@ private fun buildRequest(userRequest: String, limitTokens: Boolean, useStopMarke
         content = userRequest
     )
 
-    return ChatRequestDto(
-        model = BuildConfig.MODEL,
-        messages = listOf(
-            systemPrompt, userPrompt
-        ),
-        temperature = 0.7,
-        maxTokens = when {
-            limitTokens -> 200
-            else -> null
-        },
-        stop = when {
-            useStopMarker -> listOf("###END###")
-            else -> null
-        },
-    )
+    return when {
+        limited -> ChatRequestDto(
+            model = BuildConfig.MODEL,
+            messages = listOf(systemPrompt, userPrompt),
+            temperature = 0.7,
+            maxTokens = 200,
+            stop = listOf("###END###"),
+        )
+        else -> ChatRequestDto(
+            model = BuildConfig.MODEL,
+            messages = listOf(systemPrompt, userPrompt),
+            temperature = 0.7,
+        )
+    }
 }
 
 private suspend fun sendRequest(api: OpenAIRestApi, request: ChatRequestDto) {
@@ -86,6 +85,4 @@ private suspend fun sendRequest(api: OpenAIRestApi, request: ChatRequestDto) {
         println("${msg.role}:")
         println(msg.content)
     }
-    println("─────────────────────────────────────────────")
-    println("finish_reason: ${response.choices.firstOrNull()?.finishReason}")
 }
