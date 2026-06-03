@@ -17,27 +17,27 @@ fun main() {
         modules(networkModule)
         modules(dataOpenApiModule)
     }
-    lowLevelExample()
-}
 
-private fun lowLevelExample() {
     val retrofit: Retrofit by inject(Retrofit::class.java)
     val api = retrofit.create(OpenAIRestApi::class.java)
 
-    runBlocking {
-        println("══════════════════════════════════════════")
-        println("🔓 ЗАПРОС БЕЗ ОГРАНИЧЕНИЙ")
-        println("══════════════════════════════════════════")
-        sendRequest(api, buildRequest(userPrompt, limited = false))
+    val userPrompt = "Расскажи о преимуществах языка Kotlin для Android-разработки."
 
-        println("\n══════════════════════════════════════════")
-        println("🔒 ЗАПРОС С ОГРАНИЧЕНИЯМИ (API + промпт)")
-        println("══════════════════════════════════════════")
-        sendRequest(api, buildRequest(userPrompt, limited = true))
+    runBlocking {
+        for (i in 0..3) {
+            val limitTokens = (i and 2) != 0
+            val useStopMarker = (i and 1) != 0
+            println("══════════════════════════════════════════")
+            println("🔓 ЗАПРОС №${i}.\n" +
+                    "Ограничение токенов: ${limitTokens},\n" +
+                    "стоп-маркер: ${useStopMarker}")
+            println("══════════════════════════════════════════")
+            sendRequest(api, buildRequest(limitTokens, useStopMarker))
+        }
     }
 }
 
-private fun buildRequest(userRequest: String, limited: Boolean): ChatRequestDto {
+private fun buildRequest(limitTokens: Boolean, useStopMarker: Boolean): ChatRequestDto {
     val systemPrompt = MessageDto(
         role = RoleDto.System,
         content = """
@@ -47,34 +47,29 @@ private fun buildRequest(userRequest: String, limited: Boolean): ChatRequestDto 
                     1. <пункт 1>
                     2. <пункт 2>
                     3. <пункт 3>
-                    
-                    Правила:
-                    - Ровно 3 пункта, нумерованный список.
-                    - Каждый пункт — одно предложение, не длиннее 20 слов.
-                    - Общий объём ответа — не более 120 слов.
-                    - Никаких вступлений, заключений и лишних пояснений.
-                    - Сразу после последнего пункта выведи маркер ###END### и заверши ответ.
+                    ###END###
                 """.trimIndent()
     )
     val userPrompt = MessageDto(
         role = RoleDto.User,
-        content = userRequest
+        content = "Расскажи о преимуществах языка Kotlin для Android-разработки."
     )
 
-    return when {
-        limited -> ChatRequestDto(
-            model = BuildConfig.MODEL,
-            messages = listOf(systemPrompt, userPrompt),
-            temperature = 0.7,
-            maxTokens = 200,
-            stop = listOf("###END###"),
-        )
-        else -> ChatRequestDto(
-            model = BuildConfig.MODEL,
-            messages = listOf(systemPrompt, userPrompt),
-            temperature = 0.7,
-        )
-    }
+    return ChatRequestDto(
+        model = BuildConfig.MODEL,
+        messages = listOf(
+            systemPrompt, userPrompt
+        ),
+        temperature = 0.7,
+        maxTokens = when {
+            limitTokens -> 250
+            else -> null
+        },
+        stop = when {
+            useStopMarker -> listOf("###END###")
+            else -> null
+        },
+    )
 }
 
 private suspend fun sendRequest(api: OpenAIRestApi, request: ChatRequestDto) {
@@ -85,4 +80,6 @@ private suspend fun sendRequest(api: OpenAIRestApi, request: ChatRequestDto) {
         println("${msg.role}:")
         println(msg.content)
     }
+    println("─────────────────────────────────────────────")
+    println("finish_reason: ${response.choices.firstOrNull()?.finishReason}")
 }
