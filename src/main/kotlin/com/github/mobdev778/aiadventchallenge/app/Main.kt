@@ -19,37 +19,7 @@ fun main() {
         modules(networkModule)
         modules(dataOpenApiModule)
     }
-
-    hiLevelExample()
-
     lowLevelExample()
-}
-
-private fun hiLevelExample() {
-    val repository: OpenAIRepository by inject(OpenAIRepository::class.java)
-    runBlocking {
-        val response = repository.getChatCompletion(
-            request = ChatRequest(
-                model = BuildConfig.MODEL,
-                messages = listOf(
-                    Message(
-                        role = "system",
-                        content = "Ты - специалист по сочинению анекдотов. " +
-                                "Когда юзер пришлет тебе слово, выполни задачу: Сочини анекдот про [UserRequest]",
-                    ),
-                    Message(
-                        role = "user",
-                        content = "программистов"
-                    ),
-                )
-            )
-        )
-        println("Ответ LLM-ки:")
-        for (choice in response.choices) {
-            val message = choice.message
-            println("${message.role}: ${message.content}")
-        }
-    }
 }
 
 private fun lowLevelExample() {
