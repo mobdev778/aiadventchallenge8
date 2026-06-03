@@ -1,8 +1,17 @@
 package com.github.mobdev778.aiadventchallenge.data.openai.datasource.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ChoiceDto(
-    val message: MessageDto
+    /** Индекс варианта ответа в списке (начиная с 0). */
+    val index: Int,
+
+    /** Объект сообщения, сгенерированный моделью (содержит роль "assistant" и текст ответа). */
+    val message: MessageDto,
+
+    /** Причина, по которой модель прекратила генерацию токенов. */
+    @SerialName("finish_reason")
+    val finishReason: FinishReasonDto,
 )

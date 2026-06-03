@@ -4,6 +4,7 @@ import com.github.mobdev778.aiadventchallenge.data.openai.datasource.OpenAIRestA
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.ChatRequestMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.ChatResponseMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.repository.OpenAIRepository
+import com.github.mobdev778.aiadventchallenge.data.openai.repository.RoleMapper
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
@@ -12,11 +13,18 @@ val dataOpenApiModule = module {
         val retrofit: Retrofit = get()
         retrofit.create(OpenAIRestApi::class.java)
     }
+    single<RoleMapper> {
+        RoleMapper()
+    }
     single<ChatRequestMapper> {
-        ChatRequestMapper()
+        ChatRequestMapper(
+            roleMapper = get()
+        )
     }
     single<ChatResponseMapper> {
-        ChatResponseMapper()
+        ChatResponseMapper(
+            roleMapper = get()
+        )
     }
     single<OpenAIRepository> {
         OpenAIRepository(
