@@ -4,14 +4,13 @@ import com.github.mobdev778.aiadventchallenge.data.di.networkModule
 import com.github.mobdev778.aiadventchallenge.data.di.dataOpenApiModule
 import com.github.mobdev778.aiadventchallenge.domain.di.domainOpenaiModule
 import com.github.mobdev778.aiadventchallenge.domain.di.domainReasoningStrategyModule
-import com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy.DirectAnswerStrategy
-import com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy.MetaPromptStrategy
-import com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy.PanelOfExpertsStrategy
-import com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy.ReasoningStrategy
-import com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy.StepByStepStrategy
+import com.github.mobdev778.aiadventchallenge.domain.di.domainSvgImageGeneratorModule
+import com.github.mobdev778.aiadventchallenge.domain.svgimagegenerator.SvgImageGenerator
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.java.KoinJavaComponent.inject
+import java.io.File
+import javax.imageio.ImageIO
 
 fun main(args: Array<String>) {
     startKoin {
@@ -19,29 +18,23 @@ fun main(args: Array<String>) {
         modules(dataOpenApiModule)
         modules(domainOpenaiModule)
         modules(domainReasoningStrategyModule)
+        modules(domainSvgImageGeneratorModule)
     }
 
-    val strategies = listOf(
-        DirectAnswerStrategy::class.java,
-        MetaPromptStrategy::class.java,
-        StepByStepStrategy::class.java,
-        PanelOfExpertsStrategy::class.java,
-    )
-
-    val system = "Ты эксперт по алгоритмам на Kotlin. " +
-            "Если тебя просят написать код - пиши только код без каких-либо дополнительных комментариев"
-    val task = "Напиши метод\n" +
-            "fun radixSort(array: IntArray): IntArray\n" +
-            "на Kotlin, который будет выполнять поразрядную сортировку Int-массива"
+    val imageGenerator: SvgImageGenerator by inject(SvgImageGenerator::class.java)
 
     runBlocking {
-        strategies.forEachIndexed { index, strategyClass ->
-            val strategy = inject<ReasoningStrategy>(strategyClass).value
-            println("-------------------------------------------------")
-            println("Стратегия #${index + 1}: \"${strategy.name}\"")
-            val answer = strategy.solve(system, task)
-            println("Решение: $answer")
-            println()
+        for (temperature in listOf(0.0, 0.7, 1.2)) {
+            val prompt = "Red rose in a glass"
+            val image = imageGenerator.generateImage(temperature, prompt)
+            try {
+                ImageIO.write(
+                    image,
+                    "png",
+                    File("${System.getProperty("user.dir")}/generated_svg_${temperature}.png")
+                )
+            } catch (e: Exception) {
+            }
         }
     }
 }

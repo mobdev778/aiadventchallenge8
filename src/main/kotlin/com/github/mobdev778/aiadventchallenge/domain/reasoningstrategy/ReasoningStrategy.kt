@@ -21,6 +21,7 @@ interface ReasoningStrategy {
     suspend fun solve(
         system: String?,
         user: String,
+        temperature: Double = 0.7,
     ): String
 
     companion object {

@@ -20,6 +20,7 @@ class DirectAnswerStrategy(
     override suspend fun solve(
         system: String?,
         user: String,
+        temperature: Double,
     ): String {
         val messages = mutableListOf<Message>()
         system?.let {
@@ -36,6 +37,7 @@ class DirectAnswerStrategy(
             ChatRequest(
                 model = BuildConfig.MODEL,
                 messages = messages,
+                temperature = temperature,
             )
         )
         return response.choices.firstOrNull()?.message?.content ?: ReasoningStrategy.NO_ANSWER

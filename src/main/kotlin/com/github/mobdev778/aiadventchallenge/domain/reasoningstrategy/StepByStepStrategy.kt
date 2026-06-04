@@ -14,7 +14,8 @@ class StepByStepStrategy(
 
     override suspend fun solve(
         system: String?,
-        user: String
+        user: String,
+        temperature: Double,
     ): String {
         val messages = mutableListOf<Message>()
 
@@ -39,6 +40,7 @@ class StepByStepStrategy(
             ChatRequest(
                 model = BuildConfig.MODEL,
                 messages = messages,
+                temperature = temperature,
             )
         )
         return response.choices.firstOrNull()?.message?.content ?: ReasoningStrategy.NO_ANSWER

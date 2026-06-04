@@ -27,6 +27,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
+    // Apache Batik для конвертации SVG в BufferedImage
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.17")
+    implementation("org.apache.xmlgraphics:batik-codec:1.17")
+
     testImplementation(kotlin("test"))
 }
 

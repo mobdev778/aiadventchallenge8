@@ -15,7 +15,8 @@ class PanelOfExpertsStrategy(
 
     override suspend fun solve(
         system: String?,
-        user: String
+        user: String,
+        temperature: Double,
     ): String {
         val expertPrompts = listOf(
             "Ты — эксперт-аналитик. Твоя специализация — декомпозиция " +
@@ -53,6 +54,6 @@ class PanelOfExpertsStrategy(
             )
         }
 
-        return directAnswerStrategy.solve(system, aggregatedPrompt)
+        return directAnswerStrategy.solve(system, aggregatedPrompt, temperature)
     }
 }

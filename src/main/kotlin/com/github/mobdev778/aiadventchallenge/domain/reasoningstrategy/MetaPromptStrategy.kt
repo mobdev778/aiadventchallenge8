@@ -12,11 +12,16 @@ class MetaPromptStrategy(
 
     override val name: String = "\"Мета-промпт\" (двухэтапная стратегия)"
 
-    override suspend fun solve(system: String?, user: String): String {
+    override suspend fun solve(
+        system: String?,
+        user: String,
+        temperature: Double,
+    ): String {
         val generatedPrompt = directAnswerStrategy.solve(
             system = "На основе следующей задачи создай идеальный, детальный промпт для LLM, " +
                     "который поможет решить её максимально точно. Верни только текст промпта. Задача: \n$[UserRequest]",
             user = "$system $user",
+            temperature = temperature,
         )
         return when {
             generatedPrompt == ReasoningStrategy.NO_ANSWER -> directAnswerStrategy.solve(system, user)
