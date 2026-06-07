@@ -11,5 +11,8 @@ data class ChatResponseDto(
     val model: String,
 
     /** Список вариантов ответов, сгенерированных моделью. */
-    val choices: List<ChoiceDto>
+    val choices: List<ChoiceDto>,
+
+    /** Данные об использовании токенов для этого запроса. */
+    val usage: UsageDto? = null
 )

@@ -20,7 +20,7 @@ val networkModule = module {
 
     single {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BASIC
+            level = HttpLoggingInterceptor.Level.NONE
         }
 
         OkHttpClient.Builder()

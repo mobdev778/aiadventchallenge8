@@ -7,6 +7,7 @@ import com.github.mobdev778.aiadventchallenge.data.openai.chat.repository.Finish
 import com.github.mobdev778.aiadventchallenge.data.openai.chat.repository.ChatRepository
 import com.github.mobdev778.aiadventchallenge.data.openai.chat.repository.ReasoningEffortMapper
 import com.github.mobdev778.aiadventchallenge.data.openai.chat.repository.RoleMapper
+import com.github.mobdev778.aiadventchallenge.data.openai.chat.repository.UsageMapper
 import org.koin.dsl.module
 import retrofit2.Retrofit
 
@@ -21,6 +22,9 @@ val dataChatModule = module {
     single<FinishReasonMapper> {
         FinishReasonMapper()
     }
+    single<UsageMapper> {
+        UsageMapper()
+    }
     single<ReasoningEffortMapper> {
         ReasoningEffortMapper()
     }
@@ -34,6 +38,7 @@ val dataChatModule = module {
         ChatResponseMapper(
             roleMapper = get(),
             finishReasonMapper = get(),
+            usageMapper = get(),
         )
     }
     single<ChatRepository> {

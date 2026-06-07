@@ -7,13 +7,16 @@ import com.github.mobdev778.aiadventchallenge.domain.di.domainChatModule
 import com.github.mobdev778.aiadventchallenge.domain.di.domainImageGeneratorModule
 import com.github.mobdev778.aiadventchallenge.domain.di.domainImageModule
 import com.github.mobdev778.aiadventchallenge.domain.di.domainReasoningStrategyModule
-import com.github.mobdev778.aiadventchallenge.domain.imagegenerator.ImageGenerator
-import com.github.mobdev778.aiadventchallenge.domain.imagegenerator.gpt.GptImageGenerator
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatResponse
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
 import kotlinx.coroutines.runBlocking
 import org.koin.core.context.GlobalContext.startKoin
 import org.koin.java.KoinJavaComponent.inject
 import java.io.File
-import javax.imageio.ImageIO
+import kotlin.time.measureTime
 
 fun main(args: Array<String>) {
     startKoin {
@@ -26,20 +29,40 @@ fun main(args: Array<String>) {
         modules(domainImageGeneratorModule)
     }
 
-    val imageGenerator: ImageGenerator by inject(GptImageGenerator::class.java)
+    val chatClient: ChatClient by inject(ChatClient::class.java)
+
+    val models = listOf(
+        "gpt-3.5-turbo",
+        "gpt-4.1",
+        "gpt-5.4",
+    )
 
     runBlocking {
-        for (temperature in listOf(0.0, 0.7, 1.2)) {
-            val prompt = "Red rose in a glass"
-            val image = imageGenerator.generateImage(temperature, prompt)
-            try {
-                ImageIO.write(
-                    image,
-                    "png",
-                    File("${System.getProperty("user.dir")}/generated_svg_${temperature}.png")
+        for (model in models) {
+            val prompt = "Напиши пример Kotlin-функции, которая выполняет Radix-сортировку IntArray. " +
+                    "Только код функции, без лишних комментариев. Исключи из вывода ```kotlin```"
+
+            println("-------------------------------------")
+            println("модель: $model")
+
+            val response: ChatResponse
+            val duration = measureTime {
+                response = chatClient.execute(
+                    ChatRequest(
+                        model = model,
+                        messages = listOf(
+                            Message(Role.User, prompt)
+                        ),
+                    )
                 )
-            } catch (e: Exception) {
             }
+            val code = response.choices.firstOrNull()?.message?.content ?: "- no response -"
+
+            val fileName = "radixSort_" +
+                    model.replace(".", "").replace("-", "")
+            File("${System.getProperty("user.dir")}/${fileName}.kt").writeText(code)
+            println("Запрос выполнен за: ${duration.inWholeMilliseconds} мс")
+            println("Потрачено токенов: ${response.usage?.totalTokens}")
         }
     }
 }

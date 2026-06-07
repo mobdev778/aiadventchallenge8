@@ -10,13 +10,17 @@ import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
 class ChatResponseMapper(
     private val roleMapper: RoleMapper,
     private val finishReasonMapper: FinishReasonMapper,
+    private val usageMapper: UsageMapper,
 ) {
 
     fun map(dto: ChatResponseDto): ChatResponse {
         return ChatResponse(
-            dto.choices.map { choiceDto ->
+            choices = dto.choices.map { choiceDto ->
                 map(choiceDto)
-            }
+            },
+            usage = dto.usage?.let {
+                usageMapper.map(it)
+            },
         )
     }
 
