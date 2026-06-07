@@ -1,13 +1,13 @@
 package com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy
 
 import com.embeddings.rag.BuildConfig
-import com.github.mobdev778.aiadventchallenge.domain.openai.ChatRequest
-import com.github.mobdev778.aiadventchallenge.domain.openai.Message
-import com.github.mobdev778.aiadventchallenge.domain.openai.OpenAIClient
-import com.github.mobdev778.aiadventchallenge.domain.openai.Role
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
+import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
 
 class StepByStepStrategy(
-    private val client: OpenAIClient,
+    private val client: ChatClient,
 ) : ReasoningStrategy {
 
     override val name: String = "Пошаговое решение (Chain of Thought)"
