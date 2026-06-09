@@ -8,7 +8,7 @@ import org.koin.dsl.module
 
 val domainReasoningStrategyModule = module {
     single<DirectAnswerStrategy> {
-        DirectAnswerStrategy(client = get())
+        DirectAnswerStrategy(appProfile = get(), client = get())
     }
 
     single<MetaPromptStrategy> {
@@ -16,7 +16,7 @@ val domainReasoningStrategyModule = module {
     }
 
     single<StepByStepStrategy> {
-        StepByStepStrategy(client = get())
+        StepByStepStrategy(appProfile = get(), client = get())
     }
 
     single<PanelOfExpertsStrategy> {

@@ -1,24 +1,33 @@
-import java.net.URI
-
 plugins {
     kotlin("plugin.serialization") version "2.0.0"
-    id("com.github.gmazzo.buildconfig") version "5.3.5"
-    kotlin("jvm") version "2.2.21"
-    application
+    id("org.jetbrains.kotlin.jvm") version "2.1.20"
+    id("org.jetbrains.intellij.platform") version "2.10.2"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
 }
 
-group = "com.embeddings.rag"
+group = "com.github.mobdev778.aiadventchallenge"
 version = "1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    maven { url = URI.create("https://jitpack.io") }
+    google()
+    intellijPlatform {
+        defaultRepositories()
+    }
 }
 
 dependencies {
+    testImplementation(libs.junit)
+
     implementation("io.insert-koin:koin-core:3.5.6")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    // IMPORTANT (IntelliJ plugins):
+    // Avoid bundling your own kotlinx-coroutines artifacts unless you really need to.
+    // The IntelliJ Platform already provides coroutines; bundling another version can lead to
+    // classloader constraint violations like:
+    // LinkageError: ... collectAsState(StateFlow, ...) ... different Class objects for StateFlow
+    //
+    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
@@ -27,62 +36,50 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
-    // Apache Batik для конвертации SVG в BufferedImage
-    implementation("org.apache.xmlgraphics:batik-transcoder:1.17")
-    implementation("org.apache.xmlgraphics:batik-codec:1.17")
+    // IntelliJ Platform Gradle Plugin Dependencies Extension
+    // (https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html)
+    intellijPlatform {
+        intellijIdea("2025.3.5")
+        composeUI()
+    }
 
-    testImplementation(kotlin("test"))
+    // IMPORTANT:
+    // `lifecycle-viewmodel-compose` pulls JetBrains Compose runtime (org.jetbrains.compose.*),
+    // which conflicts with the Compose runtime bundled with the IntelliJ Platform (Jewel bridge).
+    // For IntelliJ plugins, prefer IntelliJ Platform / Jewel APIs and avoid bringing your own Compose runtime.
+    //
+    // implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
+
+    // Same rationale as above: avoid bundling coroutines Swing unless required.
+    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1")
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        ideaVersion {
+            sinceBuild = "252.25557"
+        }
+
+        changeNotes = """
+            Initial version
+        """.trimIndent()
+    }
+}
+
+tasks {
+    // Set the JVM compatibility versions
+    withType<JavaCompile> {
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+    }
 }
 
 kotlin {
-    jvmToolchain(24)
-}
-
-application {
-    mainClass.set("com.github.mobdev778.aiadventchallenge.app.MainKt")
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+    }
 }
 
 tasks.test {
     useJUnitPlatform()
-}
-
-tasks.withType<JavaExec>().configureEach {
-    if (name == "run") {
-        inputs.property("profile", profile)
-    }
-}
-
-val profile = project.findProperty("profile")?.toString() ?: "dev"
-logger.lifecycle("Building application profile: $profile")
-
-val profileConfig = when (profile) {
-    "prod" -> {
-        val prodApiKey = System.getenv("AI_PROXY_API_KEY")
-        requireNotNull(prodApiKey)
-        val prodBaseUrl = System.getenv("AI_PROXY_BASE_URL")
-        requireNotNull(prodBaseUrl)
-        val prodModel = System.getenv("AI_PROXY_MODEL")
-        mapOf(
-            "API_KEY" to prodApiKey,
-            "BASE_URL" to "${prodBaseUrl}/v1/",
-            "MODEL" to prodModel
-        )
-    }
-    "dev" -> {
-        mapOf(
-            "API_KEY" to "",
-            "BASE_URL" to "http://127.0.0.1:1234/v1/",
-            "MODEL" to "qwen/qwen3-14b"
-        )
-    }
-    else -> throw GradleException("Unknown profile: $profile")
-}
-
-buildConfig {
-    className("BuildConfig")
-    packageName(project.group.toString())
-
-    buildConfigField("String", "API_KEY", "\"${profileConfig["API_KEY"]}\"")
-    buildConfigField("String", "BASE_URL", "\"${profileConfig["BASE_URL"]}\"")
-    buildConfigField("String", "MODEL", "\"${profileConfig["MODEL"]}\"")
 }

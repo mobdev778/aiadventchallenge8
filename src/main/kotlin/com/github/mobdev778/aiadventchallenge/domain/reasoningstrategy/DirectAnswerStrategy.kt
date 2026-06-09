@@ -1,10 +1,10 @@
 package com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy
 
-import com.embeddings.rag.BuildConfig
 import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
 import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
 import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
+import com.github.mobdev778.aiadventchallenge.domain.profile.AppProfile
 
 /**
  * Стратегия "Прямой ответ" (Direct Answer).
@@ -12,6 +12,7 @@ import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
  * Передаем задачу LLM-ке "как есть", без каких-либо дополнений и подсказок.
  */
 class DirectAnswerStrategy(
+    private val appProfile: AppProfile,
     private val client: ChatClient,
 ) : ReasoningStrategy {
 
@@ -35,7 +36,7 @@ class DirectAnswerStrategy(
 
         val response = client.execute(
             ChatRequest(
-                model = BuildConfig.MODEL,
+                model = appProfile.baseModel,
                 messages = messages,
                 temperature = temperature,
             )

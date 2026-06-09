@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.data.di
 
-import com.embeddings.rag.BuildConfig
+import com.github.mobdev778.aiadventchallenge.domain.profile.AppProfile
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -23,13 +23,15 @@ val networkModule = module {
             level = HttpLoggingInterceptor.Level.NONE
         }
 
+        val appProfile: AppProfile = get()
+
         OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(600, TimeUnit.SECONDS)
             .addInterceptor(logging)
             .addInterceptor { chain ->
                 val newRequest = chain.request().newBuilder()
-                    .header("Authorization", "Bearer ${BuildConfig.API_KEY}")
+                    .header("Authorization", "Bearer ${appProfile.apiKey}")
                     .build()
                 chain.proceed(newRequest)
             }
@@ -40,9 +42,10 @@ val networkModule = module {
         val contentType = "application/json; charset=utf-8".toMediaType()
         val json: Json = get()
         val okHttpClient: OkHttpClient = get()
+        val appProfile: AppProfile = get()
 
         Retrofit.Builder()
-            .baseUrl(BuildConfig.BASE_URL)
+            .baseUrl(appProfile.baseUrl)
             .client(okHttpClient)
             .addConverterFactory(json.asConverterFactory(contentType))
             .build()
