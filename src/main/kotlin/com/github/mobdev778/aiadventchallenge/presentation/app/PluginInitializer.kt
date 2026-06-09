@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.app
 
+import com.github.mobdev778.aiadventchallenge.data.di.dataChatHistoryModule
 import com.github.mobdev778.aiadventchallenge.data.di.dataChatModule
 import com.github.mobdev778.aiadventchallenge.data.di.dataImageModule
 import com.github.mobdev778.aiadventchallenge.data.di.networkModule
@@ -33,6 +34,7 @@ class PluginInitializer : ProjectActivity {
                     networkModule,
                     dataChatModule,
                     dataImageModule,
+                    dataChatHistoryModule,
                     domainChatModule,
                     domainImageModule,
                     domainReasoningStrategyModule,

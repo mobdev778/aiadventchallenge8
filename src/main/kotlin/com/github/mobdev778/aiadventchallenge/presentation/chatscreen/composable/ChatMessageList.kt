@@ -6,11 +6,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatMessageUi
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatMessage
 
 @Composable
 fun ChatMessageList(
-    messages: List<ChatMessageUi>,
+    messages: List<ChatMessage>,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(

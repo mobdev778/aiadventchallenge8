@@ -3,6 +3,9 @@ plugins {
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("org.jetbrains.intellij.platform") version "2.10.2"
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
+
+    // Room (KMP/JVM) uses KSP for annotation processing
+    id("com.google.devtools.ksp") version "2.1.20-1.0.31"
 }
 
 group = "com.github.mobdev778.aiadventchallenge"
@@ -21,13 +24,12 @@ dependencies {
 
     implementation("io.insert-koin:koin-core:3.5.6")
 
-    // IMPORTANT (IntelliJ plugins):
-    // Avoid bundling your own kotlinx-coroutines artifacts unless you really need to.
-    // The IntelliJ Platform already provides coroutines; bundling another version can lead to
-    // classloader constraint violations like:
-    // LinkageError: ... collectAsState(StateFlow, ...) ... different Class objects for StateFlow
-    //
-    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.1")
+    // Room (KMP/JVM)
+    implementation("androidx.room:room-runtime:2.7.0") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+    }
+    implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
@@ -42,16 +44,6 @@ dependencies {
         intellijIdea("2025.3.5")
         composeUI()
     }
-
-    // IMPORTANT:
-    // `lifecycle-viewmodel-compose` pulls JetBrains Compose runtime (org.jetbrains.compose.*),
-    // which conflicts with the Compose runtime bundled with the IntelliJ Platform (Jewel bridge).
-    // For IntelliJ plugins, prefer IntelliJ Platform / Jewel APIs and avoid bringing your own Compose runtime.
-    //
-    // implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2")
-
-    // Same rationale as above: avoid bundling coroutines Swing unless required.
-    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1")
 }
 
 intellijPlatform {

@@ -11,14 +11,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatMessageUi
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatAuthor
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatMessage
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.jetbrains.jewel.ui.component.Text
 
 @Composable
 fun ChatMessageRow(
-    message: ChatMessageUi,
+    message: ChatMessage,
 ) {
     val alignment = when (message.author) {
         ChatAuthor.User -> Alignment.CenterStart
@@ -58,7 +58,7 @@ fun ChatMessageRow(
 @Composable
 private fun ChatMessageRowPreviewUser() {
     ChatMessageRow(
-        message = ChatMessageUi(
+        message = ChatMessage(
             id = 1,
             text = "User message",
             author = ChatAuthor.User,
@@ -70,7 +70,7 @@ private fun ChatMessageRowPreviewUser() {
 @Composable
 private fun ChatMessageRowPreviewBot() {
     ChatMessageRow(
-        message = ChatMessageUi(
+        message = ChatMessage(
             id = 2,
             text = "Bot message",
             author = ChatAuthor.Bot,

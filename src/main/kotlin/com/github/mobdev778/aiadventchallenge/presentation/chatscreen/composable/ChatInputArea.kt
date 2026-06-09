@@ -21,11 +21,12 @@ import org.jetbrains.jewel.ui.component.Text
 @Composable
 fun ChatInputArea(
     inputText: String,
+    modifier: Modifier = Modifier,
     onInputTextChanged: (String) -> Unit,
     onSendClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
