@@ -1,44 +1,60 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen
 
-import com.github.mobdev778.aiadventchallenge.data.chathistory.repository.ChatHistoryRepository
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatMessage
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
-import com.github.mobdev778.aiadventchallenge.domain.profile.AppProfile
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatInteractor
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatAuthor
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessage
+import com.github.mobdev778.aiadventchallenge.domain.messageselection.MessageSelectionType
+import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatUiMessage
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.TokenLimitState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.Singleton
 
+@Singleton
 class ChatScreenStateHolder(
-    private val chatClient: ChatClient,
-    private val chatHistoryRepository: ChatHistoryRepository,
-    private val appProfile: AppProfile,
+    private val chatInteractor: ChatInteractor,
+    private val settingsInteractor: SettingsInteractor,
+    private val scope: CoroutineScope,
 ) {
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
-
     private val inputTextFlow = MutableStateFlow("")
- 
+
     val uiState: StateFlow<ChatScreenState> = combine(
-        chatHistoryRepository.observe(),
+        chatInteractor.observeMessages(),
+        chatInteractor.observeWindowMessages(),
         inputTextFlow,
-    ) { messages: List<ChatMessage>, input: String ->
-        ChatScreenState(messages, input)
-    }.stateIn(
-        scope = scope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = ChatScreenState(emptyList(), "")
-    )
+        settingsInteractor.observeSettings().map {
+            StrategyState(it.messageSelectionType, it.maxMessages, it.maxTokens)
+        },
+    ) { messages: List<ChatMessage>, windowMessages: List<ChatMessage>, input: String, strategyState: StrategyState ->
+        val windowSet = windowMessages.toSet()
+        ChatScreenState(
+            messages = messages.map { ChatUiMessage(it, windowSet.contains(it)) },
+            tokenLimitState = mapTokenLimitState(strategyState, windowMessages),
+            inputText = input,
+        )
+    }
+        .flowOn(Dispatchers.Default)
+        .stateIn(
+            scope = scope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = ChatScreenState(
+                messages = emptyList(),
+                inputText = "",
+                tokenLimitState = TokenLimitState.FullHistory,
+            )
+        )
 
     fun onEvent(event: ChatScreenEvent) {
         when (event) {
@@ -54,61 +70,44 @@ class ChatScreenStateHolder(
 
     private fun sendMessage() {
         scope.launch {
-            val text = uiState.value.inputText.trim()
+            val text = inputTextFlow.value
             if (text.isEmpty()) return@launch
 
             inputTextFlow.update { "" }
-            val now = System.currentTimeMillis()
-            val newMessage = ChatMessage(
-                id = now,
-                text = text,
-                author = ChatAuthor.User
+
+            chatInteractor.sendMessage(
+                ChatMessage(
+                    id = System.currentTimeMillis(),
+                    text = text,
+                    author = ChatAuthor.User,
+                    tokens = 0, // мы не знаем в начале предполагаемый размер сообщения
+                )
             )
-
-            val requestMessages = (uiState.value.messages + newMessage)
-                .mapNotNull { uiMessage ->
-                    when (uiMessage.author) {
-                        ChatAuthor.User -> Message(role = Role.User, content = uiMessage.text)
-                        ChatAuthor.Bot -> Message(role = Role.Assistant, content = uiMessage.text)
-                    }
-                }
-
-            chatHistoryRepository.addMessage(newMessage)
-
-            runCatching {
-                chatClient.execute(
-                    ChatRequest(
-                        model = appProfile.baseModel,
-                        messages = requestMessages,
-                    ),
-                )
-            }.onSuccess { response ->
-                val answer = response.choices.firstOrNull()?.message?.content
-                    ?.takeIf { it.isNotBlank() }
-                    ?: "- no response -"
-
-                chatHistoryRepository.addMessage(
-                    ChatMessage(
-                        id = now + 1,
-                        text = answer,
-                        author = ChatAuthor.Bot,
-                    )
-                )
-            }.onFailure { t ->
-                chatHistoryRepository.addMessage(
-                    ChatMessage(
-                        id = now + 1,
-                        text = "Ошибка: ${t.message ?: t::class.java.simpleName}",
-                        author = ChatAuthor.Bot,
-                    )
-                )
-            }
         }
     }
 
     private fun clearAllMessages() {
         scope.launch {
-            chatHistoryRepository.clear()
+            chatInteractor.deleteAllMessages()
         }
     }
+
+    private fun mapTokenLimitState(strategyState: StrategyState, windowMessages: List<ChatMessage>): TokenLimitState {
+        return when (strategyState.messageSelectionType) {
+            MessageSelectionType.FullHistory -> TokenLimitState.FullHistory
+            MessageSelectionType.MessageLimit -> {
+                TokenLimitState.LimitMessages(windowMessages.size, strategyState.maxMessages)
+            }
+
+            MessageSelectionType.TokenLimit -> {
+                TokenLimitState.LimitTokens(windowMessages.sumOf { it.tokens }, strategyState.maxTokens)
+            }
+        }
+    }
+
+    private data class StrategyState(
+        val messageSelectionType: MessageSelectionType,
+        val maxMessages: Int,
+        val maxTokens: Int,
+    )
 }

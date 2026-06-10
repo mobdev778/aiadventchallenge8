@@ -24,6 +24,10 @@ dependencies {
 
     implementation("io.insert-koin:koin-core:3.5.6")
 
+    // Koin annotations (KSP)
+    implementation("io.insert-koin:koin-annotations:1.3.1")
+    ksp("io.insert-koin:koin-ksp-compiler:1.3.1")
+
     // Room (KMP/JVM)
     implementation("androidx.room:room-runtime:2.7.0") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")

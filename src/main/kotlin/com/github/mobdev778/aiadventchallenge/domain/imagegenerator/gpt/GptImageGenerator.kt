@@ -1,17 +1,19 @@
 package com.github.mobdev778.aiadventchallenge.domain.imagegenerator.gpt
 
 import com.github.mobdev778.aiadventchallenge.domain.imagegenerator.ImageGenerator
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
-import com.github.mobdev778.aiadventchallenge.domain.openai.image.ImageClient
-import com.github.mobdev778.aiadventchallenge.domain.openai.image.model.ImageRequest
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
+import com.github.mobdev778.aiadventchallenge.domain.imageclient.ImageClient
+import com.github.mobdev778.aiadventchallenge.domain.imageclient.model.ImageRequest
+import org.koin.core.annotation.Single
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.util.Base64
 import javax.imageio.ImageIO
 
+@Single
 class GptImageGenerator(
     private val chatClient: ChatClient,
     private val imageClient: ImageClient,

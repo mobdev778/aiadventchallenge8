@@ -3,11 +3,13 @@ package com.github.mobdev778.aiadventchallenge.data.chathistory.repository
 import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.ChatDao
 import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.model.ChatAuthorEntity
 import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.model.ChatMessageEntity
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatMessage
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatAuthor
+import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Single
 
+@Single
 class ChatHistoryRepository(
     private val chatDao: ChatDao,
 ) {
@@ -20,8 +22,12 @@ class ChatHistoryRepository(
         chatDao.clear()
     }
 
-    suspend fun addMessage(message: ChatMessage) {
+    suspend fun add(message: ChatMessage) {
         chatDao.insert(message.toEntity())
+    }
+
+    suspend fun delete(message: ChatMessage) {
+        chatDao.deleteById(message.id)
     }
 
     private fun ChatMessageEntity.toDomain(): ChatMessage =
@@ -32,6 +38,7 @@ class ChatHistoryRepository(
                 ChatAuthorEntity.USER -> ChatAuthor.User
                 ChatAuthorEntity.ASSISTANT -> ChatAuthor.Bot
             },
+            tokens = tokens,
         )
 
     private fun ChatMessage.toEntity(): ChatMessageEntity =
@@ -43,5 +50,6 @@ class ChatHistoryRepository(
                 ChatAuthor.Bot -> ChatAuthorEntity.ASSISTANT
             },
             createdAtMillis = System.currentTimeMillis(),
+            tokens = tokens,
         )
 }

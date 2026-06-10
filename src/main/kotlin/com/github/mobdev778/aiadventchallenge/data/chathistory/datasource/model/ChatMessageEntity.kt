@@ -17,5 +17,8 @@ data class ChatMessageEntity(
 
     @ColumnInfo(name = "created_at_millis")
     val createdAtMillis: Long,
+
+    @ColumnInfo(name = "tokens")
+    val tokens: Int,
 )
 

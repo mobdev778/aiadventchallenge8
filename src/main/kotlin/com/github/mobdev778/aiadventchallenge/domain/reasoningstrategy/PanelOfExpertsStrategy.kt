@@ -3,10 +3,12 @@ package com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import org.koin.core.annotation.Single
 
 /**
  * Стратегия "Группа экспертов (Panel of Experts)"
  */
+@Single
 class PanelOfExpertsStrategy(
     private val directAnswerStrategy: DirectAnswerStrategy,
 ) : ReasoningStrategy {

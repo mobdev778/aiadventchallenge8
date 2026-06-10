@@ -1,13 +1,15 @@
 package com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy
 
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.ChatRequest
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Message
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.ChatClient
-import com.github.mobdev778.aiadventchallenge.domain.openai.chat.model.Role
-import com.github.mobdev778.aiadventchallenge.domain.profile.AppProfile
+import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
+import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
+import org.koin.core.annotation.Single
 
+@Single
 class StepByStepStrategy(
-    private val appProfile: AppProfile,
+    private val settingsRepository: SettingsRepository,
     private val client: ChatClient,
 ) : ReasoningStrategy {
 
@@ -39,7 +41,7 @@ class StepByStepStrategy(
 
         val response = client.execute(
             ChatRequest(
-                model = appProfile.baseModel,
+                model = settingsRepository.getSettings().baseModel,
                 messages = messages,
                 temperature = temperature,
             )

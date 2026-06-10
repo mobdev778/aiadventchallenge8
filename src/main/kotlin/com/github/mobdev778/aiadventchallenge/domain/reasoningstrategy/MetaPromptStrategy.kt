@@ -1,11 +1,14 @@
 package com.github.mobdev778.aiadventchallenge.domain.reasoningstrategy
 
+import org.koin.core.annotation.Single
+
 /**
  * Стратегия "Мета-промпт" (двухэтапная стратегия).
  *
  * Сначала просим LLM составить идеальный промпт для этой задачи,
  * а вторым запросом — решаем задачу по этому сгенерированному промпту.
  */
+@Single
 class MetaPromptStrategy(
     private val directAnswerStrategy: DirectAnswerStrategy,
 ) : ReasoningStrategy {

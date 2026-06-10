@@ -10,11 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatMessage
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreenEvent
-import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreenState
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
@@ -29,6 +26,12 @@ fun ChatScreenContent(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        // 0) Limit indicator
+        ChatLimitIndicator(
+            state = state.tokenLimitState,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
         // 1) Messages list
         ChatMessageList(
             messages = state.messages,
@@ -65,27 +68,4 @@ fun ChatScreenContent(
             },
         )
     }
-}
-
-@Preview
-@Composable
-private fun ChatScreenContentPreview() {
-    ChatScreenContent(
-        state = ChatScreenState(
-            messages = listOf(
-                ChatMessage(
-                    id = 1L,
-                    text = "Hello!",
-                    author = ChatAuthor.User,
-                ),
-                ChatMessage(
-                    id = 2L,
-                    text = "Hi! How can I help you today?",
-                    author = ChatAuthor.Bot,
-                ),
-            ),
-            inputText = "Write something…",
-        ),
-        onEvent = {},
-    )
 }
