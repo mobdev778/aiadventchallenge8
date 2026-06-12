@@ -4,7 +4,7 @@ import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessa
 
 interface MessageSelectionStrategy {
 
-    fun selectMessages(
+    suspend fun selectMessages(
         history: List<ChatMessage>,
     ): List<ChatMessage>
 }

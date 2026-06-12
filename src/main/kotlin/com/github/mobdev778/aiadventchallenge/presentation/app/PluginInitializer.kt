@@ -1,6 +1,5 @@
 package com.github.mobdev778.aiadventchallenge.presentation.app
 
-import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.ChatAppDatabase
 import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.ChatDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.network.NetworkModule
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDatabaseModule

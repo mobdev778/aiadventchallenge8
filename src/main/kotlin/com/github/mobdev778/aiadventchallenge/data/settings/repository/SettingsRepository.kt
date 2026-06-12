@@ -2,8 +2,8 @@ package com.github.mobdev778.aiadventchallenge.data.settings.repository
 
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDao
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.model.SettingsEntity
-import com.github.mobdev778.aiadventchallenge.domain.messageselection.MessageSelectionType
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.AppSettings
+import com.github.mobdev778.aiadventchallenge.domain.settings.model.MessageSelectionType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -16,7 +16,7 @@ class SettingsRepository(
 
     fun observeSettings(): Flow<AppSettings> =
         settingsDao.observeById(SettingsEntity.SINGLETON_ID)
-            .map { entity -> entity?.toDomain() ?: defaultSettings() }
+            .map { entity -> entity?.toDomain() ?: default }
             .distinctUntilChanged()
 
     /**
@@ -25,7 +25,7 @@ class SettingsRepository(
      */
     suspend fun getSettings(): AppSettings {
         val settingsEntity: SettingsEntity? = settingsDao.getById(SettingsEntity.SINGLETON_ID)
-        return settingsEntity?.toDomain() ?: defaultSettings()
+        return settingsEntity?.toDomain() ?: default
     }
 
     suspend fun updateSettings(settings: AppSettings) {
@@ -33,16 +33,17 @@ class SettingsRepository(
     }
 
     private fun SettingsEntity.toDomain(): AppSettings {
-        val type = runCatching { MessageSelectionType.valueOf(messageSelectionType) }
+        val messageSelection = runCatching { MessageSelectionType.valueOf(messageSelectionType) }
             .getOrDefault(MessageSelectionType.FullHistory)
 
         return AppSettings(
-            messageSelectionType = type,
+            messageSelectionType = messageSelection,
             maxMessages = maxMessages,
             maxTokens = maxTokens,
+            recursiveSummationMaxMessages = recursiveSummationMaxMessages,
             apiKey = apiKey,
             baseUrl = baseUrl,
-            baseModel = baseModel,
+            baseModel = baseModel.trim().replace("\n", ""),
         )
     }
 
@@ -52,19 +53,21 @@ class SettingsRepository(
             messageSelectionType = messageSelectionType.name,
             maxMessages = maxMessages,
             maxTokens = maxTokens,
+            recursiveSummationMaxMessages = recursiveSummationMaxMessages,
             apiKey = apiKey,
             baseUrl = baseUrl,
             baseModel = baseModel,
         )
 
-    private fun defaultSettings(): AppSettings =
-        AppSettings(
+    companion object {
+        val default = AppSettings(
             messageSelectionType = MessageSelectionType.FullHistory,
-            maxMessages = 20,
+            maxMessages = 5,
             maxTokens = 4096,
+            recursiveSummationMaxMessages = 5,
             apiKey = "",
-            baseUrl = "http://127.0.0.1:1234",
-            baseModel = "qwen/qwen3-14b",
+            baseUrl = "https://api.proxyapi.ru/openai/v1",
+            baseModel = "gpt-5.2",
         )
-
+    }
 }

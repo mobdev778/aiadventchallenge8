@@ -4,7 +4,7 @@ import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessa
 
 class MessageLimitStrategy(val maxMessages: Int) : MessageSelectionStrategy {
 
-    override fun selectMessages(history: List<ChatMessage>): List<ChatMessage> {
+    override suspend fun selectMessages(history: List<ChatMessage>): List<ChatMessage> {
         return history.takeLast(maxMessages)
     }
 }

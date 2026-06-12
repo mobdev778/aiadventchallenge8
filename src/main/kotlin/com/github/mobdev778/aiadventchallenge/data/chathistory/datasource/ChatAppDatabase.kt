@@ -5,14 +5,11 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.github.mobdev778.aiadventchallenge.data.chathistory.datasource.model.ChatMessageEntity
-import com.intellij.openapi.application.PathManager
-import org.koin.core.annotation.Single
-import java.nio.file.Files
 import java.nio.file.Path
 
 @Database(
     entities = [ChatMessageEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class ChatAppDatabase : RoomDatabase() {

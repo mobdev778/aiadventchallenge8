@@ -2,6 +2,7 @@ package com.github.mobdev778.aiadventchallenge.presentation.chatscreen.composabl
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,22 +14,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessage
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreenEvent
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatUiMessage
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
 @Composable
 fun ChatMessageRow(
-    message: ChatMessage,
-    insideWindow: Boolean,
+    message: ChatUiMessage,
+    onEvent: (ChatScreenEvent) -> Unit
 ) {
-    val alignment = when (message.author) {
+    val author = message.message.author
+    val insideWindow = message.insideWindow
+    val alignment = when (author) {
         ChatAuthor.User -> Alignment.CenterStart
         ChatAuthor.Bot -> Alignment.CenterEnd
     }
 
-    val borderColor = when (message.author) {
+    val borderColor = when (author) {
         ChatAuthor.User -> Color.White
         ChatAuthor.Bot -> Color(0xFFBDBDBD) // light gray
     }
@@ -42,7 +46,7 @@ fun ChatMessageRow(
 
     val shape = RoundedCornerShape(12.dp)
 
-    val rowPadding = when (message.author) {
+    val rowPadding = when (author) {
         ChatAuthor.User -> Modifier.padding(start = 8.dp, end = 24.dp, top = 4.dp, bottom = 4.dp)
         ChatAuthor.Bot -> Modifier.padding(start = 24.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
     }
@@ -50,7 +54,12 @@ fun ChatMessageRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .then(rowPadding),
+            .then(rowPadding)
+            .clickable(
+                onClick = {
+                    onEvent(ChatScreenEvent.OnMessageClicked(message))
+                }
+            ),
         contentAlignment = alignment,
     ) {
         Column(
@@ -60,7 +69,7 @@ fun ChatMessageRow(
                 .background(color = borderColor.copy(alpha = 0.06f), shape = shape)
                 .padding(horizontal = 10.dp, vertical = 8.dp),
         ) {
-            Text(text = message.text, color = textColor)
+            Text(text = message.message.text, color = textColor)
 
             Divider(
                 modifier = Modifier
@@ -70,7 +79,7 @@ fun ChatMessageRow(
             )
 
             Text(
-                text = "tokens: ${message.tokens}",
+                text = "tokens: ${message.message.tokens}",
                 color = tokenColor,
             )
         }

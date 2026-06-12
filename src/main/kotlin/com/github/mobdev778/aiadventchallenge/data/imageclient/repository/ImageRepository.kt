@@ -6,7 +6,6 @@ import com.github.mobdev778.aiadventchallenge.domain.imageclient.model.ImageResp
 import org.koin.core.annotation.Single
 import org.koin.java.KoinJavaComponent.inject
 import retrofit2.Retrofit
-import kotlin.getValue
 
 @Single
 class ImageRepository(

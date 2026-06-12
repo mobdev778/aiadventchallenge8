@@ -1,12 +1,12 @@
 package com.github.mobdev778.aiadventchallenge.domain.imagegenerator.gpt
 
-import com.github.mobdev778.aiadventchallenge.domain.imagegenerator.ImageGenerator
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
 import com.github.mobdev778.aiadventchallenge.domain.imageclient.ImageClient
 import com.github.mobdev778.aiadventchallenge.domain.imageclient.model.ImageRequest
+import com.github.mobdev778.aiadventchallenge.domain.imagegenerator.ImageGenerator
 import org.koin.core.annotation.Single
 import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream

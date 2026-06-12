@@ -69,6 +69,10 @@ private fun limitIndicatorText(state: TokenLimitState): String {
         is TokenLimitState.LimitTokens -> {
             "${state.tokens} из ${state.maxTokens} токенов"
         }
+
+        is TokenLimitState.RecursiveSummation -> {
+            "${state.messages} из ${state.maxMessages} сообщений"
+        }
     }
 }
 
@@ -83,15 +87,19 @@ private fun limitIndicatorUsedRatio(state: TokenLimitState): Double? {
         is TokenLimitState.LimitTokens -> {
             if (state.maxTokens <= 0) null else state.tokens.toDouble() / state.maxTokens.toDouble()
         }
+
+        is TokenLimitState.RecursiveSummation -> {
+            if (state.maxMessages <= 0) null else state.messages.toDouble() / state.maxMessages.toDouble()
+        }
     }
 }
 
 private fun limitIndicatorColor(usedRatio: Double?): Color {
     val ratio = usedRatio ?: return Color.White
     return when {
-        ratio >= 0.75 -> Color.Red
-        ratio >= 0.50 -> Color.Yellow
-        else -> Color.Green
+        ratio >= 0.75 -> Color(0xFFFE019A) // неоновый розовый
+        ratio >= 0.50 -> Color(0xFFFF5C00) // неоновый оранжевый
+        else -> Color(0xFF39FF14) // неоновый зеленый
     }
 }
 

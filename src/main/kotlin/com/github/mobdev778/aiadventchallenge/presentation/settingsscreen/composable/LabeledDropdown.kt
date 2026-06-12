@@ -13,6 +13,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.foundation.theme.LocalContentColor
 import org.jetbrains.jewel.ui.component.OutlinedButton
@@ -21,6 +23,7 @@ import org.jetbrains.jewel.ui.component.Text
 @Composable
 fun LabeledDropdown(
     label: String,
+    labelColor: Color,
     selectedText: String,
     items: List<String>,
     onItemSelected: (index: Int) -> Unit,
@@ -31,7 +34,12 @@ fun LabeledDropdown(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label)
+        Text(
+            text = label,
+            color = labelColor,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
 
         // Lightweight dropdown without relying on Jewel's Dropdown API (it differs between versions).
         OutlinedButton(

@@ -8,11 +8,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.github.mobdev778.aiadventchallenge.domain.messageselection.MessageSelectionType
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreenEvent
-import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreenState
+import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.model.SettingsScreenState
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.OutlinedButton
@@ -23,53 +24,35 @@ fun SettingsScreenContent(
     state: SettingsScreenState,
     onEvent: (SettingsScreenEvent) -> Unit,
 ) {
+    val neonHighlightedText = Color(0xFF04D9FF)
+
     Column(
         modifier = Modifier.padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Settings")
+        Text("Настройки")
 
-        LabeledDropdown(
-            label = "Лимит контекстного окна",
-            selectedText = state.draft.messageSelectionType.name,
-            items = MessageSelectionType.entries.map {
-                when (it) {
-                    MessageSelectionType.FullHistory -> "- Не задан -"
-                    MessageSelectionType.MessageLimit -> "Лимит сообщений"
-                    MessageSelectionType.TokenLimit -> "Лимит токенов"
-                }
-                it.name
-            },
-            onItemSelected = { index ->
-                onEvent(
-                    SettingsScreenEvent.OnMessageSelectionTypeChanged(
-                        MessageSelectionType.entries[index]
-                    )
-                )
-            },
+        MessageSelectionTypeBlock(
+            titleColor = neonHighlightedText,
+            items = state.messageSelectionTypes,
+            maxMessages = state.draft.maxMessages,
+            maxTokens = state.draft.maxTokens,
+            recursiveSummationMaxMessages = state.draft.recursiveSummationMaxMessages,
+            onEvent = onEvent,
         )
-
-        if (state.draft.messageSelectionType == MessageSelectionType.MessageLimit) {
-            LabeledTextField(
-                label = "Max сообщений",
-                value = state.draft.maxMessages,
-                onValueChange = { onEvent(SettingsScreenEvent.OnLastNMessagesChanged(it)) },
-            )
-        }
-
-        if (state.draft.messageSelectionType == MessageSelectionType.TokenLimit) {
-            LabeledTextField(
-                label = "Max токенов",
-                value = state.draft.maxTokens,
-                onValueChange = { onEvent(SettingsScreenEvent.OnMaxTokensChanged(it)) },
-            )
-        }
 
         Divider(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 6.dp),
             orientation = Orientation.Horizontal,
+        )
+
+        Text(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Настройки LLM:",
+            color = neonHighlightedText,
+            textAlign = TextAlign.Center,
         )
 
         LabeledTextField(
@@ -91,16 +74,31 @@ fun SettingsScreenContent(
             onValueChange = { onEvent(SettingsScreenEvent.OnBaseModelChanged(it)) },
         )
 
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp),
+            orientation = Orientation.Horizontal,
+        )
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnResetClick) }) {
-                Text("Reset")
-            }
-            OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnSaveClick) }) {
-                Text("Save")
+            if (state.actionEnabled) {
+                OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnResetClick) }) {
+                    Text(
+                        text = "Отменить",
+                        color = neonHighlightedText,
+                    )
+                }
+                OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnSaveClick) }) {
+                    Text(
+                        text = "Сохранить",
+                        color = neonHighlightedText,
+                    )
+                }
             }
         }
     }

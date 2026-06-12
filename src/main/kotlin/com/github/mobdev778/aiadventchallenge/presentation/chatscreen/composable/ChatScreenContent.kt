@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -14,6 +16,7 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
+import kotlin.collections.lastIndex
 
 @Composable
 fun ChatScreenContent(
@@ -33,11 +36,21 @@ fun ChatScreenContent(
         )
 
         // 1) Messages list
+        val rootListState = rememberLazyListState()
+        val lastMessage = state.messages.lastOrNull()
+        if (lastMessage != null) {
+            LaunchedEffect(lastMessage) {
+                rootListState.animateScrollToItem(state.messages.lastIndex)
+            }
+        }
+
         ChatMessageList(
+            listState = rootListState,
             messages = state.messages,
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
+            onEvent = onEvent,
         )
 
         // 2) Clear all Messages

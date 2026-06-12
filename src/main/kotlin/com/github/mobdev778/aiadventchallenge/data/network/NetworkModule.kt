@@ -32,6 +32,8 @@ class NetworkModule {
 
         val apiKey = runBlocking {
             settingsRepository.getSettings().apiKey
+                .replace("\n", "")
+                .trim()
         }
 
         return OkHttpClient.Builder()
@@ -57,6 +59,8 @@ class NetworkModule {
 
         val baseUrl = runBlocking {
             settingsRepository.getSettings().baseUrl
+                .replace("\n", "")
+                .trim()
         }
         val finalBaseUrl = when {
             baseUrl.isEmpty() -> "http://127.0.0.1:1234"

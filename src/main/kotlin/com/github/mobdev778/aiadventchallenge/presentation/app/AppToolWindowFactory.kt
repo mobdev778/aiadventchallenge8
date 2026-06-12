@@ -9,7 +9,6 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import org.jetbrains.jewel.bridge.addComposeTab
 import org.koin.java.KoinJavaComponent.inject
-import kotlin.getValue
 
 class AppToolWindowFactory : ToolWindowFactory {
 

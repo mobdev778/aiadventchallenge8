@@ -1,15 +1,16 @@
 package com.github.mobdev778.aiadventchallenge.presentation.settingsscreen
 
-import com.github.mobdev778.aiadventchallenge.domain.messageselection.MessageSelectionType
+import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.AppSettings
+import com.github.mobdev778.aiadventchallenge.domain.settings.model.MessageSelectionType
+import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.mapper.MessageSelectionTypeMapper
+import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.model.SettingsScreenState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -22,36 +23,27 @@ class SettingsScreenStateHolder(
     private val scope: CoroutineScope,
 ) {
 
-    private val defaultDraft = SettingsDraft(
-        messageSelectionType = MessageSelectionType.FullHistory,
-        maxMessages = "",
-        maxTokens = "",
-        apiKey = "",
-        baseUrl = "",
-        baseModel = "",
-    )
-
-    /**
-     * If repository already has settings, the first emission from observeSettings() must overwrite
-     * this default draft.
-     */
-    private val draftFlow = MutableStateFlow(defaultDraft)
+    private val draftFlow = MutableStateFlow(SettingsRepository.default)
 
     private val savedSettingsFlow = settingsInteractor
         .observeSettings()
         .onEach { settings ->
-            if (draftFlow.value === defaultDraft) {
-                draftFlow.value = SettingsDraft.from(settings)
+            if (draftFlow.value === SettingsRepository.default) {
+                draftFlow.value = settings
             }
         }
 
     val uiState: StateFlow<SettingsScreenState> = combine(
         savedSettingsFlow,
         draftFlow,
-    ) { settings: AppSettings, draft: SettingsDraft ->
+    ) { settings: AppSettings, draft: AppSettings ->
         SettingsScreenState(
             saved = settings,
             draft = draft,
+            messageSelectionTypes = MessageSelectionType.entries.map {
+                MessageSelectionTypeMapper.map(it, it == draft.messageSelectionType)
+            },
+            actionEnabled = settings != draft
         )
     }
         .stateIn(
@@ -62,79 +54,90 @@ class SettingsScreenStateHolder(
                     messageSelectionType = MessageSelectionType.FullHistory,
                     maxMessages = 0,
                     maxTokens = 0,
+                    recursiveSummationMaxMessages = 0,
                     apiKey = "",
                     baseUrl = "",
                     baseModel = "",
                 ),
                 draft = draftFlow.value,
+                messageSelectionTypes = MessageSelectionType.entries.map {
+                    MessageSelectionTypeMapper.map(
+                        messageSelectionType = it,
+                        selected = it == MessageSelectionType.FullHistory
+                    )
+                },
+                actionEnabled = false,
             )
         )
 
     fun onEvent(event: SettingsScreenEvent) {
         when (event) {
-            is SettingsScreenEvent.OnMessageSelectionTypeChanged -> draftFlow.update { it.copy(messageSelectionType = event.type) }
-            is SettingsScreenEvent.OnLastNMessagesChanged -> draftFlow.update { it.copy(maxMessages = event.value) }
-            is SettingsScreenEvent.OnMaxTokensChanged -> draftFlow.update { it.copy(maxTokens = event.value) }
-            is SettingsScreenEvent.OnApiKeyChanged -> draftFlow.update { it.copy(apiKey = event.value) }
-            is SettingsScreenEvent.OnBaseUrlChanged -> draftFlow.update { it.copy(baseUrl = event.value) }
-            is SettingsScreenEvent.OnBaseModelChanged -> draftFlow.update { it.copy(baseModel = event.value) }
-            SettingsScreenEvent.OnSaveClick -> save()
-            SettingsScreenEvent.OnResetClick -> resetToSaved()
+            is SettingsScreenEvent.OnMessageSelectionTypeChanged -> {
+                updateMessageSelectionType(event.type)
+            }
+            is SettingsScreenEvent.OnMaxMessagesChanged -> {
+                updateMaxMessages(event.value)
+            }
+            is SettingsScreenEvent.OnMaxTokensChanged -> {
+                updateMaxTokens(event.value)
+            }
+            is SettingsScreenEvent.OnRecursiveSummationMaxMessagesChanged -> {
+                updateRecursiveSummationMaxTokens(event.value)
+            }
+            is SettingsScreenEvent.OnApiKeyChanged -> draftFlow.update {
+                it.copy(apiKey = event.value)
+            }
+            is SettingsScreenEvent.OnBaseUrlChanged -> draftFlow.update {
+                it.copy(baseUrl = event.value)
+            }
+            is SettingsScreenEvent.OnBaseModelChanged -> draftFlow.update {
+                it.copy(baseModel = event.value)
+            }
+            SettingsScreenEvent.OnSaveClick -> {
+                save()
+            }
+            SettingsScreenEvent.OnResetClick -> {
+                resetToSaved()
+            }
+        }
+    }
+
+    private fun updateMessageSelectionType(type: MessageSelectionType) {
+        draftFlow.update { draft ->
+            draft.copy(messageSelectionType = type)
+        }
+    }
+
+    private fun updateMaxMessages(maxMessages: String) {
+        val newValue = maxMessages.toIntOrNull()
+        newValue?.let {
+            draftFlow.update { it.copy(maxMessages = newValue) }
+        }
+    }
+
+    private fun updateMaxTokens(maxTokens: String) {
+        val newValue = maxTokens.toIntOrNull()
+        newValue?.let {
+            draftFlow.update { it.copy(maxTokens = newValue) }
+        }
+    }
+
+    private fun updateRecursiveSummationMaxTokens(maxTokens: String) {
+        val newValue = maxTokens.toIntOrNull()
+        newValue?.let {
+            draftFlow.update { it.copy(recursiveSummationMaxMessages = newValue) }
+        }
+    }
+
+    private fun save() {
+        val draft = draftFlow.value
+        scope.launch {
+            settingsInteractor.update(draft)
         }
     }
 
     private fun resetToSaved() {
         val saved = uiState.value.saved
-        draftFlow.value = SettingsDraft.from(saved)
-    }
-
-    private fun save() {
-        val saved = uiState.value.saved
-        val draft = draftFlow.value
-
-        val lastN = draft.maxMessages.trim().toIntOrNull() ?: saved.maxMessages
-        val maxTokens = draft.maxTokens.trim().toIntOrNull() ?: saved.maxTokens
-
-        scope.launch {
-            settingsInteractor.update(
-                AppSettings(
-                    messageSelectionType = draft.messageSelectionType,
-                    maxMessages = lastN,
-                    maxTokens = maxTokens,
-                    apiKey = draft.apiKey,
-                    baseUrl = draft.baseUrl,
-                    baseModel = draft.baseModel,
-                )
-            )
-        }
-    }
-}
-
-data class SettingsScreenState(
-    val saved: AppSettings,
-    val draft: SettingsDraft,
-)
-
-// --- Draft ---
-
-data class SettingsDraft(
-    val messageSelectionType: MessageSelectionType,
-    val maxMessages: String,
-    val maxTokens: String,
-    val apiKey: String,
-    val baseUrl: String,
-    val baseModel: String,
-) {
-    companion object {
-        fun from(settings: AppSettings): SettingsDraft {
-            return SettingsDraft(
-                messageSelectionType = settings.messageSelectionType,
-                maxMessages = settings.maxMessages.toString(),
-                maxTokens = settings.maxTokens.toString(),
-                apiKey = settings.apiKey,
-                baseUrl = settings.baseUrl,
-                baseModel = settings.baseModel,
-            )
-        }
+        draftFlow.value =  saved
     }
 }

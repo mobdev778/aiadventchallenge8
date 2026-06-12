@@ -15,7 +15,9 @@ class ChatHistoryRepository(
 ) {
     fun observe(): Flow<List<ChatMessage>> =
         chatDao.observeAll().map { entities ->
-            entities.map { it.toDomain() }
+            entities
+                .sortedBy { it.createdAtMillis }
+                .map { it.toDomain() }
         }
 
     suspend fun clear() {
@@ -26,6 +28,10 @@ class ChatHistoryRepository(
         chatDao.insert(message.toEntity())
     }
 
+    suspend fun add(messages: List<ChatMessage>) {
+        chatDao.insertWithTransaction(messages.map { it.toEntity() })
+    }
+
     suspend fun delete(message: ChatMessage) {
         chatDao.deleteById(message.id)
     }
@@ -33,23 +39,28 @@ class ChatHistoryRepository(
     private fun ChatMessageEntity.toDomain(): ChatMessage =
         ChatMessage(
             id = id,
+            parentId = parentId,
+            time = createdAtMillis,
             text = text,
             author = when (author) {
                 ChatAuthorEntity.USER -> ChatAuthor.User
                 ChatAuthorEntity.ASSISTANT -> ChatAuthor.Bot
             },
             tokens = tokens,
+            rank = rank,
         )
 
     private fun ChatMessage.toEntity(): ChatMessageEntity =
         ChatMessageEntity(
             id = id,
+            parentId = parentId,
+            createdAtMillis = time,
             text = text,
             author = when (author) {
                 ChatAuthor.User -> ChatAuthorEntity.USER
                 ChatAuthor.Bot -> ChatAuthorEntity.ASSISTANT
             },
-            createdAtMillis = System.currentTimeMillis(),
             tokens = tokens,
+            rank = rank,
         )
 }
