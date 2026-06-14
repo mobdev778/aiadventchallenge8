@@ -9,7 +9,7 @@ import java.nio.file.Path
 
 @Database(
     entities = [SettingsEntity::class],
-    version = 1,
+    version = 4,
     exportSchema = false,
 )
 abstract class SettingsAppDatabase : RoomDatabase() {

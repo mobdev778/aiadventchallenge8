@@ -3,10 +3,11 @@ package com.github.mobdev778.aiadventchallenge.presentation.settingsscreen
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.AppSettings
-import com.github.mobdev778.aiadventchallenge.domain.settings.model.MessageSelectionType
-import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.mapper.MessageSelectionTypeMapper
+import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManagementType
+import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.mapper.ContextManagementTypeMapper
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.model.SettingsScreenState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -40,8 +41,8 @@ class SettingsScreenStateHolder(
         SettingsScreenState(
             saved = settings,
             draft = draft,
-            messageSelectionTypes = MessageSelectionType.entries.map {
-                MessageSelectionTypeMapper.map(it, it == draft.messageSelectionType)
+            contextManagementTypes = ContextManagementType.entries.map {
+                ContextManagementTypeMapper.map(it, it == draft.contextManagementType)
             },
             actionEnabled = settings != draft
         )
@@ -51,29 +52,38 @@ class SettingsScreenStateHolder(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = SettingsScreenState(
                 saved = AppSettings(
-                    messageSelectionType = MessageSelectionType.FullHistory,
+                    contextManagementType = ContextManagementType.None,
                     maxMessages = 0,
                     maxTokens = 0,
                     recursiveSummationMaxMessages = 0,
+                    stickyFactsMaxMessages = 0,
                     apiKey = "",
                     baseUrl = "",
                     baseModel = "",
                 ),
                 draft = draftFlow.value,
-                messageSelectionTypes = MessageSelectionType.entries.map {
-                    MessageSelectionTypeMapper.map(
-                        messageSelectionType = it,
-                        selected = it == MessageSelectionType.FullHistory
+                contextManagementTypes = ContextManagementType.entries.map {
+                    ContextManagementTypeMapper.map(
+                        contextManagementType = it,
+                        selected = it == ContextManagementType.None
                     )
                 },
                 actionEnabled = false,
             )
         )
 
+    val commands = MutableSharedFlow<SettingsScreenCommand>(
+        // Так команда дождется, пока Compose-экран будет готов ее принять.
+        extraBufferCapacity = 1
+    )
+
     fun onEvent(event: SettingsScreenEvent) {
         when (event) {
-            is SettingsScreenEvent.OnMessageSelectionTypeChanged -> {
-                updateMessageSelectionType(event.type)
+            is SettingsScreenEvent.OnBackClick -> {
+                commands.tryEmit(SettingsScreenCommand.Back)
+            }
+            is SettingsScreenEvent.OnContextManagementTypeChanged -> {
+                updateContextManagementType(event.type)
             }
             is SettingsScreenEvent.OnMaxMessagesChanged -> {
                 updateMaxMessages(event.value)
@@ -82,7 +92,10 @@ class SettingsScreenStateHolder(
                 updateMaxTokens(event.value)
             }
             is SettingsScreenEvent.OnRecursiveSummationMaxMessagesChanged -> {
-                updateRecursiveSummationMaxTokens(event.value)
+                updateRecursiveSummationMaxMessages(event.value)
+            }
+            is SettingsScreenEvent.OnStickyFactsMaxMessagesChanged -> {
+                updateStickyFactsMaxMessagesChanged(event.value)
             }
             is SettingsScreenEvent.OnApiKeyChanged -> draftFlow.update {
                 it.copy(apiKey = event.value)
@@ -102,9 +115,9 @@ class SettingsScreenStateHolder(
         }
     }
 
-    private fun updateMessageSelectionType(type: MessageSelectionType) {
+    private fun updateContextManagementType(type: ContextManagementType) {
         draftFlow.update { draft ->
-            draft.copy(messageSelectionType = type)
+            draft.copy(contextManagementType = type)
         }
     }
 
@@ -122,10 +135,17 @@ class SettingsScreenStateHolder(
         }
     }
 
-    private fun updateRecursiveSummationMaxTokens(maxTokens: String) {
-        val newValue = maxTokens.toIntOrNull()
+    private fun updateRecursiveSummationMaxMessages(maxMessages: String) {
+        val newValue = maxMessages.toIntOrNull()
         newValue?.let {
             draftFlow.update { it.copy(recursiveSummationMaxMessages = newValue) }
+        }
+    }
+
+    private fun updateStickyFactsMaxMessagesChanged(maxMessages: String) {
+        val newValue = maxMessages.toIntOrNull()
+        newValue?.let {
+            draftFlow.update { it.copy(stickyFactsMaxMessages = newValue) }
         }
     }
 

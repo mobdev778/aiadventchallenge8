@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model
 
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessage
+import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 
 data class ChatUiMessage(
     val message: ChatMessage,

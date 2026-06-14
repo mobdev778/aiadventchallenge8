@@ -17,6 +17,7 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.Chat
 fun ChatMessageList(
     listState: LazyListState = rememberLazyListState(),
     messages: List<ChatUiMessage>,
+    isBranchingEnabled: Boolean,
     modifier: Modifier = Modifier,
     onEvent: (ChatScreenEvent) -> Unit,
 ) {
@@ -32,6 +33,7 @@ fun ChatMessageList(
             Column {
                 ChatMessageRow(
                     message = message,
+                    isBranchingEnabled = isBranchingEnabled,
                     onEvent = onEvent,
                 )
 
@@ -41,6 +43,7 @@ fun ChatMessageList(
                 if (message.expanded && message.children.isNotEmpty()) {
                     ChatMessageChildren(
                         messages = message.children,
+                        isBranchingEnabled = isBranchingEnabled,
                         modifier = Modifier.padding(start = 24.dp),
                         onEvent = onEvent,
                     )
@@ -53,6 +56,7 @@ fun ChatMessageList(
 @Composable
 private fun ChatMessageChildren(
     messages: List<ChatUiMessage>,
+    isBranchingEnabled: Boolean,
     modifier: Modifier = Modifier,
     onEvent: (ChatScreenEvent) -> Unit,
 ) {
@@ -63,12 +67,14 @@ private fun ChatMessageChildren(
         messages.forEach { message ->
             ChatMessageRow(
                 message = message,
+                isBranchingEnabled = isBranchingEnabled,
                 onEvent = onEvent,
             )
 
             if (message.expanded && message.children.isNotEmpty()) {
                 ChatMessageChildren(
                     messages = message.children,
+                    isBranchingEnabled = isBranchingEnabled,
                     modifier = Modifier.padding(start = 24.dp),
                     onEvent = onEvent,
                 )

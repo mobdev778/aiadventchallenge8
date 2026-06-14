@@ -3,7 +3,7 @@ package com.github.mobdev778.aiadventchallenge.data.settings.repository
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDao
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.model.SettingsEntity
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.AppSettings
-import com.github.mobdev778.aiadventchallenge.domain.settings.model.MessageSelectionType
+import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManagementType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -33,14 +33,15 @@ class SettingsRepository(
     }
 
     private fun SettingsEntity.toDomain(): AppSettings {
-        val messageSelection = runCatching { MessageSelectionType.valueOf(messageSelectionType) }
-            .getOrDefault(MessageSelectionType.FullHistory)
+        val contextManagementType = runCatching { ContextManagementType.valueOf(this.contextManagementType) }
+            .getOrDefault(ContextManagementType.None)
 
         return AppSettings(
-            messageSelectionType = messageSelection,
+            contextManagementType = contextManagementType,
             maxMessages = maxMessages,
             maxTokens = maxTokens,
             recursiveSummationMaxMessages = recursiveSummationMaxMessages,
+            stickyFactsMaxMessages = stickyFactsMaxMessages,
             apiKey = apiKey,
             baseUrl = baseUrl,
             baseModel = baseModel.trim().replace("\n", ""),
@@ -50,10 +51,11 @@ class SettingsRepository(
     private fun AppSettings.toEntity(): SettingsEntity =
         SettingsEntity(
             id = SettingsEntity.SINGLETON_ID,
-            messageSelectionType = messageSelectionType.name,
+            contextManagementType = contextManagementType.name,
             maxMessages = maxMessages,
             maxTokens = maxTokens,
             recursiveSummationMaxMessages = recursiveSummationMaxMessages,
+            stickyFactsMaxMessages = stickyFactsMaxMessages,
             apiKey = apiKey,
             baseUrl = baseUrl,
             baseModel = baseModel,
@@ -61,10 +63,11 @@ class SettingsRepository(
 
     companion object {
         val default = AppSettings(
-            messageSelectionType = MessageSelectionType.FullHistory,
-            maxMessages = 5,
+            contextManagementType = ContextManagementType.None,
+            maxMessages = 6,
             maxTokens = 4096,
-            recursiveSummationMaxMessages = 5,
+            recursiveSummationMaxMessages = 6,
+            stickyFactsMaxMessages = 6,
             apiKey = "",
             baseUrl = "https://api.proxyapi.ru/openai/v1",
             baseModel = "gpt-5.2",
