@@ -1,20 +1,23 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen
 
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.ChatInteractor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatAuthor
-import com.github.mobdev778.aiadventchallenge.domain.chathistory.model.ChatMessage
+import com.github.mobdev778.aiadventchallenge.domain.chat.ChatInteractor
+import com.github.mobdev778.aiadventchallenge.domain.chat.model.Chat
+import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
+import com.github.mobdev778.aiadventchallenge.domain.chat.model.MessageType
 import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
-import com.github.mobdev778.aiadventchallenge.domain.settings.model.MessageSelectionType
+import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManagementType
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatUiMessage
-import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.TokenLimitState
+import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ContextManagementState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -32,30 +35,54 @@ class ChatScreenStateHolder(
     private val inputTextFlow = MutableStateFlow("")
     private val expandedMessagesFlow = MutableStateFlow<Set<UUID>>(emptySet())
 
+    private val selectedChatIdFlow = MutableStateFlow<UUID?>(null)
+
+    val commands = MutableSharedFlow<ChatScreenCommand>(
+        // Так команда дождется, пока Compose-экран будет готов ее принять.
+        extraBufferCapacity = 1
+    )
+
+    private val intermediateStateFlow: Flow<IntermediateState> = selectedChatIdFlow
+        .flatMapLatest { chatId ->
+            val chatId = chatId ?: UUID(0, 0)
+            chatInteractor.observeChat(chatId).map { chat ->
+                chat ?: Chat(
+                    id = UUID(0, 0),
+                    name = "",
+                    time = 0L,
+                    parentId = null,
+                )
+            }.flatMapLatest { chat ->
+                combine(
+                    chatInteractor.observeMessages(chat.id),
+                    chatInteractor.observeWindowMessages(chat.id),
+                    chatInteractor.observeSentMessages(),
+                ) { messages, windowMessages, sentMessage ->
+                    IntermediateState(chat, messages, windowMessages, sentMessage)
+                }
+            }
+        }
+
     val uiState: StateFlow<ChatScreenState> = combine(
-        combine(
-            chatInteractor.observeMessages(),
-            chatInteractor.observeWindowMessages(),
-            chatInteractor.observeSentMessages(),
-        ) { messages, windowMessages, sentMessage ->
-            ChatInteractorData(messages, windowMessages, sentMessage)
-        }.distinctUntilChanged(),
+        intermediateStateFlow,
         inputTextFlow,
         settingsInteractor.observeSettings().map {
             StrategyState(
-                it.messageSelectionType,
+                it.contextManagementType,
                 it.maxMessages,
                 it.maxTokens,
-                it.recursiveSummationMaxMessages
+                it.recursiveSummationMaxMessages,
+                it.stickyFactsMaxMessages,
             )
         },
         expandedMessagesFlow,
-    ) { chatData, input, strategyState, expandedIds ->
+    ) { intermediateState, input, strategyState, expandedIds ->
+        val chat = intermediateState.chat
 
         // TODO подумать над более быстрым способом восстановления дерева через Room
-        val windowIds = chatData.windowMessages.map { it.id }.toSet()
+        val windowIds = intermediateState.windowMessages.map { it.id }.toSet()
 
-        val idMessageMap = chatData.messages
+        val idMessageMap = intermediateState.messages
             .map {
                 it.id to ChatUiMessage(
                     rank = it.rank,
@@ -69,7 +96,7 @@ class ChatScreenStateHolder(
             .toMutableMap()
 
         val idChildrenMap = HashMap<UUID, MutableList<ChatUiMessage>>()
-        for (message in chatData.messages) {
+        for (message in intermediateState.messages) {
             if (message.parentId != null) {
                 val children = idChildrenMap.getOrPut(message.parentId) { ArrayList() }
                 val child = idMessageMap[message.id]
@@ -77,8 +104,7 @@ class ChatScreenStateHolder(
             }
         }
 
-        var windowMessages = chatData.messages
-            .filter { it.parentId == null } // возвращаем только корневые элементы
+        var windowMessages = intermediateState.messages
             .filter { windowIds.contains(it.id) }
             .mapNotNull {
                 val children = idChildrenMap.getOrDefault(it.id, ArrayList())
@@ -87,10 +113,10 @@ class ChatScreenStateHolder(
                 )
             }
 
-        windowMessages = if (chatData.sentMesssage != null) {
+        windowMessages = if (intermediateState.sentMessage != null) {
             windowMessages + ChatUiMessage(
                 rank = 0,
-                message = chatData.sentMesssage,
+                message = intermediateState.sentMessage,
                 insideWindow = true,
                 children = emptyList(),
                 expanded = false
@@ -98,8 +124,9 @@ class ChatScreenStateHolder(
         } else windowMessages
 
         ChatScreenState(
+            chat = chat,
             messages = windowMessages,
-            tokenLimitState = mapTokenLimitState(strategyState, windowMessages),
+            contextManagementState = mapTokenLimitState(strategyState, windowMessages),
             inputText = input,
         )
     }
@@ -108,18 +135,32 @@ class ChatScreenStateHolder(
             scope = scope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ChatScreenState(
+                chat = Chat(
+                    id = UUID(0, 0),
+                    name = "",
+                    time = 0L,
+                    parentId = null,
+                ),
                 messages = emptyList(),
                 inputText = "",
-                tokenLimitState = TokenLimitState.FullHistory,
+                contextManagementState = ContextManagementState.None,
             )
         )
 
+    fun setChat(chatId: UUID) {
+        selectedChatIdFlow.value = chatId
+    }
+
     fun onEvent(event: ChatScreenEvent) {
         when (event) {
+            is ChatScreenEvent.OnBackClick -> {
+                commands.tryEmit(ChatScreenCommand.Back)
+            }
             is ChatScreenEvent.OnInputTextChanged -> changeText(text = event.text)
             is ChatScreenEvent.OnMessageClicked -> expandCollapseMessage(event.message)
             is ChatScreenEvent.OnSendMessageClick -> sendMessage()
             is ChatScreenEvent.OnClearAllMessagesClick -> clearAllMessages()
+            is ChatScreenEvent.OnMessageBranchToggle -> toggleBotMessageBranch(event.message.message)
         }
     }
 
@@ -129,6 +170,7 @@ class ChatScreenStateHolder(
 
     private fun sendMessage() {
         scope.launch {
+            val chatId = selectedChatIdFlow.value ?: return@launch
             val text = inputTextFlow.value
             if (text.isEmpty()) return@launch
 
@@ -137,10 +179,12 @@ class ChatScreenStateHolder(
             chatInteractor.sendMessage(
                 ChatMessage(
                     id = UUID.randomUUID(),
+                    chatId = chatId,
                     parentId = null,
                     time = System.currentTimeMillis(),
+                    branchB = false,
                     text = text,
-                    author = ChatAuthor.User,
+                    type = MessageType.User,
                     tokens = 0, // мы не знаем в начале предполагаемый размер сообщения
                     rank = 0,
                 )
@@ -150,7 +194,8 @@ class ChatScreenStateHolder(
 
     private fun clearAllMessages() {
         scope.launch {
-            chatInteractor.deleteAllMessages()
+            val chatId = selectedChatIdFlow.value ?: return@launch
+            chatInteractor.deleteAllMessages(chatId)
         }
     }
 
@@ -162,39 +207,49 @@ class ChatScreenStateHolder(
         }
     }
 
-    private fun mapTokenLimitState(strategyState: StrategyState, windowMessages: List<ChatUiMessage>): TokenLimitState {
-        return when (strategyState.messageSelectionType) {
-            MessageSelectionType.FullHistory -> {
-                TokenLimitState.FullHistory
+    private fun toggleBotMessageBranch(message: ChatMessage) {
+        scope.launch {
+            chatInteractor.updateMessage(message.copy(branchB = !message.branchB))
+        }
+    }
+
+    private fun mapTokenLimitState(strategyState: StrategyState, windowMessages: List<ChatUiMessage>): ContextManagementState {
+        return when (strategyState.contextManagementType) {
+            ContextManagementType.None -> {
+                ContextManagementState.None
             }
 
-            MessageSelectionType.MessageLimit -> {
-                TokenLimitState.LimitMessages(windowMessages.size, strategyState.maxMessages)
+            ContextManagementType.SlidingWindow -> {
+                ContextManagementState.SlidingWindow(windowMessages.size, strategyState.maxMessages)
             }
 
-            MessageSelectionType.TokenLimit -> {
-                TokenLimitState.LimitTokens(windowMessages.sumOf { it.message.tokens }, strategyState.maxTokens)
-            }
-
-            MessageSelectionType.RecursiveSummation -> {
-                TokenLimitState.RecursiveSummation(
-                    windowMessages.size,
+            ContextManagementType.StickyFacts -> {
+                ContextManagementState.StickFacts(
+                    windowMessages.filter {
+                        it.message.type == MessageType.User || it.message.type == MessageType.Bot
+                    }.size,
                     strategyState.recursiveSummationMaxMessages,
                 )
+            }
+
+            ContextManagementType.Branching -> {
+                ContextManagementState.Branching
             }
         }
     }
 
     private data class StrategyState(
-        val messageSelectionType: MessageSelectionType,
+        val contextManagementType: ContextManagementType,
         val maxMessages: Int,
         val maxTokens: Int,
         val recursiveSummationMaxMessages: Int,
+        val stickyFactsMaxMessages: Int,
     )
 
-    private data class ChatInteractorData(
+    private data class IntermediateState(
+        val chat: Chat,
         val messages: List<ChatMessage>,
         val windowMessages: List<ChatMessage>,
-        val sentMesssage: ChatMessage?,
+        val sentMessage: ChatMessage?,
     )
 }

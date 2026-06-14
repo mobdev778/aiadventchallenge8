@@ -30,14 +30,22 @@ fun SettingsScreenContent(
         modifier = Modifier.padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Text("Настройки")
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnBackClick) }) {
+                Text("Back")
+            }
+            Text("Настройки")
+        }
 
-        MessageSelectionTypeBlock(
+        ContextManagementTypeTypeBlock(
             titleColor = neonHighlightedText,
-            items = state.messageSelectionTypes,
+            items = state.contextManagementTypes,
             maxMessages = state.draft.maxMessages,
-            maxTokens = state.draft.maxTokens,
-            recursiveSummationMaxMessages = state.draft.recursiveSummationMaxMessages,
+            stickyFactsMaxMessages = state.draft.stickyFactsMaxMessages,
             onEvent = onEvent,
         )
 

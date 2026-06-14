@@ -10,8 +10,8 @@ data class SettingsEntity(
     @ColumnInfo(name = "id")
     val id: Int = SINGLETON_ID,
 
-    @ColumnInfo(name = "message_selection_type")
-    val messageSelectionType: String,
+    @ColumnInfo(name = "context_management_type")
+    val contextManagementType: String,
 
     @ColumnInfo(name = "max_messages")
     val maxMessages: Int,
@@ -21,6 +21,9 @@ data class SettingsEntity(
 
     @ColumnInfo(name = "recursive_summation_max_messages")
     val recursiveSummationMaxMessages: Int,
+
+    @ColumnInfo(name = "sticky_facts_max_messages")
+    val stickyFactsMaxMessages: Int,
 
     @ColumnInfo(name = "api_key")
     val apiKey: String,
