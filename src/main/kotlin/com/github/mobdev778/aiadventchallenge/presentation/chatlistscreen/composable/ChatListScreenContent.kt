@@ -4,9 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,13 +37,24 @@ fun ChatListScreenContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text("Chats")
-            DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenSettingsClick) }) {
-                Text("Settings")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenSettingsClick) }) {
+                    Text("Настройки")
+                }
+
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
+                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenProfilesClick) }) {
+                    Text("Профили")
+                }
             }
         }
 
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(vertical = 8.dp))
+        Spacer(modifier = Modifier.size(16.dp))
+
+        Text("Чаты")
+
+        Spacer(modifier = Modifier.size(8.dp))
 
         LazyColumn(
             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -56,11 +69,11 @@ fun ChatListScreenContent(
                 ) {
                     Text(chat.name)
                 }
-                androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(vertical = 4.dp))
+                Spacer(modifier = Modifier.padding(vertical = 4.dp))
             }
         }
 
-        androidx.compose.foundation.layout.Spacer(modifier = Modifier.padding(vertical = 8.dp))
+        Spacer(modifier = Modifier.padding(vertical = 8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),

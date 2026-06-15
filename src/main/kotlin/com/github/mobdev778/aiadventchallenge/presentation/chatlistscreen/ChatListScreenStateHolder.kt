@@ -33,11 +33,17 @@ class ChatListScreenStateHolder(
             is ChatListScreenEvent.OnCreateChatClick -> {
                 createChat(event.name)
             }
+
             is ChatListScreenEvent.OnOpenChatClick -> {
                 commands.tryEmit(ChatListScreenCommand.OpenChat(event.chatId))
             }
-            is ChatListScreenEvent.OnOpenSettingsClick -> {
+
+            ChatListScreenEvent.OnOpenSettingsClick -> {
                 commands.tryEmit(ChatListScreenCommand.OpenSettings)
+            }
+
+            ChatListScreenEvent.OnOpenProfilesClick -> {
+                commands.tryEmit(ChatListScreenCommand.OpenProfiles)
             }
         }
     }
@@ -52,6 +58,7 @@ class ChatListScreenStateHolder(
                 name = trimmed,
                 time = System.currentTimeMillis(),
                 parentId = null,
+                taskContextId = null,
             )
             chatRepository.createChat(chat)
             commands.tryEmit(ChatListScreenCommand.OpenChat(chat.id))

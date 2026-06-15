@@ -26,9 +26,13 @@ fun ChatMessageList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
+        // NOTE:
+        // `ChatMessage.id` is not unique across the whole rendered tree when branching is enabled
+        // (the same domain message can appear both as a root item and as a child item).
+        // LazyColumn requires keys to be unique among its direct items.
         items(
             items = messages,
-            key = { it.message.id },
+            key = { ui -> "${ui.message.id}:${ui.rank}" },
         ) { message ->
             Column {
                 ChatMessageRow(

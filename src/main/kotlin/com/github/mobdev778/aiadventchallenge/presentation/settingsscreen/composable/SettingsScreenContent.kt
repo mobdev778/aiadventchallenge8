@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreenEvent
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.model.SettingsScreenState
 import org.jetbrains.jewel.ui.Orientation
@@ -38,8 +39,11 @@ fun SettingsScreenContent(
             OutlinedButton(onClick = { onEvent(SettingsScreenEvent.OnBackClick) }) {
                 Text("Back")
             }
-            Text("Настройки")
         }
+        ScreenHeader(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Настройки",
+        )
 
         ContextManagementTypeTypeBlock(
             titleColor = neonHighlightedText,

@@ -18,6 +18,7 @@ fun ThemedOutlinedTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier.Companion,
+    singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     val shape = RoundedCornerShape(10.dp)
@@ -29,6 +30,7 @@ fun ThemedOutlinedTextField(
         textStyle = LocalTextStyle.current.copy(color = contentColor),
         cursorBrush = SolidColor(contentColor),
         visualTransformation = visualTransformation,
+        singleLine = singleLine,
         modifier = modifier
             .border(
                 width = 1.dp,

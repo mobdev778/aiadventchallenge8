@@ -1,16 +1,22 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen
 
+import com.github.mobdev778.aiadventchallenge.data.profile.repository.ProfileRepository
+import com.github.mobdev778.aiadventchallenge.data.taskcontext.repository.TaskContextRepository
+import com.github.mobdev778.aiadventchallenge.domain.chat.ChatContext
 import com.github.mobdev778.aiadventchallenge.domain.chat.ChatInteractor
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.Chat
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.MessageType
+import com.github.mobdev778.aiadventchallenge.domain.profile.model.Profile
 import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManagementType
+import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatUiMessage
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ContextManagementState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +36,9 @@ import java.util.UUID
 class ChatScreenStateHolder(
     private val chatInteractor: ChatInteractor,
     private val settingsInteractor: SettingsInteractor,
+    private val taskContextRepository: TaskContextRepository,
     private val scope: CoroutineScope,
+    private val profileRepository: ProfileRepository,
 ) {
     private val inputTextFlow = MutableStateFlow("")
     private val expandedMessagesFlow = MutableStateFlow<Set<UUID>>(emptySet())
@@ -42,6 +50,7 @@ class ChatScreenStateHolder(
         extraBufferCapacity = 1
     )
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private val intermediateStateFlow: Flow<IntermediateState> = selectedChatIdFlow
         .flatMapLatest { chatId ->
             val chatId = chatId ?: UUID(0, 0)
@@ -51,14 +60,16 @@ class ChatScreenStateHolder(
                     name = "",
                     time = 0L,
                     parentId = null,
+                    taskContextId = null,
                 )
             }.flatMapLatest { chat ->
                 combine(
                     chatInteractor.observeMessages(chat.id),
                     chatInteractor.observeWindowMessages(chat.id),
                     chatInteractor.observeSentMessages(),
-                ) { messages, windowMessages, sentMessage ->
-                    IntermediateState(chat, messages, windowMessages, sentMessage)
+                    chatInteractor.observeTaskContext(chat.id),
+                ) { messages, windowMessages, sentMessage, taskContext ->
+                    IntermediateState(chat, messages, windowMessages, sentMessage, taskContext)
                 }
             }
         }
@@ -76,7 +87,8 @@ class ChatScreenStateHolder(
             )
         },
         expandedMessagesFlow,
-    ) { intermediateState, input, strategyState, expandedIds ->
+        profileRepository.observeProfiles().map { profiles -> profiles.first { it.isSelected }},
+    ) { intermediateState, input, strategyState, expandedIds, profile ->
         val chat = intermediateState.chat
 
         // TODO подумать над более быстрым способом восстановления дерева через Room
@@ -128,6 +140,8 @@ class ChatScreenStateHolder(
             messages = windowMessages,
             contextManagementState = mapTokenLimitState(strategyState, windowMessages),
             inputText = input,
+            taskContext = intermediateState.taskContext,
+            profile = profile,
         )
     }
         .flowOn(Dispatchers.Default)
@@ -140,10 +154,13 @@ class ChatScreenStateHolder(
                     name = "",
                     time = 0L,
                     parentId = null,
+                    taskContextId = null,
                 ),
                 messages = emptyList(),
                 inputText = "",
                 contextManagementState = ContextManagementState.None,
+                taskContext = null,
+                profile = Profile.default,
             )
         )
 
@@ -156,11 +173,18 @@ class ChatScreenStateHolder(
             is ChatScreenEvent.OnBackClick -> {
                 commands.tryEmit(ChatScreenCommand.Back)
             }
+
             is ChatScreenEvent.OnInputTextChanged -> changeText(text = event.text)
             is ChatScreenEvent.OnMessageClicked -> expandCollapseMessage(event.message)
             is ChatScreenEvent.OnSendMessageClick -> sendMessage()
             is ChatScreenEvent.OnClearAllMessagesClick -> clearAllMessages()
             is ChatScreenEvent.OnMessageBranchToggle -> toggleBotMessageBranch(event.message.message)
+
+            is ChatScreenEvent.OnTaskStateIndicatorClick -> {
+                val chatId = selectedChatIdFlow.value ?: return
+                val taskContextId = uiState.value.taskContext?.id ?: return
+                commands.tryEmit(ChatScreenCommand.OpenTaskContext(taskContextId = taskContextId, chatId = chatId))
+            }
         }
     }
 
@@ -169,14 +193,21 @@ class ChatScreenStateHolder(
     }
 
     private fun sendMessage() {
-        scope.launch {
+        scope.launch(Dispatchers.Default) {
             val chatId = selectedChatIdFlow.value ?: return@launch
             val text = inputTextFlow.value
             if (text.isEmpty()) return@launch
 
             inputTextFlow.update { "" }
 
+            val context = ChatContext(
+                profile = uiState.value.profile,
+                taskContext = uiState.value.taskContext,
+                messages = uiState.value.messages.map { it.message }
+            )
+
             chatInteractor.sendMessage(
+                context,
                 ChatMessage(
                     id = UUID.randomUUID(),
                     chatId = chatId,
@@ -194,8 +225,12 @@ class ChatScreenStateHolder(
 
     private fun clearAllMessages() {
         scope.launch {
-            val chatId = selectedChatIdFlow.value ?: return@launch
-            chatInteractor.deleteAllMessages(chatId)
+            val uiState = uiState.value
+            chatInteractor.deleteAllMessages(uiState.chat.id)
+            val taskContext = uiState.taskContext
+            if (taskContext != null) {
+                taskContextRepository.deleteTaskContext(taskContext.id)
+            }
         }
     }
 
@@ -251,5 +286,6 @@ class ChatScreenStateHolder(
         val messages: List<ChatMessage>,
         val windowMessages: List<ChatMessage>,
         val sentMessage: ChatMessage?,
+        val taskContext: TaskContext?,
     )
 }

@@ -7,4 +7,5 @@ data class Chat(
     val name: String,
     val time: Long,
     val parentId: UUID?,
+    val taskContextId: UUID?,
 )

@@ -3,13 +3,17 @@ package com.github.mobdev778.aiadventchallenge.presentation.settingsscreen
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.composable.SettingsScreenContent
+import org.koin.java.KoinJavaComponent.inject
 
 @Composable
 fun SettingsScreen(
-    stateHolder: SettingsScreenStateHolder,
     onBack: () -> Unit,
 ) {
+    val stateHolder = remember {
+        inject<SettingsScreenStateHolder>(SettingsScreenStateHolder::class.java).value
+    }
     val state = stateHolder.uiState.collectAsState().value
 
     SettingsScreenContent(

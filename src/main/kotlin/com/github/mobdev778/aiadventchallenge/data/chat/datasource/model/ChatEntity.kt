@@ -11,6 +11,7 @@ import java.util.UUID
     indices = [
         Index(value = ["parent_id"]),
         Index(value = ["created_at_millis"]),
+        Index(value = ["task_context_id"]),
     ],
 )
 data class ChatEntity(
@@ -25,4 +26,7 @@ data class ChatEntity(
 
     @ColumnInfo(name = "parent_id")
     val parentId: UUID?,
+
+    @ColumnInfo(name = "task_context_id")
+    val taskContextId: UUID?,
 )

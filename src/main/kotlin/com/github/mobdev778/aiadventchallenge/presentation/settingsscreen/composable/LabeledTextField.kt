@@ -14,6 +14,8 @@ fun LabeledTextField(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     Column(
@@ -25,7 +27,8 @@ fun LabeledTextField(
             value = value,
             onValueChange = onValueChange,
             visualTransformation = visualTransformation,
-            modifier = Modifier.fillMaxWidth(),
+            singleLine = singleLine,
+            modifier = modifier.fillMaxWidth(),
         )
     }
 }

@@ -2,7 +2,10 @@ package com.github.mobdev778.aiadventchallenge.presentation.app
 
 import com.github.mobdev778.aiadventchallenge.data.chat.datasource.ChatDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.network.NetworkModule
+import com.github.mobdev778.aiadventchallenge.data.profile.datasource.ProfileDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDatabaseModule
+import com.github.mobdev778.aiadventchallenge.data.taskcontext.datasource.TaskContextDatabaseModule
+import com.intellij.execution.testframework.SourceScope.modules
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
@@ -49,6 +52,8 @@ class PluginInitializer : ProjectActivity {
                         NetworkModule().module,
                         ChatDatabaseModule().module,
                         SettingsDatabaseModule().module,
+                        ProfileDatabaseModule().module,
+                        TaskContextDatabaseModule().module,
                     )
                 }
 

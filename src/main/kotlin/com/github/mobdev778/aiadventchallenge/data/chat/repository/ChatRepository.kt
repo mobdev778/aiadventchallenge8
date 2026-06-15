@@ -63,6 +63,7 @@ class ChatRepository(
             name = name,
             time = createdAtMillis,
             parentId = parentId,
+            taskContextId = taskContextId,
         )
 
     private fun Chat.toEntity(): ChatEntity =
@@ -71,6 +72,7 @@ class ChatRepository(
             name = name,
             createdAtMillis = time,
             parentId = parentId,
+            taskContextId = taskContextId,
         )
 
     private fun ChatMessageEntity.toDomain(): ChatMessage =

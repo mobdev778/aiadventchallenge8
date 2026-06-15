@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen.composable
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,12 +14,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreenEvent
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ContextManagementState
+import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
+import com.github.mobdev778.aiadventchallenge.presentation.common.TaskStateIndicator
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 import kotlin.collections.lastIndex
@@ -28,8 +29,6 @@ fun ChatScreenContent(
     state: ChatScreenState,
     onEvent: (ChatScreenEvent) -> Unit,
 ) {
-    val neonHighlightedText = Color(0xFF04D9FF)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -53,12 +52,22 @@ fun ChatScreenContent(
         )
 
         // 1) Chat name
-        Text(
+        ScreenHeader(
             modifier = Modifier.fillMaxWidth(),
             text = state.chat.name,
-            color = neonHighlightedText,
-            textAlign = TextAlign.Center,
         )
+
+        // 1.1) Task state indicator
+        val taskState = state.taskContext?.state
+        if (taskState != null) {
+            TaskStateIndicator(
+                state = taskState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onEvent(ChatScreenEvent.OnTaskStateIndicatorClick) }
+                    .padding(vertical = 4.dp),
+            )
+        }
 
         // 1) Messages list
         // We want to see the *bottom* of the last item (important for long messages).

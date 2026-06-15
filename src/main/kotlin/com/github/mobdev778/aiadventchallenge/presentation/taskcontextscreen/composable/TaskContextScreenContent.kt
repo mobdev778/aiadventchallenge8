@@ -1,0 +1,99 @@
+package com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.composable
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
+import com.github.mobdev778.aiadventchallenge.presentation.common.TaskStateIndicator
+import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.model.TaskContextScreenState
+import org.jetbrains.jewel.ui.component.DefaultButton
+import org.jetbrains.jewel.ui.component.Text
+
+@Composable
+fun TaskContextScreenContent(
+    state: TaskContextScreenState,
+    onBack: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(12.dp)
+            .verticalScroll(rememberScrollState()),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DefaultButton(onClick = onBack) {
+                Text("Назад")
+            }
+        }
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        ScreenHeader(
+            modifier = Modifier.fillMaxWidth(),
+            text = "Контекст задачи",
+        )
+
+        Spacer(modifier = Modifier.size(16.dp))
+
+        val ctx = state.taskContext
+        if (ctx == null) {
+            Text("Контекст не найден")
+            return
+        }
+
+        Text("Задача")
+        Text(ctx.task)
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        Text("Состояние")
+        TaskStateIndicator(state = ctx.state)
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        Text("Шаг")
+        Text(ctx.step.toString())
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        Text("План")
+        if (ctx.plan.isEmpty()) {
+            Text("—")
+        } else {
+            ctx.plan.forEachIndexed { index, item ->
+                Text("${index + 1}. $item")
+            }
+        }
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        Text("Сделано")
+        if (ctx.done.isEmpty()) {
+            Text("—")
+        } else {
+            ctx.done.forEachIndexed { index, item ->
+                Text("${index + 1}. $item")
+            }
+        }
+
+        Spacer(modifier = Modifier.size(12.dp))
+
+        Text("Текущее")
+        Text(if (ctx.current.isBlank()) "—" else ctx.current)
+    }
+}
