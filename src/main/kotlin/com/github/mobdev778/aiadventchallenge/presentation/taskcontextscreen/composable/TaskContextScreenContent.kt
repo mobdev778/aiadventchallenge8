@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
 import com.github.mobdev778.aiadventchallenge.presentation.common.TaskStateIndicator
 import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.model.TaskContextScreenState
+import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.DefaultButton
+import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
 @Composable
@@ -61,33 +63,28 @@ fun TaskContextScreenContent(
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        Text("Состояние")
+        Text("Состояние: ${ctx.state}")
         TaskStateIndicator(state = ctx.state)
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        Text("Шаг")
-        Text(ctx.step.toString())
+        Text("Шаг: ${ctx.step}")
 
         Spacer(modifier = Modifier.size(12.dp))
 
         Text("План")
+
+        Divider(orientation = Orientation.Horizontal)
+
         if (ctx.plan.isEmpty()) {
             Text("—")
         } else {
             ctx.plan.forEachIndexed { index, item ->
-                Text("${index + 1}. $item")
-            }
-        }
-
-        Spacer(modifier = Modifier.size(12.dp))
-
-        Text("Сделано")
-        if (ctx.done.isEmpty()) {
-            Text("—")
-        } else {
-            ctx.done.forEachIndexed { index, item ->
-                Text("${index + 1}. $item")
+                CheckedItem(
+                    checked = ctx.done.contains(item),
+                    index = index + 1,
+                    name = item,
+                )
             }
         }
 

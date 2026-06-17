@@ -114,12 +114,25 @@ fun ChatScreenContent(
                 .fillMaxWidth(),
             contentAlignment = Alignment.Center,
         ) {
-            OutlinedButton(
-                onClick = {
-                    onEvent(ChatScreenEvent.OnClearAllMessagesClick)
-                },
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("❌ Clear all messages")
+                OutlinedButton(
+                    onClick = {
+                        onEvent(ChatScreenEvent.OnClearAllMessagesClick)
+                    },
+                ) {
+                    Text("❌ Clear all messages")
+                }
+
+                OutlinedButton(
+                    onClick = {
+                        onEvent(ChatScreenEvent.OnContinueDialogClick)
+                    },
+                ) {
+                    Text("Продолжай")
+                }
             }
         }
 

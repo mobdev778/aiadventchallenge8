@@ -15,7 +15,7 @@ fun TaskContextScreen(
     chatId: UUID,
     onBack: (chatId: UUID) -> Unit,
 ) {
-    val stateHolder = remember {
+    val stateHolder = remember(chatId) {
         inject<TaskContextScreenStateHolder>(TaskContextScreenStateHolder::class.java).value
     }
 
@@ -30,7 +30,7 @@ fun TaskContextScreen(
         stateHolder.onArgs(taskContextId = taskContextId, chatId = chatId)
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(chatId) {
         stateHolder.commands.collect { command ->
             when (command) {
                 is TaskContextScreenCommand.Back -> onBack(command.chatId)

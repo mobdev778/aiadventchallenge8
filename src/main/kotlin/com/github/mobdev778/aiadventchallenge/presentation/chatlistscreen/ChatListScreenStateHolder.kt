@@ -38,6 +38,10 @@ class ChatListScreenStateHolder(
                 commands.tryEmit(ChatListScreenCommand.OpenChat(event.chatId))
             }
 
+            is ChatListScreenEvent.OnDeleteChatClick -> {
+                deleteChat(event.chatId)
+            }
+
             ChatListScreenEvent.OnOpenSettingsClick -> {
                 commands.tryEmit(ChatListScreenCommand.OpenSettings)
             }
@@ -62,6 +66,12 @@ class ChatListScreenStateHolder(
             )
             chatRepository.createChat(chat)
             commands.tryEmit(ChatListScreenCommand.OpenChat(chat.id))
+        }
+    }
+
+    private fun deleteChat(chatId: UUID) {
+        scope.launch(Dispatchers.IO) {
+            chatRepository.deleteChat(chatId)
         }
     }
 }

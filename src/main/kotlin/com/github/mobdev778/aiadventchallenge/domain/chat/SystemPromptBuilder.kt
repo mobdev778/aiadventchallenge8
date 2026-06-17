@@ -30,7 +30,7 @@ class SystemPromptBuilder {
             [CURRENT] ${ctx.current}
             [PLAN] ${ctx.plan.joinToString(separator = ", ")}
             [DONE] ${ctx.done.joinToString(separator = ", ")}
-            [PROFILE] $profile
+            [PROFILE] ${profile.content}
             [QUERY] $query
     
             Rules:

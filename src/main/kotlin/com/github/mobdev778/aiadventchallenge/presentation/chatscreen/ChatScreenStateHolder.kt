@@ -176,8 +176,9 @@ class ChatScreenStateHolder(
 
             is ChatScreenEvent.OnInputTextChanged -> changeText(text = event.text)
             is ChatScreenEvent.OnMessageClicked -> expandCollapseMessage(event.message)
-            is ChatScreenEvent.OnSendMessageClick -> sendMessage()
+            is ChatScreenEvent.OnSendMessageClick -> sendMessage(inputTextFlow.value)
             is ChatScreenEvent.OnClearAllMessagesClick -> clearAllMessages()
+            is ChatScreenEvent.OnContinueDialogClick -> sendMessage("Продолжай")
             is ChatScreenEvent.OnMessageBranchToggle -> toggleBotMessageBranch(event.message.message)
 
             is ChatScreenEvent.OnTaskStateIndicatorClick -> {
@@ -192,10 +193,9 @@ class ChatScreenStateHolder(
         inputTextFlow.update { text }
     }
 
-    private fun sendMessage() {
+    private fun sendMessage(text: String) {
         scope.launch(Dispatchers.Default) {
             val chatId = selectedChatIdFlow.value ?: return@launch
-            val text = inputTextFlow.value
             if (text.isEmpty()) return@launch
 
             inputTextFlow.update { "" }

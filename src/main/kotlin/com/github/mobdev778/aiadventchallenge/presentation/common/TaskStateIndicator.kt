@@ -4,7 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -29,7 +32,7 @@ fun TaskStateIndicator(
         contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier,
+            modifier = Modifier.padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -37,14 +40,17 @@ fun TaskStateIndicator(
                 color = Color(0xFF7c4eba),
                 enabled = state == TaskState.Planning,
             )
+            Spacer(modifier = Modifier.width(32.dp))
             Dot(
                 color = Color(0xFF4daced),
                 enabled = state == TaskState.Execution,
             )
+            Spacer(modifier = Modifier.width(32.dp))
             Dot(
                 color = Color(0xFFf5a551),
                 enabled = state == TaskState.Validation,
             )
+            Spacer(modifier = Modifier.width(32.dp))
             Dot(
                 color = Color(0xFF70ee7d),
                 enabled = state == TaskState.Done,
@@ -60,8 +66,8 @@ private fun Dot(
 ) {
     Box(
         modifier = Modifier
-            .size(10.dp)
-            .alpha(if (enabled) 1f else 0.3f)
+            .size(16.dp)
+            .alpha(if (enabled) 1f else 0.25f)
             .background(color = color, shape = CircleShape)
     )
 }
