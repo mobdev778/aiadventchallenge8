@@ -63,8 +63,12 @@ fun TaskContextScreenContent(
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        Text("Состояние: ${ctx.state}")
-        TaskStateIndicator(state = ctx.state)
+        TaskStateLabel(ctx.state)
+        Spacer(modifier = Modifier.size(4.dp))
+        TaskStateIndicator(
+            autoPlay = null,
+            state = ctx.state,
+        )
 
         Spacer(modifier = Modifier.size(12.dp))
 

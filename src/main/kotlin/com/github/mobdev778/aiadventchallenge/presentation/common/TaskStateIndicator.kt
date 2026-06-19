@@ -1,13 +1,12 @@
 package com.github.mobdev778.aiadventchallenge.presentation.common
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -17,47 +16,71 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
+import org.jetbrains.jewel.ui.component.Text
 
 @Composable
 fun TaskStateIndicator(
+    autoPlay: Boolean?,
     state: TaskState,
     modifier: Modifier = Modifier,
 ) {
-    Box(
+    Row(
         modifier = modifier
             .background(
-                color = Color(0x1AFFFFFF),
-                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFF3F3F3F),
+                shape = RoundedCornerShape(16.dp),
             ),
-        contentAlignment = Alignment.Center,
+        horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
+        if (autoPlay != null) {
+            Row(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .border(width = 1.dp, color = Color.White, shape = RoundedCornerShape(12.dp))
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Auto Play:",
+                    color = Color.White,
+                )
+                if (autoPlay) {
+                    Text(
+                        text = "ON",
+                        color = Color(0xFF70ee7d)
+                    )
+                } else {
+                    Text(
+                        text = "OFF",
+                        color = Color(0xFF777777)
+                    )
+                }
+            }
+        }
+
         Row(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .padding(8.dp)
+                .border(width = 1.dp, color = Color.White, shape = RoundedCornerShape(12.dp))
+                .padding(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Dot(
-                color = Color(0xFF7c4eba),
-                enabled = state == TaskState.Planning,
-            )
-            Spacer(modifier = Modifier.width(32.dp))
-            Dot(
-                color = Color(0xFF4daced),
-                enabled = state == TaskState.Execution,
-            )
-            Spacer(modifier = Modifier.width(32.dp))
-            Dot(
-                color = Color(0xFFf5a551),
-                enabled = state == TaskState.Validation,
-            )
-            Spacer(modifier = Modifier.width(32.dp))
-            Dot(
-                color = Color(0xFF70ee7d),
-                enabled = state == TaskState.Done,
-            )
+            TaskState.entries.forEachIndexed { index, iState ->
+                if (index != 0) { Text("→", color = Color.Gray) }
+                Dot(
+                    color = taskStateColors[index],
+                    enabled = state == iState,
+                )
+            }
         }
     }
 }
+
+val taskStateColors = listOf(
+    Color(0xFF7c4eba), Color(0xFF4daced), Color(0xFFf5a551), Color(0xFFF485F8), Color(0xFF70ee7d),
+)
 
 @Composable
 private fun Dot(
@@ -67,7 +90,7 @@ private fun Dot(
     Box(
         modifier = Modifier
             .size(16.dp)
-            .alpha(if (enabled) 1f else 0.25f)
+            .alpha(if (enabled) 1f else 0.2f)
             .background(color = color, shape = CircleShape)
     )
 }

@@ -34,7 +34,10 @@ fun ChatScreen(
             when (command) {
                 ChatScreenCommand.Back -> onBack()
                 ChatScreenCommand.OpenSettings -> onOpenSettings()
-                is ChatScreenCommand.OpenTaskContext -> onOpenTaskContext(command.taskContextId, command.chatId)
+                is ChatScreenCommand.OpenTaskContext -> onOpenTaskContext(
+                    command.taskContextId,
+                    command.chatId,
+                )
             }
         }
     }

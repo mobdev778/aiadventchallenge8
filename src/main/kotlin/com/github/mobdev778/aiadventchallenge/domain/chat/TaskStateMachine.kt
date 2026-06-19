@@ -21,9 +21,11 @@ class TaskStateMachine(
 
     private val json: Json by inject(Json::class.java)
 
+    /**
+     * Создает начальный TaskContext.
+     */
     suspend fun createContext(userQuery: String): TaskContext? {
         val planningPrompt = buildPlanningPrompt(userQuery)
-
         val baseModel = settingsRepository.getSettings().baseModel
 
         // Делаем быстрый скрытый запрос к LLM (без стриминга), чтобы понять интенцию
@@ -42,7 +44,7 @@ class TaskStateMachine(
                 TaskContext(
                     id = UUID.randomUUID(),
                     task = planResult.taskName,
-                    state = TaskState.Execution, // Переходим к выполнению
+                    state = TaskState.Execution,
                     step = 1,
                     plan = planResult.plan,
                     done = emptyList(),
@@ -57,30 +59,90 @@ class TaskStateMachine(
         }
     }
 
+    /**
+     * Создает новый TaskContext для повторного планирования по задаче
+     */
+    suspend fun recreateContext(context: TaskContext, userQuery: String): TaskContext? {
+        val planningPrompt = buildReplanningPrompt(context, userQuery)
+        val baseModel = settingsRepository.getSettings().baseModel
+
+        val response = chatClient.execute(
+            ChatRequest(
+                model = baseModel,
+                messages = listOf(Message(Role.System, planningPrompt)),
+            )
+        )
+        val jsonResponse = response.choices.first().message.content ?: ""
+        return try {
+            val planResult: PlanningResponseDto = json.decodeFromString<PlanningResponseDto>(jsonResponse)
+            if (planResult.isTask && planResult.taskName != null && planResult.plan != null) {
+                // Инициализируем слой РАБОЧЕЙ ПАМЯТИ
+                TaskContext(
+                    id = UUID.randomUUID(),
+                    task = planResult.taskName,
+                    state = TaskState.Execution,
+                    step = 1,
+                    plan = planResult.plan,
+                    done = emptyList(),
+                    current = planResult.plan.firstOrNull() ?: "Начало задачи"
+                )
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    /**
+     * Выполняет обновление контекста по ответу LLM.
+     */
     suspend fun execute(context: TaskContext, response: String): TaskContext {
         // Если модель сигнализирует о завершении шага
-        if (response.trim().contains("next_step")) {
+        if (response.trim().contains("[next_step]")) {
             val nextStep = context.step + 1
 
-            // Логика перехода по этапам (TaskState)
-            val newState = when {
-                nextStep > context.plan.size -> TaskState.Done
-                nextStep == context.plan.size -> TaskState.Validation
-                else -> context.state // Остаемся в текущем, если это просто следующий шаг внутри Execution
-            }
-
-            // Обновляем списки сделанного и текущего
             val updatedDone = context.done + context.current
-            val nextCurrentAction = if (newState != TaskState.Done) {
-                context.plan.getOrNull(nextStep - 1) ?: "Завершение"
-            } else {
-                "Задача полностью выполнена"
+            val nextCurrentAction = context.plan.getOrNull(nextStep - 1) ?: "Завершение"
+
+            if (nextStep < context.plan.size) {
+                // Возвращаем обновленный слой рабочей памяти
+                return context.copy(
+                    state = context.state,
+                    step = nextStep,
+                    done = updatedDone,
+                    current = nextCurrentAction
+                )
             }
 
-            // Возвращаем обновленный слой рабочей памяти
+            // особый кейс - все шаги текущего этапа завершены. Нужно получить от LLM новые шаги
+            val nextState = when (context.state) {
+                TaskState.Planning -> TaskState.Execution
+                TaskState.Execution -> TaskState.Validation
+                TaskState.Validation -> TaskState.PrintResult
+                TaskState.PrintResult -> TaskState.Done
+                TaskState.Done -> TaskState.Done
+            }
+
+            if (nextState == TaskState.PrintResult) {
+                return context.copy(
+                    state = TaskState.PrintResult,
+                    step = context.plan.size - 1,
+                    done = updatedDone,
+                    current = "Работа над задачей завершена. Выведи пользователю финальное решение."
+                )
+            } else if (nextState == TaskState.Done) {
+                return context.copy(
+                    state = TaskState.Done,
+                    step = context.plan.size - 1,
+                    done = updatedDone,
+                    current = "Работа над задачей завершена."
+                )
+            }
             return context.copy(
-                state = newState,
-                step = nextStep,
+                state = nextState,
+                step = context.plan.size - 1,
                 done = updatedDone,
                 current = nextCurrentAction
             )
@@ -91,7 +153,8 @@ class TaskStateMachine(
     }
 
     private fun buildPlanningPrompt(userQuery: String): String = """
-        Ты — интеллектуальный планировщик задач. Твоя цель — проанализировать запрос пользователя и понять, формулирует ли он задачу, требующую пошагового выполнения.
+        Ты — интеллектуальный планировщик задач. Твоя цель — проанализировать запрос пользователя и понять, 
+        формулирует ли он задачу, требующую пошагового выполнения.
     
         Запрос пользователя: "$userQuery"
     
@@ -107,4 +170,35 @@ class TaskStateMachine(
           "plan": ["Шаг 1...", "Шаг 2...", "Шаг 3..."]
         }
         """.trimIndent()
+
+    private fun buildReplanningPrompt(context: TaskContext, userQuery: String): String = """
+        Ты — интеллектуальный планировщик задач. Предыдущая задача была успешно ЗАВЕРШЕНА. 
+        Сейчас пользователь прислал уточняющий запрос для запуска нового цикла планирования 
+        (перепланирования) на основе результатов прошлой задачи.
+
+        КОНТЕКСТ ПРОШЛОЙ ЗАДАЧИ:
+        - Название: ${context.task}
+        - Был утвержден план:
+        ${context.plan}
+        - Фактически выполнено:
+        ${context.done}
+
+        НОВЫЙ УТОЧНЯЮЩИЙ ЗАПРОС ПОЛЬЗОВАТЕЛЯ:
+        "$userQuery
+
+        Твоя цель — проанализировать новый запрос с учетом контекста прошлой задачи и понять, 
+        формулирует ли пользователь новую конкретную задачу.
+
+        ЕСЛИ ЗАПРОС НЕ ЯВЛЯЕТСЯ КОНКРЕТНОЙ ЗАДАЧЕЙ (например, это просто благодарность "спасибо", флуд или общий вопрос):
+        Верни строго: {"isTask": false}
+
+        ЕСЛИ ЭТО НОВАЯ ЗАДАЧА ИЛИ УТОЧНЕНИЕ (например: "добавь логирование в эту фичу", "напиши тесты для написанного кода"):
+        Сформулируй новое название задачи и разбей её на понятные, последовательные шаги (от 2 до 5 шагов).
+        Верни ответ СТРОГО в формате JSON без лишнего текста и markdown-разметки:
+        {
+          "isTask": true,
+          "taskName": "Краткое название новой задачи",
+          "plan": ["Шаг 1...", "Шаг 2...", "Шаг 3..."]
+        }
+    """.trimIndent()
 }

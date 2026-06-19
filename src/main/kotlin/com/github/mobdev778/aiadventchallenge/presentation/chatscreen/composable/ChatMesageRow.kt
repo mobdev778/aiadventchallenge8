@@ -93,14 +93,14 @@ fun ChatMessageRow(
                             .padding(vertical = 6.dp),
                         orientation = Orientation.Horizontal,
                     )
-                    Text(text = message.message.text, color = textColor)
+                    MarkdownText(text = message.message.text, color = textColor)
                 }
-
+ 
                 else -> {
-                    Text(text = message.message.text, color = textColor)
-
+                    MarkdownText(text = message.message.text, color = textColor)
+ 
                     ChatSwitcher(
-                        message = message,
+message = message,
                         isBranchingEnabled = isBranchingEnabled,
                         onEvent = onEvent
                     )

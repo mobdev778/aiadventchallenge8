@@ -61,6 +61,7 @@ fun ChatScreenContent(
         val taskState = state.taskContext?.state
         if (taskState != null) {
             TaskStateIndicator(
+                autoPlay = state.autoPlay,
                 state = taskState,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +109,7 @@ fun ChatScreenContent(
             onEvent = onEvent,
         )
 
-        // 2) Clear all Messages
+        // 2) Блок с кнопками
         Box(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -126,12 +127,22 @@ fun ChatScreenContent(
                     Text("❌ Clear all messages")
                 }
 
-                OutlinedButton(
-                    onClick = {
-                        onEvent(ChatScreenEvent.OnContinueDialogClick)
-                    },
-                ) {
-                    Text("Продолжай")
+                if (state.autoPlay) {
+                    OutlinedButton(
+                        onClick = {
+                            onEvent(ChatScreenEvent.OnStopAutoPlayClick)
+                        },
+                    ) {
+                        Text("Пауза ⏸\uFE0F")
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = {
+                            onEvent(ChatScreenEvent.OnContinueDialogClick)
+                        },
+                    ) {
+                        Text("Продолжай ▶\uFE0F")
+                    }
                 }
             }
         }

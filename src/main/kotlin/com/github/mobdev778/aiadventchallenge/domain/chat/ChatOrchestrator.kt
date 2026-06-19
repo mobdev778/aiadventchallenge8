@@ -24,14 +24,30 @@ class ChatOrchestrator(
 ) {
 
     suspend fun sendMessage(context: ChatContext, message: ChatMessage): Pair<ChatMessage, Int> {
+        var context = context
+
         // 1. ПРОВЕРКА РАБОЧЕЙ ПАМЯТИ: Есть ли активная задача?
-        if (context.taskContext == null || context.taskContext.state == TaskState.Done) {
-            // Задачи нет — проверяем, не хочет ли пользователь создать её
+
+        // 1а. Если задача завершилась, но пользователь хочет продолжить/доуточнить
+        if (context.taskContext?.state == TaskState.Done) {
+            val taskContext = taskStateMachine.recreateContext(context.taskContext, message.text)
+            if (taskContext != null) {
+                taskContextRepository.saveTaskContext(taskContext)
+                val chat = chatRepository.observeChat(message.chatId).first()!!
+                chatRepository.createChat(chat.copy(taskContextId = taskContext.id))
+                context = context.copy(taskContext = taskContext)
+            }
+        }
+
+        // 1б. Если ранее завершенной задачи нет
+        if (context.taskContext == null) {
+            // проверяем, не хочет ли пользователь создать её
             val taskContext = taskStateMachine.createContext(message.text)
             if (taskContext != null) {
                 taskContextRepository.saveTaskContext(taskContext)
                 val chat = chatRepository.observeChat(message.chatId).first()!!
                 chatRepository.createChat(chat.copy(taskContextId = taskContext.id))
+                context = context.copy(taskContext = taskContext)
             }
         }
 
@@ -39,8 +55,8 @@ class ChatOrchestrator(
         val systemPrompt = if (context.taskContext != null) {
             // Если есть рабочая память, собираем динамический контекст
             SystemPromptBuilder()
-                .profile(context.profile)           // Долговременная
-                .context(context.taskContext) // Рабочая
+                .profile(context.profile)     // Долговременная память
+                .context(context.taskContext) // Рабочая память
                 .query(message.text)
                 .build()
         } else {

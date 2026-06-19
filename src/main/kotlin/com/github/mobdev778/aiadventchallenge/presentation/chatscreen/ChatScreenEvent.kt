@@ -5,6 +5,7 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.Chat
 sealed interface ChatScreenEvent {
     data object OnBackClick : ChatScreenEvent
     data object OnClearAllMessagesClick : ChatScreenEvent
+    data object OnStopAutoPlayClick : ChatScreenEvent
     data object OnContinueDialogClick : ChatScreenEvent
     data class OnMessageClicked(val message: ChatUiMessage) : ChatScreenEvent
     data class OnInputTextChanged(val text: String) : ChatScreenEvent

@@ -10,5 +10,6 @@ data class ChatScreenState(
     val contextManagementState: ContextManagementState,
     val inputText: String,
     val taskContext: TaskContext?,
+    val autoPlay: Boolean,
     val profile: Profile,
 )

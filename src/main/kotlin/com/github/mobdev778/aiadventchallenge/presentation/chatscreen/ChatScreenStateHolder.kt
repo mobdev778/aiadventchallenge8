@@ -68,8 +68,9 @@ class ChatScreenStateHolder(
                     chatInteractor.observeWindowMessages(chat.id),
                     chatInteractor.observeSentMessages(),
                     chatInteractor.observeTaskContext(chat.id),
-                ) { messages, windowMessages, sentMessage, taskContext ->
-                    IntermediateState(chat, messages, windowMessages, sentMessage, taskContext)
+                    chatInteractor.observeAutoPlay(chat.id),
+                ) { messages, windowMessages, sentMessage, taskContext, autoPlay ->
+                    IntermediateState(chat, messages, windowMessages, sentMessage, taskContext, autoPlay)
                 }
             }
         }
@@ -141,6 +142,7 @@ class ChatScreenStateHolder(
             contextManagementState = mapTokenLimitState(strategyState, windowMessages),
             inputText = input,
             taskContext = intermediateState.taskContext,
+            autoPlay = intermediateState.autoPlay,
             profile = profile,
         )
     }
@@ -160,6 +162,7 @@ class ChatScreenStateHolder(
                 inputText = "",
                 contextManagementState = ContextManagementState.None,
                 taskContext = null,
+                autoPlay = false,
                 profile = Profile.default,
             )
         )
@@ -178,6 +181,7 @@ class ChatScreenStateHolder(
             is ChatScreenEvent.OnMessageClicked -> expandCollapseMessage(event.message)
             is ChatScreenEvent.OnSendMessageClick -> sendMessage(inputTextFlow.value)
             is ChatScreenEvent.OnClearAllMessagesClick -> clearAllMessages()
+            is ChatScreenEvent.OnStopAutoPlayClick -> stopAutoPlay()
             is ChatScreenEvent.OnContinueDialogClick -> sendMessage("Продолжай")
             is ChatScreenEvent.OnMessageBranchToggle -> toggleBotMessageBranch(event.message.message)
 
@@ -193,6 +197,13 @@ class ChatScreenStateHolder(
         inputTextFlow.update { text }
     }
 
+    private fun stopAutoPlay() {
+        scope.launch {
+            val chatId = uiState.value.chat.id
+            chatInteractor.stopAutoPlay(chatId)
+        }
+    }
+
     private fun sendMessage(text: String) {
         scope.launch(Dispatchers.Default) {
             val chatId = selectedChatIdFlow.value ?: return@launch
@@ -201,6 +212,7 @@ class ChatScreenStateHolder(
             inputTextFlow.update { "" }
 
             val context = ChatContext(
+                chatId = uiState.value.chat.id,
                 profile = uiState.value.profile,
                 taskContext = uiState.value.taskContext,
                 messages = uiState.value.messages.map { it.message }
@@ -287,5 +299,6 @@ class ChatScreenStateHolder(
         val windowMessages: List<ChatMessage>,
         val sentMessage: ChatMessage?,
         val taskContext: TaskContext?,
+        val autoPlay: Boolean,
     )
 }

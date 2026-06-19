@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -26,14 +26,10 @@ fun ChatMessageList(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        // NOTE:
-        // `ChatMessage.id` is not unique across the whole rendered tree when branching is enabled
-        // (the same domain message can appear both as a root item and as a child item).
-        // LazyColumn requires keys to be unique among its direct items.
-        items(
+        itemsIndexed(
             items = messages,
-            key = { ui -> "${ui.message.id}:${ui.rank}" },
-        ) { message ->
+            key = { index, ui -> ui.lazyKey(parentPath = "root", siblingIndex = index) },
+        ) { index, message ->
             Column {
                 ChatMessageRow(
                     message = message,
@@ -41,12 +37,10 @@ fun ChatMessageList(
                     onEvent = onEvent,
                 )
 
-                // IMPORTANT:
-                // Nested LazyColumn inside LazyColumn item causes infinite height constraints crash.
-                // Render children as a regular Column (non-scrollable) inside the parent list item.
                 if (message.expanded && message.children.isNotEmpty()) {
                     ChatMessageChildren(
                         messages = message.children,
+                        parentPath = message.lazyKey(parentPath = "root", siblingIndex = index),
                         isBranchingEnabled = isBranchingEnabled,
                         modifier = Modifier.padding(start = 24.dp),
                         onEvent = onEvent,
@@ -60,6 +54,7 @@ fun ChatMessageList(
 @Composable
 private fun ChatMessageChildren(
     messages: List<ChatUiMessage>,
+    parentPath: String,
     isBranchingEnabled: Boolean,
     modifier: Modifier = Modifier,
     onEvent: (ChatScreenEvent) -> Unit,
@@ -68,7 +63,7 @@ private fun ChatMessageChildren(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        messages.forEach { message ->
+        messages.forEachIndexed { index, message ->
             ChatMessageRow(
                 message = message,
                 isBranchingEnabled = isBranchingEnabled,
@@ -78,6 +73,7 @@ private fun ChatMessageChildren(
             if (message.expanded && message.children.isNotEmpty()) {
                 ChatMessageChildren(
                     messages = message.children,
+                    parentPath = message.lazyKey(parentPath = parentPath, siblingIndex = index),
                     isBranchingEnabled = isBranchingEnabled,
                     modifier = Modifier.padding(start = 24.dp),
                     onEvent = onEvent,
@@ -85,4 +81,8 @@ private fun ChatMessageChildren(
             }
         }
     }
+}
+
+private fun ChatUiMessage.lazyKey(parentPath: String, siblingIndex: Int): String {
+    return "$parentPath/${message.id}:${rank}:$siblingIndex"
 }
