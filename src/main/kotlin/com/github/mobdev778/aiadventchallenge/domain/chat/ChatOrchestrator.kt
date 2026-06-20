@@ -9,6 +9,8 @@ import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
+import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
+import com.github.mobdev778.aiadventchallenge.domain.invariant.ValidationResult
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Single
@@ -21,6 +23,7 @@ class ChatOrchestrator(
     private val taskStateMachine: TaskStateMachine,
     private val taskContextRepository: TaskContextRepository,
     private val chatRepository: ChatRepository,
+    private val registry: InvariantRegistry,
 ) {
 
     suspend fun sendMessage(context: ChatContext, message: ChatMessage): Pair<ChatMessage, Int> {
@@ -58,6 +61,7 @@ class ChatOrchestrator(
                 .profile(context.profile)     // Долговременная память
                 .context(context.taskContext) // Рабочая память
                 .query(message.text)
+                .invariants(registry.getInvariants())
                 .build()
         } else {
             // Если рабочей памяти нет, используем стандартный профиль
@@ -65,13 +69,19 @@ class ChatOrchestrator(
         }
 
         // 3. Запрос к модели
-        val (response,tokens) = sendMessage(
+        var (response,tokens) = sendMessage(
             context = context,
             systemPrompt = systemPrompt,
             message = message,
         )
 
-        // 4. ОБНОВЛЕНИЕ РАБОЧЕЙ ПАМЯТИ
+        // 4. Валидация ответа через инварианты
+        val validationResult = registry.validate(message.text, response.text)
+        if (validationResult is ValidationResult.Failed) {
+            response = response.copy(text = "Нарушение: ${validationResult.reason}")
+        }
+
+        // 5. ОБНОВЛЕНИЕ РАБОЧЕЙ ПАМЯТИ
         // Передаем ответ в стейт-машину. Если там есть "next_step", рабочая память обновится
         context.taskContext?.let { currentContext ->
             val updatedContext = taskStateMachine.execute(currentContext, response.text)
@@ -85,7 +95,7 @@ class ChatOrchestrator(
             }
         }
 
-        // 5. Возвращаем ответ для обновления краткосрочной памяти (чата)
+        // 6. Возвращаем ответ для обновления краткосрочной памяти (чата)
         return response to tokens
     }
 

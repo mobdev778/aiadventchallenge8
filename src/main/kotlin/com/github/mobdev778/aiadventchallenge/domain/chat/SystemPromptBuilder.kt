@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.chat
 
+import com.github.mobdev778.aiadventchallenge.domain.invariant.Invariant
 import com.github.mobdev778.aiadventchallenge.domain.profile.model.Profile
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
@@ -9,6 +10,7 @@ class SystemPromptBuilder {
     private var query: String = ""
     private lateinit var ctx: TaskContext
     private lateinit var profile: Profile
+    private lateinit var invariants: List<Invariant>
 
     fun query(query: String) = apply {
         this.query = query
@@ -20,6 +22,10 @@ class SystemPromptBuilder {
 
     fun profile(profile: Profile) = apply {
         this.profile = profile
+    }
+
+    fun invariants(invariants: List<Invariant>) = apply {
+        this.invariants = invariants
     }
 
     fun build(): String {
@@ -38,6 +44,7 @@ class SystemPromptBuilder {
                 - Работай только в рамках current step
                 - Не перепрыгивай этапы
                 - Если step завершен - верни "[next_step]".
+                - Строго соблюдай следующие инварианты проекта: ${invariants.joinToString(separator = ", ")}
                 - для ${TaskState.PrintResult} всегда возвращай "[next_step]". 
         """.trimIndent()
     }
