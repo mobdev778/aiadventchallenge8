@@ -1,7 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model
 
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.Chat
-import com.github.mobdev778.aiadventchallenge.domain.profile.model.Profile
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
 
 data class ChatScreenState(
@@ -11,5 +10,4 @@ data class ChatScreenState(
     val inputText: String,
     val taskContext: TaskContext?,
     val autoPlay: Boolean,
-    val profile: Profile,
 )

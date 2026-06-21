@@ -64,7 +64,7 @@ class ChatListScreenStateHolder(
                 parentId = null,
                 taskContextId = null,
             )
-            chatRepository.createChat(chat)
+            chatRepository.add(chat)
             commands.tryEmit(ChatListScreenCommand.OpenChat(chat.id))
         }
     }

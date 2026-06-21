@@ -35,7 +35,7 @@ class ChatRepository(
         chatDao.clearMessages(chatId)
     }
 
-    suspend fun createChat(chat: Chat) {
+    suspend fun add(chat: Chat) {
         chatDao.insertChat(chat.toEntity())
     }
 

@@ -1,13 +1,10 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatscreen
 
-import com.github.mobdev778.aiadventchallenge.data.profile.repository.ProfileRepository
 import com.github.mobdev778.aiadventchallenge.data.taskcontext.repository.TaskContextRepository
-import com.github.mobdev778.aiadventchallenge.domain.chat.ChatContext
 import com.github.mobdev778.aiadventchallenge.domain.chat.ChatInteractor
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.Chat
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.MessageType
-import com.github.mobdev778.aiadventchallenge.domain.profile.model.Profile
 import com.github.mobdev778.aiadventchallenge.domain.settings.SettingsInteractor
 import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManagementType
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
@@ -38,7 +35,6 @@ class ChatScreenStateHolder(
     private val settingsInteractor: SettingsInteractor,
     private val taskContextRepository: TaskContextRepository,
     private val scope: CoroutineScope,
-    private val profileRepository: ProfileRepository,
 ) {
     private val inputTextFlow = MutableStateFlow("")
     private val expandedMessagesFlow = MutableStateFlow<Set<UUID>>(emptySet())
@@ -88,8 +84,7 @@ class ChatScreenStateHolder(
             )
         },
         expandedMessagesFlow,
-        profileRepository.observeProfiles().map { profiles -> profiles.first { it.isSelected }},
-    ) { intermediateState, input, strategyState, expandedIds, profile ->
+    ) { intermediateState, input, strategyState, expandedIds ->
         val chat = intermediateState.chat
 
         // TODO подумать над более быстрым способом восстановления дерева через Room
@@ -143,7 +138,6 @@ class ChatScreenStateHolder(
             inputText = input,
             taskContext = intermediateState.taskContext,
             autoPlay = intermediateState.autoPlay,
-            profile = profile,
         )
     }
         .flowOn(Dispatchers.Default)
@@ -163,7 +157,6 @@ class ChatScreenStateHolder(
                 contextManagementState = ContextManagementState.None,
                 taskContext = null,
                 autoPlay = false,
-                profile = Profile.default,
             )
         )
 
@@ -211,16 +204,10 @@ class ChatScreenStateHolder(
 
             inputTextFlow.update { "" }
 
-            val context = ChatContext(
-                chatId = uiState.value.chat.id,
-                profile = uiState.value.profile,
-                taskContext = uiState.value.taskContext,
-                messages = uiState.value.messages.map { it.message }
-            )
-
             chatInteractor.sendMessage(
-                context,
-                ChatMessage(
+                chat = uiState.value.chat,
+                parentMessageId = uiState.value.messages.lastOrNull()?.message?.id,
+                message = ChatMessage(
                     id = UUID.randomUUID(),
                     chatId = chatId,
                     parentId = null,

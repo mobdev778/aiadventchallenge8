@@ -1,25 +1,105 @@
-package com.github.mobdev778.aiadventchallenge.domain.chat
+package com.github.mobdev778.aiadventchallenge.domain.agent.agents
 
 import com.github.mobdev778.aiadventchallenge.data.chatclient.datasource.model.PlanningResponseDto
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
+import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentContext
+import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
+import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentResponse
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
+import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
+import com.github.mobdev778.aiadventchallenge.domain.invariant.ValidationResult
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
 import kotlinx.serialization.json.Json
-import org.koin.core.annotation.Single
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
+import kotlin.getValue
 
-@Single
-class TaskStateMachine(
-    private val chatClient: ChatClient,
-    private val settingsRepository: SettingsRepository,
-) {
+/**
+ * Агент для поддержания обычной беседы.
+ *
+ * На каждом сообщении проверяет, озадачился ли пользователь выполнением большой задачи.
+ * И если "видит", что задача создана, то создает контекст и планирует шаги.
+ */
+class ChatAssistantAgent(
+    id: String,
+    invariantRegistry: InvariantRegistry,
+    settingsRepository: SettingsRepository,
+    chatClient: ChatClient,
+) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient) {
 
     private val json: Json by inject(Json::class.java)
+
+    override suspend fun handle(
+        context: AgentContext,
+        request: AgentRequest
+    ): AgentResponse {
+        // 1. Генерируем начальны контекст
+        var newTaskContext: TaskContext?
+        if (context.taskContext?.state == TaskState.Done) {
+            newTaskContext = recreateContext(context.taskContext, request.query)
+        } else {
+            newTaskContext = createContext(request.query)
+        }
+
+        // 2. СБОРКА СИСТЕМНОГО ПРОМПТА ИЗ ТРЕХ СЛОЕВ ПАМЯТИ
+        val immutableTaskContext = newTaskContext
+
+        val systemPrompt = if (newTaskContext != null) {
+            // Если есть рабочая память, собираем динамический контекст
+            SystemPromptBuilder()
+                .profile(context.profile)     // Долговременная память
+                .context(immutableTaskContext) // Рабочая память
+                .query(request.query)
+                .invariants(context.invariants)
+                .agentRules(getAgentRules())
+                .build()
+        } else {
+            // Если рабочей памяти нет, используем стандартный профиль
+            "${context.profile.content}\nПользователь просто общается, помогай в свободном режиме."
+        }
+
+        // 3. Запрос к модели
+        var response = sendMessage(
+            context = context.copy(taskContext = newTaskContext),
+            systemPrompt = systemPrompt,
+            request = request,
+        )
+
+        // 4. Валидация ответа через инварианты
+        val validationResult = invariantRegistry.validate(request.query, response.message)
+        if (validationResult is ValidationResult.Failed) {
+            response = response.copy(message = "[Нарушение]: ${validationResult.reason}")
+        }
+
+        // 5. ОБНОВЛЕНИЕ РАБОЧЕЙ ПАМЯТИ
+        // Передаем ответ в стейт-машину. Если там есть "next_step", рабочая память обновится
+        context.taskContext?.let { currentContext ->
+            newTaskContext = updateContext(currentContext, response.message)
+        }
+
+        val taskContext = newTaskContext
+        return when {
+            taskContext == null -> response.copy(taskContext = newTaskContext)
+            response.message.contains("[EXECUTION]") -> {
+                response.copy(
+                    taskContext = taskContext.copy(
+                        state = TaskState.Execution,
+                        step = 1,
+                        current = taskContext.plan.firstOrNull() ?: "Новая задача"
+                    )
+                )
+            }
+            else -> response.copy(taskContext = newTaskContext)
+        }
+    }
+
+    override suspend fun getAgentRules(): String {
+        return "Верни [EXECUTION] в конце ответа, если считаешь, что этап планирования задачи можно пропустить"
+    }
 
     /**
      * Создает начальный TaskContext.
@@ -44,7 +124,7 @@ class TaskStateMachine(
                 TaskContext(
                     id = UUID.randomUUID(),
                     task = planResult.taskName,
-                    state = TaskState.Execution,
+                    state = TaskState.Planning,
                     step = 1,
                     plan = planResult.plan,
                     done = emptyList(),
@@ -80,7 +160,7 @@ class TaskStateMachine(
                 TaskContext(
                     id = UUID.randomUUID(),
                     task = planResult.taskName,
-                    state = TaskState.Execution,
+                    state = TaskState.Planning,
                     step = 1,
                     plan = planResult.plan,
                     done = emptyList(),
@@ -93,63 +173,6 @@ class TaskStateMachine(
             e.printStackTrace()
             null
         }
-    }
-
-    /**
-     * Выполняет обновление контекста по ответу LLM.
-     */
-    suspend fun execute(context: TaskContext, response: String): TaskContext {
-        // Если модель сигнализирует о завершении шага
-        if (response.trim().contains("[next_step]")) {
-            val nextStep = context.step + 1
-
-            val updatedDone = context.done + context.current
-            val nextCurrentAction = context.plan.getOrNull(nextStep - 1) ?: "Завершение"
-
-            if (nextStep < context.plan.size) {
-                // Возвращаем обновленный слой рабочей памяти
-                return context.copy(
-                    state = context.state,
-                    step = nextStep,
-                    done = updatedDone,
-                    current = nextCurrentAction
-                )
-            }
-
-            // особый кейс - все шаги текущего этапа завершены. Нужно получить от LLM новые шаги
-            val nextState = when (context.state) {
-                TaskState.Planning -> TaskState.Execution
-                TaskState.Execution -> TaskState.Validation
-                TaskState.Validation -> TaskState.PrintResult
-                TaskState.PrintResult -> TaskState.Done
-                TaskState.Done -> TaskState.Done
-            }
-
-            if (nextState == TaskState.PrintResult) {
-                return context.copy(
-                    state = TaskState.PrintResult,
-                    step = context.plan.size - 1,
-                    done = updatedDone,
-                    current = "Работа над задачей завершена. Выведи пользователю финальное решение."
-                )
-            } else if (nextState == TaskState.Done) {
-                return context.copy(
-                    state = TaskState.Done,
-                    step = context.plan.size - 1,
-                    done = updatedDone,
-                    current = "Работа над задачей завершена."
-                )
-            }
-            return context.copy(
-                state = nextState,
-                step = context.plan.size - 1,
-                done = updatedDone,
-                current = nextCurrentAction
-            )
-        }
-
-        // Если не next_step, контекст памяти не меняется
-        return context
     }
 
     private fun buildPlanningPrompt(userQuery: String): String = """
