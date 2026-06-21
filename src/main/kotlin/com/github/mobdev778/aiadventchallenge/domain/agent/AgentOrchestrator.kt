@@ -9,7 +9,6 @@ import com.github.mobdev778.aiadventchallenge.domain.agent.pool.AgentContextBuil
 import com.github.mobdev778.aiadventchallenge.domain.agent.pool.AgentPool
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
