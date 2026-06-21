@@ -152,8 +152,8 @@ class ChatInteractor(
         )
         chatRepository.add(listOf(userMessage, botMessage))
 
-        val isAutoMessagePossible = (response.message.contains("[next_step]") ||
-                response.message.contains("[Нарушение]: ")) && response.taskContext?.state != TaskState.Done &&
+        val isAutoMessagePossible = containsAutoPlayMessage(response.message) &&
+                response.taskContext?.state != TaskState.Done &&
                 isAutoPlayEnabled(response.request.chatId)
         if (isAutoMessagePossible) {
             val autoMessage = ChatMessage(
@@ -175,9 +175,22 @@ class ChatInteractor(
         }
     }
 
+    private fun containsAutoPlayMessage(text: String): Boolean {
+        for (autoPlayMessage in autoPlayMessages) {
+            if (text.contains(autoPlayMessage)) {
+                return true
+            }
+        }
+        return false
+    }
+
     suspend fun deleteAllMessages(chatId: UUID) {
         chatRepository.clearMessages(chatId)
         taskContextRepository.clearTaskContext()
         stopAutoPlay(chatId)
     }
+
+    val autoPlayMessages = listOf(
+        "[next_step]", "[Нарушение]: ", "[EXECUTION]", "[VALIDATION]", "[SUMMARIZE]", "[PLANNING]"
+    )
 }
