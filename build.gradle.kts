@@ -1,5 +1,5 @@
 plugins {
-    kotlin("plugin.serialization") version "2.0.0"
+    kotlin("plugin.serialization") version "2.1.20"
     id("org.jetbrains.kotlin.jvm") version "2.1.20"
     id("org.jetbrains.intellij.platform") version "2.10.2"
     id("org.jetbrains.kotlin.plugin.compose") version "2.1.20"
@@ -31,6 +31,7 @@ dependencies {
     // Room (KMP/JVM)
     implementation("androidx.room:room-runtime:2.7.0") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     }
     implementation("androidx.sqlite:sqlite-bundled:2.5.0")
     ksp("androidx.room:room-compiler:2.7.0")
@@ -42,11 +43,23 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:5.3.2")
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
 
+    implementation("io.modelcontextprotocol:kotlin-sdk-client-jvm:0.9.0") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+    }
+    implementation("io.ktor:ktor-client-cio-jvm:3.2.3") {
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
+        exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-jdk8")
+    }
+
     // IntelliJ Platform Gradle Plugin Dependencies Extension
-    // (https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html)
+// (https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html)
     intellijPlatform {
         intellijIdea("2025.3.5")
         composeUI()
+
+        bundledLibrary("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     }
 }
 

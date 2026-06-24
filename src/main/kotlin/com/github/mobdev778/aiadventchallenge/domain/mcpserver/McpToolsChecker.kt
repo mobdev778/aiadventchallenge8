@@ -1,0 +1,49 @@
+package com.github.mobdev778.aiadventchallenge.domain.mcpserver
+
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.sse.SSE
+import io.modelcontextprotocol.kotlin.sdk.client.mcpStreamableHttp
+import io.modelcontextprotocol.kotlin.sdk.types.ListToolsRequest
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.koin.core.annotation.Single
+
+@Single
+class McpToolsChecker {
+
+    suspend fun loadTools(url: String): List<String> = withContext(Dispatchers.IO) {
+        val normalizedUrl = url.trim().removeSuffix("/")
+        require(normalizedUrl.isNotEmpty()) { "MCP server URL must not be blank" }
+
+        val httpClient = HttpClient(CIO) {
+            install(SSE)
+        }
+
+        try {
+            val client = httpClient.mcpStreamableHttp(normalizedUrl)
+            client.listTools(ListToolsRequest()).tools.map { it.name }
+        } catch (error: Throwable) {
+            throw IllegalStateException(error.toReadableMessage(normalizedUrl), error)
+        } finally {
+            httpClient.close()
+        }
+    }
+
+    private fun Throwable.toReadableMessage(url: String): String {
+        val rootCause = generateSequence(this) { it.cause }.last()
+        val rootMessage = rootCause.message?.takeIf { it.isNotBlank() }
+        val rootType = rootCause::class.qualifiedName.orEmpty()
+
+        return when {
+            this is IllegalArgumentException && message?.contains("Failed to prepare request") == true ->
+                "Не удалось подготовить HTTP-запрос к $url. Вероятна несовместимость версий Ktor в classpath."
+
+            rootType.contains("HttpTimeout") ->
+                "Таймаут при подключении к $url"
+
+            rootMessage != null -> "Ошибка подключения к $url: $rootMessage"
+            else -> "Ошибка подключения к $url: ${rootCause::class.simpleName ?: "Unknown error"}"
+        }
+    }
+}

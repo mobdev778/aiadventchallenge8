@@ -1,6 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.presentation.app
 
 import com.github.mobdev778.aiadventchallenge.data.chat.datasource.ChatDatabaseModule
+import com.github.mobdev778.aiadventchallenge.data.mcpserver.datasource.McpServerDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.network.NetworkModule
 import com.github.mobdev778.aiadventchallenge.data.profile.datasource.ProfileDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDatabaseModule
@@ -54,6 +55,7 @@ class PluginInitializer : ProjectActivity {
                         SettingsDatabaseModule().module,
                         ProfileDatabaseModule().module,
                         TaskContextDatabaseModule().module,
+                        McpServerDatabaseModule().module,
                     )
                 }
 

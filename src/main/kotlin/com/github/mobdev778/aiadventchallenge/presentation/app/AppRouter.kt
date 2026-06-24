@@ -6,10 +6,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.github.mobdev778.aiadventchallenge.presentation.addmcpserverscreen.AddMcpServerScreen
 import com.github.mobdev778.aiadventchallenge.presentation.addprofilescreen.AddProfileScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen.ChatListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreen
 import com.github.mobdev778.aiadventchallenge.presentation.editprofilescreen.EditProfileScreen
+import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.McpInfoScreen
+import com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen.McpServerListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.ProfileListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreen
 import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.TaskContextScreen
@@ -23,6 +26,9 @@ sealed interface Screen {
     data object ProfileList : Screen
     data object AddProfile : Screen
     data class EditProfile(val profileId: UUID) : Screen
+    data object McpServerList : Screen
+    data object AddMcpServer : Screen
+    data class McpInfo(val serverId: UUID) : Screen
     data class TaskContext(val taskContextId: UUID, val chatId: UUID) : Screen
 }
 
@@ -54,6 +60,18 @@ class AppRouter(initial: Screen = Screen.ChatList) {
         screen = Screen.EditProfile(profileId)
     }
 
+    fun openMcpServerList() {
+        screen = Screen.McpServerList
+    }
+
+    fun openAddMcpServer() {
+        screen = Screen.AddMcpServer
+    }
+
+    fun openMcpInfo(serverId: UUID) {
+        screen = Screen.McpInfo(serverId)
+    }
+
     fun openTaskContext(taskContextId: UUID, chatId: UUID) {
         screen = Screen.TaskContext(taskContextId = taskContextId, chatId = chatId)
     }
@@ -72,6 +90,7 @@ fun AppRouterContent(
                 onOpenChat = { router.openChat(it) },
                 onOpenSettings = { router.openSettings() },
                 onOpenProfiles = { router.openProfileList() },
+                onOpenMcp = { router.openMcpServerList() },
             )
         }
 
@@ -110,6 +129,27 @@ fun AppRouterContent(
             EditProfileScreen(
                 profileId = s.profileId,
                 onBack = { router.openProfileList() },
+            )
+        }
+
+        is Screen.McpServerList -> {
+            McpServerListScreen(
+                onBack = { router.openChatList() },
+                onOpenAddServer = { router.openAddMcpServer() },
+                onOpenServerInfo = { router.openMcpInfo(it) },
+            )
+        }
+
+        is Screen.AddMcpServer -> {
+            AddMcpServerScreen(
+                onBack = { router.openMcpServerList() },
+            )
+        }
+
+        is Screen.McpInfo -> {
+            McpInfoScreen(
+                serverId = s.serverId,
+                onBack = { router.openMcpServerList() },
             )
         }
 

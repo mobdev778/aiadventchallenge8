@@ -6,4 +6,5 @@ sealed interface ChatListScreenCommand {
     data class OpenChat(val chatId: UUID) : ChatListScreenCommand
     data object OpenSettings : ChatListScreenCommand
     data object OpenProfiles : ChatListScreenCommand
+    data object OpenMcp : ChatListScreenCommand
 }
