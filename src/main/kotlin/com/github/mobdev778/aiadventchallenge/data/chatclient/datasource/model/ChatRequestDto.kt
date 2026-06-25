@@ -15,6 +15,13 @@ data class ChatRequestDto(
     /** Список сообщений, составляющих историю диалога. */
     val messages: List<MessageDto>,
 
+    /** Список доступных MCP-инструментов. */
+    val tools: List<ToolDto>? = null,
+
+    /** Режим выбора инструмента. При наличии инструментов всегда используется auto. */
+    @SerialName("tool_choice")
+    val toolChoice: String? = null,
+
     /** Температура генерации (от 0.0 до 2.0). Выше значение — креативнее ответ, ниже — точнее и предсказуемее. */
     val temperature: Double,
 

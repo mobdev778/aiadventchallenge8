@@ -7,4 +7,5 @@ sealed interface McpServerListScreenEvent {
     data object OnAddClick : McpServerListScreenEvent
     data class OnActiveChanged(val serverId: UUID, val active: Boolean) : McpServerListScreenEvent
     data class OnServerClick(val serverId: UUID) : McpServerListScreenEvent
+    data class OnDeleteClick(val serverId: UUID) : McpServerListScreenEvent
 }

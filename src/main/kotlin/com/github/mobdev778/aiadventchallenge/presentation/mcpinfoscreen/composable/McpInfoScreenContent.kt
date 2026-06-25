@@ -57,13 +57,11 @@ fun McpInfoScreenContent(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        Text("Название сервера")
-        Text(server?.name ?: "—")
+        Text("Название сервера: ${server?.name ?: "—"}")
 
         Spacer(modifier = Modifier.size(12.dp))
 
-        Text("URL")
-        Text(server?.url ?: "—")
+        Text("URL: ${server?.url ?: "—"}")
 
         Spacer(modifier = Modifier.size(16.dp))
 
@@ -77,6 +75,9 @@ fun McpInfoScreenContent(
         Spacer(modifier = Modifier.size(16.dp))
 
         Text("Доступные инструменты")
+
+        Spacer(modifier = Modifier.size(4.dp))
+
         ThemedOutlinedTextField(
             value = state.toolsText,
             onValueChange = {},

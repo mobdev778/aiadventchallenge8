@@ -6,6 +6,7 @@ import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentContext
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
 import com.github.mobdev778.aiadventchallenge.domain.chat.ObserveWindowMessagesUseCase
 import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
+import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import kotlinx.coroutines.flow.first
 import org.koin.core.annotation.Single
 
@@ -15,6 +16,7 @@ class AgentContextBuilder(
     private val taskContextRepository: TaskContextRepository,
     private val observeWindowMessagesUseCase: ObserveWindowMessagesUseCase,
     private val invariantRegistry: InvariantRegistry,
+    private val mcpServerInteractor: McpServerInteractor,
 ) {
 
     suspend fun build(request: AgentRequest): AgentContext {
@@ -29,6 +31,7 @@ class AgentContextBuilder(
             taskContext = taskContext,
             windowMessages = windowMessages,
             invariants = invariantRegistry.getInvariants(),
+            tools = mcpServerInteractor.activeToolsFlow.first(),
         )
     }
 }

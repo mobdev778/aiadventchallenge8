@@ -15,7 +15,7 @@ import java.nio.file.Path
         ChatMessageEntity::class,
         StickyFactsEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = false,
 )
 abstract class ChatAppDatabase : RoomDatabase() {

@@ -62,7 +62,7 @@ class McpInfoScreenStateHolder(
             }
 
             val toolsText = runCatching {
-                val tools = mcpToolsChecker.loadTools(server.url)
+                val tools = mcpToolsChecker.loadTools(server.url).map { it.name }
                 if (tools.isEmpty()) {
                     "Инструменты не найдены"
                 } else {

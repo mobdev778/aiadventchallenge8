@@ -9,6 +9,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
+import org.slf4j.LoggerFactory
 import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
@@ -26,7 +27,11 @@ class NetworkModule {
 
     @Factory
     fun createOkHttpClient(settingsRepository: SettingsRepository): OkHttpClient {
-        val logging = HttpLoggingInterceptor().apply {
+        val httpLogger = LoggerFactory.getLogger("HTTP")
+        val logging = HttpLoggingInterceptor { message ->
+            println("!!! network: $message")
+            httpLogger.info(message)
+        }.apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
 

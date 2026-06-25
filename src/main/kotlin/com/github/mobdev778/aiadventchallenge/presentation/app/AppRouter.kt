@@ -13,6 +13,7 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreen
 import com.github.mobdev778.aiadventchallenge.presentation.editprofilescreen.EditProfileScreen
 import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.McpInfoScreen
 import com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen.McpServerListScreen
+import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.MyMcpServerScreen
 import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.ProfileListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreen
 import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.TaskContextScreen
@@ -27,6 +28,7 @@ sealed interface Screen {
     data object AddProfile : Screen
     data class EditProfile(val profileId: UUID) : Screen
     data object McpServerList : Screen
+    data object MyMcpServer : Screen
     data object AddMcpServer : Screen
     data class McpInfo(val serverId: UUID) : Screen
     data class TaskContext(val taskContextId: UUID, val chatId: UUID) : Screen
@@ -64,6 +66,10 @@ class AppRouter(initial: Screen = Screen.ChatList) {
         screen = Screen.McpServerList
     }
 
+    fun openMyMcpServer() {
+        screen = Screen.MyMcpServer
+    }
+
     fun openAddMcpServer() {
         screen = Screen.AddMcpServer
     }
@@ -91,6 +97,7 @@ fun AppRouterContent(
                 onOpenSettings = { router.openSettings() },
                 onOpenProfiles = { router.openProfileList() },
                 onOpenMcp = { router.openMcpServerList() },
+                onOpenMyMcp = { router.openMyMcpServer() },
             )
         }
 
@@ -137,6 +144,12 @@ fun AppRouterContent(
                 onBack = { router.openChatList() },
                 onOpenAddServer = { router.openAddMcpServer() },
                 onOpenServerInfo = { router.openMcpInfo(it) },
+            )
+        }
+
+        is Screen.MyMcpServer -> {
+            MyMcpServerScreen(
+                onBack = { router.openChatList() },
             )
         }
 

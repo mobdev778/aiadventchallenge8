@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.app
 
+import com.github.mobdev778.aiadventchallenge.presentation.logsscreen.LogsFileScreen
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
@@ -17,6 +18,10 @@ class AppToolWindowFactory : ToolWindowFactory {
             AppRouterContent(
                 router = router,
             )
+        }
+
+        toolWindow.addComposeTab("Logs", focusOnClickInside = true) {
+            LogsFileScreen()
         }
     }
 }

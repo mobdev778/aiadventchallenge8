@@ -56,6 +56,12 @@ fun ChatListScreenContent(
                 DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenMcpClick) }) {
                     Text("MCP")
                 }
+
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+
+                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenMyMcpClick) }) {
+                    Text("MyMCP")
+                }
             }
         }
 

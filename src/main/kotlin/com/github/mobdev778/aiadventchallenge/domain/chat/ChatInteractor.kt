@@ -146,7 +146,7 @@ class ChatInteractor(
             time = System.currentTimeMillis(),
             branchB = false,
             text = response.message,
-            type = MessageType.User,
+            type = MessageType.Bot,
             tokens = response.requestTokens,
             rank = 0,
         )

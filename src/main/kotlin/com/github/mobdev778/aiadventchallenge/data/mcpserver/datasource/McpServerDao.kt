@@ -18,4 +18,7 @@ interface McpServerDao {
 
     @Query("UPDATE mcp_servers SET active = :active WHERE id = :id")
     suspend fun updateActive(id: String, active: Boolean)
+
+    @Query("DELETE FROM mcp_servers WHERE id = :id")
+    suspend fun deleteById(id: String)
 }

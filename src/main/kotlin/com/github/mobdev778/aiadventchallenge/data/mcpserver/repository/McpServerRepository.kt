@@ -34,6 +34,10 @@ class McpServerRepository(
         mcpServerDao.updateActive(id = serverId.toString(), active = active)
     }
 
+    suspend fun deleteServer(serverId: UUID) {
+        mcpServerDao.deleteById(id = serverId.toString())
+    }
+
     private fun McpServerEntity.toDomain(): McpServer =
         McpServer(
             id = UUID.fromString(id),

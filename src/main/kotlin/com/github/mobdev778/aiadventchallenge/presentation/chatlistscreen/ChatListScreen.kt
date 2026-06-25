@@ -15,6 +15,7 @@ fun ChatListScreen(
     onOpenSettings: () -> Unit,
     onOpenProfiles: () -> Unit,
     onOpenMcp: () -> Unit,
+    onOpenMyMcp: () -> Unit,
 ) {
     val stateHolder = remember {
         inject<ChatListScreenStateHolder>(ChatListScreenStateHolder::class.java).value
@@ -39,6 +40,10 @@ fun ChatListScreen(
 
                 ChatListScreenCommand.OpenMcp -> {
                     onOpenMcp()
+                }
+
+                ChatListScreenCommand.OpenMyMcp -> {
+                    onOpenMyMcp()
                 }
 
                 is ChatListScreenCommand.OpenChat -> {

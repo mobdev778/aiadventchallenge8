@@ -11,8 +11,10 @@ import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
 import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
 import com.github.mobdev778.aiadventchallenge.domain.invariant.ValidationResult
+import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.serialization.json.Json
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
@@ -29,7 +31,9 @@ class ChatAssistantAgent(
     invariantRegistry: InvariantRegistry,
     settingsRepository: SettingsRepository,
     chatClient: ChatClient,
-) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient) {
+    mcpServerInteractor: McpServerInteractor,
+    scope: CoroutineScope,
+) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     private val json: Json by inject(Json::class.java)
 

@@ -6,6 +6,7 @@ data class AgentResponse(
     val agent: String,
     val request: AgentRequest,
     val message: String,
+    val toolMessages: List<ToolResponse>,
     val requestTokens: Int,
     val responseTokens: Int,
     val taskContext: TaskContext?, // обновленный контекст задачи

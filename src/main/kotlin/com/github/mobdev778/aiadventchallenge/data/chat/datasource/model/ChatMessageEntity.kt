@@ -40,5 +40,11 @@ data class ChatMessageEntity(
 
     @ColumnInfo(name = "rank")
     val rank: Int,
+
+    @ColumnInfo(name = "tool_call_id")
+    val toolCallId: String? = null,
+
+    @ColumnInfo(name = "name")
+    val name: String? = null,
 )
 

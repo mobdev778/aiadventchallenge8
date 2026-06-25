@@ -69,6 +69,9 @@ fun McpServerListScreenContent(
                         onClick = {
                             onEvent(McpServerListScreenEvent.OnServerClick(server.id))
                         },
+                        onDeleteClick = {
+                            onEvent(McpServerListScreenEvent.OnDeleteClick(server.id))
+                        },
                     )
                 }
             }

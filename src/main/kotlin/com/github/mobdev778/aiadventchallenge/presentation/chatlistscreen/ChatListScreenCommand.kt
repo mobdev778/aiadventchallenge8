@@ -7,4 +7,5 @@ sealed interface ChatListScreenCommand {
     data object OpenSettings : ChatListScreenCommand
     data object OpenProfiles : ChatListScreenCommand
     data object OpenMcp : ChatListScreenCommand
+    data object OpenMyMcp : ChatListScreenCommand
 }

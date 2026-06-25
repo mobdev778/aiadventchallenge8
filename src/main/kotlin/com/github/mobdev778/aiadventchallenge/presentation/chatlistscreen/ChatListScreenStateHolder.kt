@@ -53,6 +53,9 @@ class ChatListScreenStateHolder(
             ChatListScreenEvent.OnOpenMcpClick -> {
                 commands.tryEmit(ChatListScreenCommand.OpenMcp)
             }
+            ChatListScreenEvent.OnOpenMyMcpClick -> {
+                commands.tryEmit(ChatListScreenCommand.OpenMyMcp)
+            }
         }
     }
 

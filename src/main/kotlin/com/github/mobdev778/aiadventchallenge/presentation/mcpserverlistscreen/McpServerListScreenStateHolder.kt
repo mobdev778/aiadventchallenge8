@@ -35,12 +35,19 @@ class McpServerListScreenStateHolder(
             is McpServerListScreenEvent.OnServerClick -> {
                 commands.tryEmit(McpServerListScreenCommand.OpenServerInfo(event.serverId))
             }
+            is McpServerListScreenEvent.OnDeleteClick -> deleteServer(event.serverId)
         }
     }
 
     private fun updateActive(serverId: java.util.UUID, active: Boolean) {
         scope.launch(Dispatchers.IO) {
             mcpServerRepository.updateServerActive(serverId = serverId, active = active)
+        }
+    }
+
+    private fun deleteServer(serverId: java.util.UUID) {
+        scope.launch(Dispatchers.IO) {
+            mcpServerRepository.deleteServer(serverId = serverId)
         }
     }
 }

@@ -5,6 +5,7 @@ import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.sse.SSE
 import io.modelcontextprotocol.kotlin.sdk.client.mcpStreamableHttp
 import io.modelcontextprotocol.kotlin.sdk.types.ListToolsRequest
+import io.modelcontextprotocol.kotlin.sdk.types.Tool
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
@@ -12,7 +13,7 @@ import org.koin.core.annotation.Single
 @Single
 class McpToolsChecker {
 
-    suspend fun loadTools(url: String): List<String> = withContext(Dispatchers.IO) {
+    suspend fun loadTools(url: String): List<Tool> = withContext(Dispatchers.IO) {
         val normalizedUrl = url.trim().removeSuffix("/")
         require(normalizedUrl.isNotEmpty()) { "MCP server URL must not be blank" }
 
@@ -21,8 +22,10 @@ class McpToolsChecker {
         }
 
         try {
-            val client = httpClient.mcpStreamableHttp(normalizedUrl)
-            client.listTools(ListToolsRequest()).tools.map { it.name }
+            val client = httpClient.mcpStreamableHttp(normalizedUrl) {
+                headers["Accept"] = "application/json, text/event-stream"
+            }
+            client.listTools(ListToolsRequest()).tools
         } catch (error: Throwable) {
             throw IllegalStateException(error.toReadableMessage(normalizedUrl), error)
         } finally {

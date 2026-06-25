@@ -86,10 +86,13 @@ class ChatRepository(
             type = when (type) {
                 MessageTypeEntity.User -> MessageType.User
                 MessageTypeEntity.Assistant -> MessageType.Bot
+                MessageTypeEntity.Tool -> MessageType.Tool
                 MessageTypeEntity.StickyFacts -> MessageType.StickyFacts
             },
             tokens = tokens,
             rank = rank,
+            toolCallId = toolCallId,
+            name = name,
         )
 
     private fun ChatMessage.toEntity(): ChatMessageEntity =
@@ -103,9 +106,12 @@ class ChatRepository(
             type = when (type) {
                 MessageType.User -> MessageTypeEntity.User
                 MessageType.Bot -> MessageTypeEntity.Assistant
+                MessageType.Tool -> MessageTypeEntity.Tool
                 MessageType.StickyFacts -> MessageTypeEntity.StickyFacts
             },
             tokens = tokens,
             rank = rank,
+            toolCallId = toolCallId,
+            name = name,
         )
 }

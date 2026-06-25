@@ -13,4 +13,6 @@ data class ChatMessage(
     val tokens: Int,
     // ранг - количество "сжатий контекста", с которым связано данное сообщение. У оригинальных сообщений ранг: 0.
     val rank: Int,
+    val toolCallId: String? = null,
+    val name: String? = null,
 )
