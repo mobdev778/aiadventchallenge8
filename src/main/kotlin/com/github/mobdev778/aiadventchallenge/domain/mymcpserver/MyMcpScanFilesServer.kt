@@ -1,16 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.mymcpserver
 
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.engine.EmbeddedServer
-import io.ktor.server.engine.embeddedServer
-import io.ktor.server.netty.Netty
-import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
-import io.modelcontextprotocol.kotlin.sdk.server.mcpStreamableHttp
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequest
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.types.Implementation
@@ -20,7 +11,6 @@ import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.koin.core.annotation.Single
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -28,41 +18,16 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
-import kotlin.io.path.name
 import kotlin.io.path.readText
 import kotlin.streams.asSequence
 
-@Single
-class MyMcpNettyServer {
+class MyMcpScanFilesServer : BaseMyMcpServer(
+    name = "MyMcpScanFilesServer",
+    description = "Локальный MCP-сервер навигации по файлам проекта",
+    port = 3000,
+) {
 
-    private var engine: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
-
-    suspend fun start(port: Int) {
-        if (engine != null) return
-
-        val newEngine = embeddedServer(Netty, port = port, host = "localhost") {
-            configureMyMcpServer()
-        }
-        newEngine.start(wait = false)
-        engine = newEngine
-    }
-
-    suspend fun stop() {
-        engine?.stop(2000, 5000)
-        engine = null
-    }
-
-    private fun Application.configureMyMcpServer() {
-        install(ContentNegotiation) {
-            json()
-        }
-
-        mcpStreamableHttp("/mcp") {
-            createServer()
-        }
-    }
-
-    private fun createServer(): Server {
+    override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
                 name = "my-mcp-server",

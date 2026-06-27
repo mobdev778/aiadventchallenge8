@@ -5,14 +5,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.model.MyMcpServerState
 import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
 import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.MyMcpServerScreenEvent
-import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.model.MyMcpServerScreenState
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.OutlinedButton
@@ -20,7 +22,7 @@ import org.jetbrains.jewel.ui.component.Text
 
 @Composable
 fun MyMcpServerScreenContent(
-    state: MyMcpServerScreenState,
+    state: List<MyMcpServerState>,
     onEvent: (MyMcpServerScreenEvent) -> Unit,
 ) {
     Column(
@@ -39,37 +41,36 @@ fun MyMcpServerScreenContent(
 
         ScreenHeader(
             modifier = Modifier.fillMaxWidth(),
-            text = "My MCP Server",
+            text = "My MCP Servers",
         )
 
-        MyMcpServerSettingsBlock(
-            state = state,
-            onEvent = onEvent,
-        )
+        val listState = rememberLazyListState()
 
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            orientation = Orientation.Horizontal,
-        )
-
-        MyMcpServerStatusBlock(
-            state = state,
-            onEvent = onEvent,
-        )
-
-        Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 6.dp),
-            orientation = Orientation.Horizontal,
-        )
-
-        MyMcpServerActionsBlock(
-            state = state,
-            onEvent = onEvent,
-        )
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            itemsIndexed(
+                items = state,
+                key = { index, _ -> state[index].name },
+            ) { index, item ->
+                Column {
+                    if (index > 0) {
+                        Divider(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 6.dp),
+                            orientation = Orientation.Horizontal,
+                        )
+                    }
+                    MyMcpServerStatusBlock(
+                        state = item,
+                        onEvent = onEvent
+                    )
+                }
+            }
+        }
     }
 }
 

@@ -1,6 +1,5 @@
 package com.github.mobdev778.aiadventchallenge.data.mcpserver.datasource
 
-import com.github.mobdev778.aiadventchallenge.data.mymcpserver.datasource.MyMcpServerConfigDao
 import com.intellij.openapi.application.PathManager
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -24,8 +23,4 @@ class McpServerDatabaseModule {
         return mcpServerAppDatabase.mcpServerDao()
     }
 
-    @Single
-    fun provideMyMcpServerConfigDao(mcpServerAppDatabase: McpServerAppDatabase): MyMcpServerConfigDao {
-        return mcpServerAppDatabase.myMcpServerConfigDao()
-    }
 }

@@ -5,11 +5,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class MyMcpNettyServerIntegrationTest {
+class MyMcpScanFilesServerIntegrationTest {
 
     @Test
     fun `loads tools from my mcp netty server`(): Unit = runBlocking {
-        val server = MyMcpNettyServer()
+        val server = MyMcpScanFilesServer()
 
         try {
             server.start(8300)

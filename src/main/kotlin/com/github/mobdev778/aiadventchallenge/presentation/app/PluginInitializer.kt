@@ -7,7 +7,6 @@ import com.github.mobdev778.aiadventchallenge.data.profile.datasource.ProfileDat
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.taskcontext.datasource.TaskContextDatabaseModule
 import com.github.mobdev778.aiadventchallenge.infrastructure.logging.PluginUncaughtExceptionHandler
-import com.intellij.execution.testframework.SourceScope.modules
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.ProjectActivity
