@@ -28,7 +28,7 @@ fun MyMcpServerStatusBlock(
 
     Text(
         modifier = Modifier.fillMaxWidth(),
-        text = "${state.name}",
+        text = state.name,
         color = neonHighlightedText,
         textAlign = TextAlign.Center,
     )

@@ -13,7 +13,7 @@ class MyMcpServerInteractor(
 ) {
 
     private val servers: List<MyMcpServer> = listOf(
-        MyMcpScanFilesServer(),
+        MyMcpReadFileServer(),
         MyMcpCalcPrimeNumbersServer(scope),
         MyMcpServerSaveToFileServer(),
         MyMcpServerMatrixQuoteSearcherServer(),

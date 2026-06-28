@@ -39,7 +39,7 @@ fun McpServerRow(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(text = server.name)
-            Text(text = server.url)
+            Text(text = if (server.url.length > 35) server.url.take(35) + "..." else server.url)
         }
 
         Spacer(modifier = Modifier.width(8.dp))
