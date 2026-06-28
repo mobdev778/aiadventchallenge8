@@ -26,6 +26,7 @@ class MyMcpCalcPrimeNumbersServer(
     name = "MyMcpCalcPrimeNumbersServer",
     description = "Локальный MCP-сервер непрерывного вычисления простых чисел",
     port = 3001,
+    launchAtStartup = false,
 ) {
 
     private val knownPrimeNumbers = Collections.synchronizedSet(hashSetOf<Int>())

@@ -25,6 +25,7 @@ class MyMcpScanFilesServer : BaseMyMcpServer(
     name = "MyMcpScanFilesServer",
     description = "Локальный MCP-сервер навигации по файлам проекта",
     port = 3000,
+    launchAtStartup = false,
 ) {
 
     override fun createServer(): Server {

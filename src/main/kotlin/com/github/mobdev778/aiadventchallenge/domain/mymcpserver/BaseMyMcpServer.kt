@@ -19,7 +19,8 @@ import kotlin.String
 abstract class BaseMyMcpServer(
     private val name: String,
     private val description: String,
-    private val port: Int
+    private val port: Int,
+    val launchAtStartup: Boolean,
 ) : MyMcpServer {
 
     protected var engine: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
@@ -29,7 +30,8 @@ abstract class BaseMyMcpServer(
             name = name,
             description = description,
             isRunning = false,
-            url = "http://localhost:$port/mcp"
+            url = "http://localhost:$port/mcp",
+            launchAtStartup = launchAtStartup,
         )
     )
 

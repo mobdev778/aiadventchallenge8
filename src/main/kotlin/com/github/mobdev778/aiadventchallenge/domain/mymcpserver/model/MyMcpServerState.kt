@@ -5,4 +5,5 @@ data class MyMcpServerState(
     val description: String,
     val isRunning: Boolean,
     val url: String,
+    val launchAtStartup: Boolean,
 )

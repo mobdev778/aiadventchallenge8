@@ -22,8 +22,10 @@ class AppToolWindowFactory : ToolWindowFactory {
         toolWindow.addComposeTab("AI Chat", focusOnClickInside = true) {
             LaunchedEffect(Unit) {
                 val servers = myMcpServerInteractor.serverStatesFlow.first()
-                servers.forEach {
-                    myMcpServerInteractor.start(it.name)
+                servers.forEach { server ->
+                    if (server.launchAtStartup) {
+                        myMcpServerInteractor.start(server.name)
+                    }
                 }
             }
 
