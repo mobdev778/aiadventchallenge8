@@ -15,6 +15,8 @@ class MyMcpServerInteractor(
     private val servers: List<MyMcpServer> = listOf(
         MyMcpScanFilesServer(),
         MyMcpCalcPrimeNumbersServer(scope),
+        MyMcpServerSaveToFileServer(),
+        MyMcpServerMatrixQuoteSearcherServer(),
     )
 
     val serverStatesFlow: Flow<List<MyMcpServerState>> = combine(
@@ -33,3 +35,4 @@ class MyMcpServerInteractor(
         server?.stop()
     }
 }
+
