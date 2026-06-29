@@ -4,6 +4,7 @@ import com.github.mobdev778.aiadventchallenge.data.chat.datasource.ChatDatabaseM
 import com.github.mobdev778.aiadventchallenge.data.mcpserver.datasource.McpServerDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.network.NetworkModule
 import com.github.mobdev778.aiadventchallenge.data.profile.datasource.ProfileDatabaseModule
+import com.github.mobdev778.aiadventchallenge.data.rag.datasource.RagDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.settings.datasource.SettingsDatabaseModule
 import com.github.mobdev778.aiadventchallenge.data.taskcontext.datasource.TaskContextDatabaseModule
 import com.github.mobdev778.aiadventchallenge.infrastructure.logging.PluginUncaughtExceptionHandler
@@ -54,6 +55,7 @@ class PluginInitializer : ProjectActivity {
                         ChatDatabaseModule().module,
                         SettingsDatabaseModule().module,
                         ProfileDatabaseModule().module,
+                        RagDatabaseModule().module,
                         TaskContextDatabaseModule().module,
                         McpServerDatabaseModule().module,
                     )

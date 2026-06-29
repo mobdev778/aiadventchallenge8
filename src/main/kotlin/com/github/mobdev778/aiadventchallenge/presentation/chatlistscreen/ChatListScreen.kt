@@ -14,6 +14,7 @@ fun ChatListScreen(
     onOpenChat: (UUID) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenProfiles: () -> Unit,
+    onOpenRag: () -> Unit,
     onOpenMcp: () -> Unit,
     onOpenMyMcp: () -> Unit,
 ) {
@@ -36,6 +37,10 @@ fun ChatListScreen(
 
                 ChatListScreenCommand.OpenProfiles -> {
                     onOpenProfiles()
+                }
+
+                ChatListScreenCommand.OpenRag -> {
+                    onOpenRag()
                 }
 
                 ChatListScreenCommand.OpenMcp -> {

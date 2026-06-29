@@ -21,6 +21,10 @@ repositories {
 
 dependencies {
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
+
+    // embedding
+    implementation("dev.langchain4j:langchain4j-open-ai:0.31.0")
+
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")

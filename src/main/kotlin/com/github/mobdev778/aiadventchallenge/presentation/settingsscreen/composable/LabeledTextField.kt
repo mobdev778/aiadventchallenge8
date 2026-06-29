@@ -19,16 +19,18 @@ fun LabeledTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(label)
+        if (label.isNotEmpty()) {
+            Text(label)
+        }
         ThemedOutlinedTextField(
             value = value,
             onValueChange = onValueChange,
             visualTransformation = visualTransformation,
             singleLine = singleLine,
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

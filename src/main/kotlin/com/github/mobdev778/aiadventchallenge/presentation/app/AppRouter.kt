@@ -8,6 +8,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.github.mobdev778.aiadventchallenge.presentation.addmcpserverscreen.AddMcpServerScreen
 import com.github.mobdev778.aiadventchallenge.presentation.addprofilescreen.AddProfileScreen
+import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscreen.AddRagDocumentScreen
+import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscreen.model.AddRagDocumentScreenState
+import com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocumentscreen.AddingRagDocumentScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen.ChatListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreen
 import com.github.mobdev778.aiadventchallenge.presentation.editprofilescreen.EditProfileScreen
@@ -15,6 +18,9 @@ import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.McpInfo
 import com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen.McpServerListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.MyMcpServerScreen
 import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.ProfileListScreen
+import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.RagDocumentListScreen
+import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.model.RagDocumentListItem
+import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.ViewRagDocumentScreen
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreen
 import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.TaskContextScreen
 import java.util.UUID
@@ -27,6 +33,14 @@ sealed interface Screen {
     data object ProfileList : Screen
     data object AddProfile : Screen
     data class EditProfile(val profileId: UUID) : Screen
+    data object RagDocumentList : Screen
+    data object AddRagDocument : Screen
+    data class ViewRagDocument(val document: RagDocumentListItem) : Screen
+    data class AddingRagDocument(
+        val source: String,
+        val title: String,
+        val chunkingStrategy: AddRagDocumentScreenState.ChunkingStrategy,
+    ) : Screen
     data object McpServerList : Screen
     data object MyMcpServer : Screen
     data object AddMcpServer : Screen
@@ -60,6 +74,30 @@ class AppRouter(initial: Screen = Screen.ChatList) {
 
     fun openEditProfile(profileId: UUID) {
         screen = Screen.EditProfile(profileId)
+    }
+
+    fun openRagDocumentList() {
+        screen = Screen.RagDocumentList
+    }
+
+    fun openAddRagDocument() {
+        screen = Screen.AddRagDocument
+    }
+
+    fun openViewRagDocument(document: RagDocumentListItem) {
+        screen = Screen.ViewRagDocument(document)
+    }
+
+    fun openAddingRagDocument(
+        source: String,
+        title: String,
+        chunkingStrategy: AddRagDocumentScreenState.ChunkingStrategy,
+    ) {
+        screen = Screen.AddingRagDocument(
+            source = source,
+            title = title,
+            chunkingStrategy = chunkingStrategy,
+        )
     }
 
     fun openMcpServerList() {
@@ -96,6 +134,7 @@ fun AppRouterContent(
                 onOpenChat = { router.openChat(it) },
                 onOpenSettings = { router.openSettings() },
                 onOpenProfiles = { router.openProfileList() },
+                onOpenRag = { router.openRagDocumentList() },
                 onOpenMcp = { router.openMcpServerList() },
                 onOpenMyMcp = { router.openMyMcpServer() },
             )
@@ -136,6 +175,44 @@ fun AppRouterContent(
             EditProfileScreen(
                 profileId = s.profileId,
                 onBack = { router.openProfileList() },
+            )
+        }
+
+        is Screen.RagDocumentList -> {
+            RagDocumentListScreen(
+                onBack = { router.openChatList() },
+                onOpenAddDocument = { router.openAddRagDocument() },
+                onOpenDocument = { router.openViewRagDocument(it) },
+            )
+        }
+
+        is Screen.AddRagDocument -> {
+            AddRagDocumentScreen(
+                onBack = { router.openRagDocumentList() },
+                onOpenAddingDocument = { source, title, chunkingStrategy ->
+                    router.openAddingRagDocument(
+                        source = source,
+                        title = title,
+                        chunkingStrategy = chunkingStrategy,
+                    )
+                },
+            )
+        }
+
+        is Screen.ViewRagDocument -> {
+            ViewRagDocumentScreen(
+                document = s.document,
+                onBack = { router.openRagDocumentList() },
+            )
+        }
+
+        is Screen.AddingRagDocument -> {
+            AddingRagDocumentScreen(
+                source = s.source,
+                title = s.title,
+                chunkingStrategy = s.chunkingStrategy,
+                onBackToAddDocument = { router.openAddRagDocument() },
+                onBackToDocumentList = { router.openRagDocumentList() },
             )
         }
 
