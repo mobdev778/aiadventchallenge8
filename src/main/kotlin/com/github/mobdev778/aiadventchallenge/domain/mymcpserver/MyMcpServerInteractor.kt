@@ -10,13 +10,14 @@ import org.koin.core.annotation.Single
 @Single
 class MyMcpServerInteractor(
     scope: CoroutineScope,
+    ragServer: MyMcpRagSearchServer,
 ) {
 
     private val servers: List<MyMcpServer> = listOf(
         MyMcpReadFileServer(),
         MyMcpCalcPrimeNumbersServer(scope),
         MyMcpServerSaveToFileServer(),
-        MyMcpServerMatrixQuoteSearcherServer(),
+        ragServer,
     )
 
     val serverStatesFlow: Flow<List<MyMcpServerState>> = combine(
