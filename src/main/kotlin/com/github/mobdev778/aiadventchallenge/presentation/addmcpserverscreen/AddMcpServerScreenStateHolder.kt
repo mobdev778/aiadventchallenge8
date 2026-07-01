@@ -47,6 +47,7 @@ class AddMcpServerScreenStateHolder(
                 active = false,
                 name = name,
                 url = url,
+                isLocal = false,
             )
             mcpServerRepository.createServer(server)
             commands.tryEmit(AddMcpServerScreenCommand.Back)

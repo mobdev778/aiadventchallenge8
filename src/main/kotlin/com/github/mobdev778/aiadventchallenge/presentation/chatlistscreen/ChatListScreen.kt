@@ -13,10 +13,6 @@ import java.util.UUID
 fun ChatListScreen(
     onOpenChat: (UUID) -> Unit,
     onOpenSettings: () -> Unit,
-    onOpenProfiles: () -> Unit,
-    onOpenRag: () -> Unit,
-    onOpenMcp: () -> Unit,
-    onOpenMyMcp: () -> Unit,
 ) {
     val stateHolder = remember {
         inject<ChatListScreenStateHolder>(ChatListScreenStateHolder::class.java).value
@@ -33,22 +29,6 @@ fun ChatListScreen(
             when (command) {
                 ChatListScreenCommand.OpenSettings -> {
                     onOpenSettings()
-                }
-
-                ChatListScreenCommand.OpenProfiles -> {
-                    onOpenProfiles()
-                }
-
-                ChatListScreenCommand.OpenRag -> {
-                    onOpenRag()
-                }
-
-                ChatListScreenCommand.OpenMcp -> {
-                    onOpenMcp()
-                }
-
-                ChatListScreenCommand.OpenMyMcp -> {
-                    onOpenMyMcp()
                 }
 
                 is ChatListScreenCommand.OpenChat -> {

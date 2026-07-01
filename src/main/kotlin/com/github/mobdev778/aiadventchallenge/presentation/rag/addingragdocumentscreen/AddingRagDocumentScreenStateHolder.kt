@@ -1,9 +1,11 @@
 package com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocumentscreen
 
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagConfigRepository
 import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRepository
 import com.github.mobdev778.aiadventchallenge.domain.rag.RagChunkGenerator
 import com.github.mobdev778.aiadventchallenge.domain.rag.filechunker.FileChunkerFactory
 import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagDocument
+import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.RankerFactory
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocumentscreen.model.AddingRagDocumentScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscreen.model.AddRagDocumentScreenState.ChunkingStrategy
 import kotlinx.coroutines.CoroutineScope
@@ -22,6 +24,8 @@ import java.util.UUID
 @Factory
 class AddingRagDocumentScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
+    private val ragConfigRepository: RagConfigRepository,
+    private val rankerFactory: RankerFactory,
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(AddingRagDocumentScreenState())
@@ -50,7 +54,10 @@ class AddingRagDocumentScreenStateHolder(
 
             val total = getTotalChunks(source, chunkingStrategy)
 
-            val ragChunkGenerator = RagChunkGenerator(document.id)
+            val ragChunkGenerator = RagChunkGenerator(
+                document.id,
+                rankerFactory.embeddingModel
+            )
 
             val fileChunker = FileChunkerFactory().create(File(source), chunkingStrategy)
             while (true) {

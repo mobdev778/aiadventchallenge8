@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen
 
-import com.github.mobdev778.aiadventchallenge.data.mcpserver.repository.McpServerRepository
+import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpToolsChecker
 import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.model.McpInfoScreenState
 import kotlinx.coroutines.CoroutineScope
@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
@@ -16,7 +17,7 @@ import java.util.UUID
 
 @Single
 class McpInfoScreenStateHolder(
-    private val mcpServerRepository: McpServerRepository,
+    private val mcpServerInteractor: McpServerInteractor,
     private val mcpToolsChecker: McpToolsChecker,
     private val scope: CoroutineScope,
 ) {
@@ -31,7 +32,7 @@ class McpInfoScreenStateHolder(
         if (state.value.server?.id == serverId) return
 
         scope.launch(Dispatchers.IO) {
-            val server = mcpServerRepository.getServer(serverId)
+            val server = mcpServerInteractor.allServersFlow.firstOrNull()?.firstOrNull { it.id == serverId }
 
             _state.update {
                 it.copy(

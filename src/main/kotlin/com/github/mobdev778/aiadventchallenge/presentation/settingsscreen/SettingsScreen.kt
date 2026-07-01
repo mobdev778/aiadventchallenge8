@@ -10,6 +10,10 @@ import org.koin.java.KoinJavaComponent.inject
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenProfiles: () -> Unit,
+    onOpenRag: () -> Unit,
+    onOpenMcp: () -> Unit,
+    onOpenMyMcp: () -> Unit,
 ) {
     val stateHolder = remember {
         inject<SettingsScreenStateHolder>(SettingsScreenStateHolder::class.java).value
@@ -25,6 +29,10 @@ fun SettingsScreen(
         stateHolder.commands.collect { command ->
             when (command) {
                 SettingsScreenCommand.Back -> onBack()
+                SettingsScreenCommand.OpenProfiles -> onOpenProfiles()
+                SettingsScreenCommand.OpenRag -> onOpenRag()
+                SettingsScreenCommand.OpenMcp -> onOpenMcp()
+                SettingsScreenCommand.OpenMyMcp -> onOpenMyMcp()
             }
         }
     }

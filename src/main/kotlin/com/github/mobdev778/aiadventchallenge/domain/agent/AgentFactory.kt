@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.agent
 
+import com.github.mobdev778.aiadventchallenge.data.profile.repository.ProfileRepository
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.agent.agents.Agent
 import com.github.mobdev778.aiadventchallenge.domain.agent.agents.ChatAssistantAgent
@@ -22,13 +23,17 @@ class AgentFactory(
     private val chatClient: ChatClient,
     private val mcpServerInteractor: McpServerInteractor,
     private val scope: CoroutineScope,
+    private val profileRepository: ProfileRepository,
 ) {
 
     fun create(type: AgentType): Agent {
         val id = UUID.randomUUID().toString().replace("-", "")
         return when (type) {
             AgentType.ChatAssistant -> {
-                ChatAssistantAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)
+                ChatAssistantAgent(
+                    id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+                    profileRepository
+                )
             }
             AgentType.Planner -> {
                 PlannerAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)

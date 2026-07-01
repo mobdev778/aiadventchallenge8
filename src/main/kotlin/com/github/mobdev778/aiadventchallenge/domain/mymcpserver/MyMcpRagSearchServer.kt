@@ -1,6 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.mymcpserver
 
-import com.github.mobdev778.aiadventchallenge.domain.rag.RagSearcher
+import com.github.mobdev778.aiadventchallenge.domain.rag.RankedRagSearcher
+import com.github.mobdev778.aiadventchallenge.domain.rag.SimpleRagSearcher
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequest
@@ -18,7 +19,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class MyMcpRagSearchServer(
-    private val ragSearcher: RagSearcher
+    private val ragSearcher: RankedRagSearcher,
 ) : BaseMyMcpServer(
     name = "MyMcpRagSearchServer",
     description = "Локальный MCP-сервер семантического RAG-поиска по документам",
@@ -67,7 +68,7 @@ class MyMcpRagSearchServer(
         println("!!! MyMCP Vector Search: executeVectorSearch(query='$query')")
         if (query.isBlank()) return "[]"
 
-        // Вызываем ваш RAG-движок, который превратит query в эмбеддинг и найдет top-3 абзаца
+        // Вызываем ваш RAG-движок, который превратит query в эмбеддинг и найдет top-K абзацев
         val foundParagraphs = try {
             ragSearcher.search(query)
         } catch (e: Exception) {
@@ -83,7 +84,7 @@ class MyMcpRagSearchServer(
         ) { paragraph ->
             buildString {
                 append('"')
-                append(paragraph.escapeForJson())
+                append(paragraph.text.escapeForJson())
                 append('"')
             }
         }

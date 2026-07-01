@@ -7,4 +7,5 @@ data class McpServer(
     val active: Boolean,
     val name: String,
     val url: String,
+    val isLocal: Boolean,
 )

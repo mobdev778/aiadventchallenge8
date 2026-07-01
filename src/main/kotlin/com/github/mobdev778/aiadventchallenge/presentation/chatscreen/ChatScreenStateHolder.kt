@@ -26,10 +26,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Singleton
+import org.koin.core.annotation.Single
 import java.util.UUID
 
-@Singleton
+@Single
 class ChatScreenStateHolder(
     private val chatInteractor: ChatInteractor,
     private val settingsInteractor: SettingsInteractor,

@@ -44,30 +44,6 @@ fun ChatListScreenContent(
                 DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenSettingsClick) }) {
                     Text("Настройки")
                 }
-
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-
-                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenProfilesClick) }) {
-                    Text("Профили")
-                }
-
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-
-                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenRagClick) }) {
-                    Text("RAG")
-                }
-
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-
-                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenMcpClick) }) {
-                    Text("MCP")
-                }
-
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
-
-                DefaultButton(onClick = { onEvent(ChatListScreenEvent.OnOpenMyMcpClick) }) {
-                    Text("MyMCP")
-                }
             }
         }
 

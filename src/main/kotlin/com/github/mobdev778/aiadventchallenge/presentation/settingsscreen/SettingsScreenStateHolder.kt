@@ -82,6 +82,18 @@ class SettingsScreenStateHolder(
             is SettingsScreenEvent.OnBackClick -> {
                 commands.tryEmit(SettingsScreenCommand.Back)
             }
+            SettingsScreenEvent.OnOpenProfilesClick -> {
+                commands.tryEmit(SettingsScreenCommand.OpenProfiles)
+            }
+            SettingsScreenEvent.OnOpenRagClick -> {
+                commands.tryEmit(SettingsScreenCommand.OpenRag)
+            }
+            SettingsScreenEvent.OnOpenMcpClick -> {
+                commands.tryEmit(SettingsScreenCommand.OpenMcp)
+            }
+            SettingsScreenEvent.OnOpenMyMcpClick -> {
+                commands.tryEmit(SettingsScreenCommand.OpenMyMcp)
+            }
             is SettingsScreenEvent.OnContextManagementTypeChanged -> {
                 updateContextManagementType(event.type)
             }

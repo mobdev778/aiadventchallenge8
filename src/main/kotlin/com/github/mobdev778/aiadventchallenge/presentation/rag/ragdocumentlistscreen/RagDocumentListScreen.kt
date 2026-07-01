@@ -14,15 +14,16 @@ fun RagDocumentListScreen(
     onBack: () -> Unit,
     onOpenAddDocument: () -> Unit,
     onOpenDocument: (RagDocumentListItem) -> Unit,
+    onOpenRagConfig: () -> Unit,
 ) {
     val stateHolder = remember {
         inject<RagDocumentListScreenStateHolder>(RagDocumentListScreenStateHolder::class.java).value
     }
 
-    val documents by stateHolder.documents.collectAsState()
+    val uiState by stateHolder.uiState.collectAsState()
 
     RagDocumentListScreenContent(
-        documents = documents,
+        documents = uiState.documents,
         onEvent = stateHolder::onEvent,
     )
 
@@ -31,6 +32,7 @@ fun RagDocumentListScreen(
             when (command) {
                 RagDocumentListScreenCommand.Back -> onBack()
                 RagDocumentListScreenCommand.OpenAddDocument -> onOpenAddDocument()
+                RagDocumentListScreenCommand.OpenRagConfig -> onOpenRagConfig()
                 is RagDocumentListScreenCommand.OpenDocument -> onOpenDocument(command.document)
             }
         }

@@ -5,6 +5,11 @@ import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManag
 sealed interface SettingsScreenEvent {
     data object OnBackClick : SettingsScreenEvent
 
+    data object OnOpenProfilesClick : SettingsScreenEvent
+    data object OnOpenRagClick : SettingsScreenEvent
+    data object OnOpenMcpClick : SettingsScreenEvent
+    data object OnOpenMyMcpClick : SettingsScreenEvent
+
     data class OnContextManagementTypeChanged(val type: ContextManagementType) : SettingsScreenEvent
 
     data class OnMaxMessagesChanged(val value: String) : SettingsScreenEvent

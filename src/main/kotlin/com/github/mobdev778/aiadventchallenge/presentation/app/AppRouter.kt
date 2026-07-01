@@ -18,6 +18,7 @@ import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.McpInfo
 import com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen.McpServerListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.MyMcpServerScreen
 import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.ProfileListScreen
+import com.github.mobdev778.aiadventchallenge.presentation.rag.ragconfigscreen.RagConfigScreen
 import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.RagDocumentListScreen
 import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.model.RagDocumentListItem
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.ViewRagDocumentScreen
@@ -34,6 +35,7 @@ sealed interface Screen {
     data object AddProfile : Screen
     data class EditProfile(val profileId: UUID) : Screen
     data object RagDocumentList : Screen
+    data object RagConfig : Screen
     data object AddRagDocument : Screen
     data class ViewRagDocument(val document: RagDocumentListItem) : Screen
     data class AddingRagDocument(
@@ -78,6 +80,10 @@ class AppRouter(initial: Screen = Screen.ChatList) {
 
     fun openRagDocumentList() {
         screen = Screen.RagDocumentList
+    }
+
+    fun openRagConfig() {
+        screen = Screen.RagConfig
     }
 
     fun openAddRagDocument() {
@@ -133,10 +139,6 @@ fun AppRouterContent(
             ChatListScreen(
                 onOpenChat = { router.openChat(it) },
                 onOpenSettings = { router.openSettings() },
-                onOpenProfiles = { router.openProfileList() },
-                onOpenRag = { router.openRagDocumentList() },
-                onOpenMcp = { router.openMcpServerList() },
-                onOpenMyMcp = { router.openMyMcpServer() },
             )
         }
 
@@ -154,12 +156,16 @@ fun AppRouterContent(
         is Screen.Settings -> {
             SettingsScreen(
                 onBack = { router.openChatList() },
+                onOpenProfiles = { router.openProfileList() },
+                onOpenRag = { router.openRagDocumentList() },
+                onOpenMcp = { router.openMcpServerList() },
+                onOpenMyMcp = { router.openMyMcpServer() },
             )
         }
 
         is Screen.ProfileList -> {
             ProfileListScreen(
-                onBack = { router.openChatList() },
+                onBack = { router.openSettings() },
                 onOpenAddProfile = { router.openAddProfile() },
                 onOpenEditProfile = { router.openEditProfile(it) },
             )
@@ -180,9 +186,16 @@ fun AppRouterContent(
 
         is Screen.RagDocumentList -> {
             RagDocumentListScreen(
-                onBack = { router.openChatList() },
+                onBack = { router.openSettings() },
                 onOpenAddDocument = { router.openAddRagDocument() },
                 onOpenDocument = { router.openViewRagDocument(it) },
+                onOpenRagConfig = { router.openRagConfig() },
+            )
+        }
+
+        is Screen.RagConfig -> {
+            RagConfigScreen(
+                onBack = { router.openRagDocumentList() },
             )
         }
 
@@ -218,7 +231,7 @@ fun AppRouterContent(
 
         is Screen.McpServerList -> {
             McpServerListScreen(
-                onBack = { router.openChatList() },
+                onBack = { router.openSettings() },
                 onOpenAddServer = { router.openAddMcpServer() },
                 onOpenServerInfo = { router.openMcpInfo(it) },
             )
@@ -226,7 +239,7 @@ fun AppRouterContent(
 
         is Screen.MyMcpServer -> {
             MyMcpServerScreen(
-                onBack = { router.openChatList() },
+                onBack = { router.openSettings() },
             )
         }
 

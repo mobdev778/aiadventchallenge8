@@ -1,6 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.agent.agents
 
 import com.github.mobdev778.aiadventchallenge.data.chatclient.datasource.model.PlanningResponseDto
+import com.github.mobdev778.aiadventchallenge.data.profile.repository.ProfileRepository
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentContext
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
@@ -33,6 +34,7 @@ class ChatAssistantAgent(
     chatClient: ChatClient,
     mcpServerInteractor: McpServerInteractor,
     scope: CoroutineScope,
+    private val profileRepository: ProfileRepository,
 ) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     private val json: Json by inject(Json::class.java)
@@ -123,7 +125,10 @@ class ChatAssistantAgent(
 
         return try {
             val planResult: PlanningResponseDto = json.decodeFromString<PlanningResponseDto>(jsonResponse)
-            if (planResult.isTask && planResult.taskName != null && planResult.plan != null) {
+            if (
+                planResult.isTask && planResult.taskName != null && planResult.plan != null &&
+                !profileRepository.getSelectedProfile().content.contains("[IGNORE TASK CONTEXT]")
+            ) {
                 // Инициализируем слой РАБОЧЕЙ ПАМЯТИ
                 TaskContext(
                     id = UUID.randomUUID(),
@@ -192,7 +197,7 @@ class ChatAssistantAgent(
         Разбей её на понятные, последовательные шаги (от 2 до 5 шагов).
         Верни ответ СТРОГО в формате JSON без лишнего текста и markdown-разметки:
         {
-          "isTask": true,
+          "isTask": false,
           "taskName": "Краткое название задачи",
           "plan": ["Шаг 1...", "Шаг 2...", "Шаг 3..."]
         }

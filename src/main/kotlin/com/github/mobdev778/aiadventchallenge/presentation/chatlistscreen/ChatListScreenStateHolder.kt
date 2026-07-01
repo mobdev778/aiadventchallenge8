@@ -10,10 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.koin.core.annotation.Singleton
+import org.koin.core.annotation.Single
 import java.util.UUID
 
-@Singleton
+@Single
 class ChatListScreenStateHolder(
     private val chatRepository: ChatRepository,
     private val scope: CoroutineScope,
@@ -44,21 +44,6 @@ class ChatListScreenStateHolder(
 
             ChatListScreenEvent.OnOpenSettingsClick -> {
                 commands.tryEmit(ChatListScreenCommand.OpenSettings)
-            }
-
-            ChatListScreenEvent.OnOpenProfilesClick -> {
-                commands.tryEmit(ChatListScreenCommand.OpenProfiles)
-            }
-
-            ChatListScreenEvent.OnOpenRagClick -> {
-                commands.tryEmit(ChatListScreenCommand.OpenRag)
-            }
-
-            ChatListScreenEvent.OnOpenMcpClick -> {
-                commands.tryEmit(ChatListScreenCommand.OpenMcp)
-            }
-            ChatListScreenEvent.OnOpenMyMcpClick -> {
-                commands.tryEmit(ChatListScreenCommand.OpenMyMcp)
             }
         }
     }

@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen
 
-import com.github.mobdev778.aiadventchallenge.data.mcpserver.repository.McpServerRepository
+import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.model.McpServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,15 +11,16 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import java.util.UUID
 
 @Single
 class McpServerListScreenStateHolder(
-    private val mcpServerRepository: McpServerRepository,
+    private val mcpServerInteractor: McpServerInteractor,
     private val scope: CoroutineScope,
 ) {
 
-    val servers: StateFlow<List<McpServer>> = mcpServerRepository
-        .observeServers()
+    val servers: StateFlow<List<McpServer>> = mcpServerInteractor
+        .allServersFlow
         .flowOn(Dispatchers.IO)
         .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
 
@@ -39,15 +40,15 @@ class McpServerListScreenStateHolder(
         }
     }
 
-    private fun updateActive(serverId: java.util.UUID, active: Boolean) {
+    private fun updateActive(serverId: UUID, active: Boolean) {
         scope.launch(Dispatchers.IO) {
-            mcpServerRepository.updateServerActive(serverId = serverId, active = active)
+            mcpServerInteractor.updateServerActive(serverId = serverId, active = active)
         }
     }
 
-    private fun deleteServer(serverId: java.util.UUID) {
+    private fun deleteServer(serverId: UUID) {
         scope.launch(Dispatchers.IO) {
-            mcpServerRepository.deleteServer(serverId = serverId)
+            mcpServerInteractor.deleteServer(serverId = serverId)
         }
     }
 }

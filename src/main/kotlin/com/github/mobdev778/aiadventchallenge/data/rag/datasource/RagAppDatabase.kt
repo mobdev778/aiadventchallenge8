@@ -4,13 +4,14 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import com.github.mobdev778.aiadventchallenge.data.rag.datasource.model.RagConfigEntity
 import com.github.mobdev778.aiadventchallenge.data.rag.datasource.model.RagDocumentChunkEntity
 import com.github.mobdev778.aiadventchallenge.data.rag.datasource.model.RagDocumentEntity
 import java.nio.file.Path
 
 @Database(
-    entities = [RagDocumentEntity::class, RagDocumentChunkEntity::class],
-    version = 3,
+    entities = [RagDocumentEntity::class, RagDocumentChunkEntity::class, RagConfigEntity::class],
+    version = 5,
     exportSchema = false,
 )
 abstract class RagAppDatabase : RoomDatabase() {

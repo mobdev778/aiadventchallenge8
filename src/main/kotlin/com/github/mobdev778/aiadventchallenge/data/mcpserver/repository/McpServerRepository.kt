@@ -44,6 +44,7 @@ class McpServerRepository(
             active = active,
             name = name,
             url = url,
+            isLocal = false,
         )
 
     private fun McpServer.toEntity(): McpServerEntity =

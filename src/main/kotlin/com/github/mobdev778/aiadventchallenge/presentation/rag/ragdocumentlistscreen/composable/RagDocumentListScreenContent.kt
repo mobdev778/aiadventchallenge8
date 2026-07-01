@@ -35,6 +35,10 @@ fun RagDocumentListScreenContent(
                 Text("Назад")
             }
 
+            DefaultButton(onClick = { onEvent(RagDocumentListScreenEvent.OnRagConfigClick) }) {
+                Text("Настройки RAG")
+            }
+
             DefaultButton(onClick = { onEvent(RagDocumentListScreenEvent.OnAddClick) }) {
                 Text("Добавить")
             }

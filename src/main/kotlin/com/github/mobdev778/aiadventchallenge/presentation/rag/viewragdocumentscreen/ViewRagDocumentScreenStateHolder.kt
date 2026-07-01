@@ -3,6 +3,7 @@ package com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocuments
 import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRepository
 import com.github.mobdev778.aiadventchallenge.domain.rag.RagChunkGenerator
 import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagDocumentChunk
+import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.RankerFactory
 import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.model.RagDocumentListItem
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.model.ViewRagDocumentScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.model.ViewRagDocumentSearchResult
@@ -16,13 +17,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Factory
 import java.util.PriorityQueue
-import java.util.UUID
 import kotlin.math.sqrt
 
 @Factory
 class ViewRagDocumentScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
     private val scope: CoroutineScope,
+    private val ragRankerFactory: RankerFactory,
 ) {
     private val _state = MutableStateFlow(ViewRagDocumentScreenState())
     val state: StateFlow<ViewRagDocumentScreenState> = _state.asStateFlow()
@@ -56,11 +57,9 @@ class ViewRagDocumentScreenStateHolder(
         scope.launch(Dispatchers.IO) {
             _state.update { it.copy(isSearching = true, results = emptyList()) }
 
-            val queryChunk = RagChunkGenerator(document.id).generate(
-                section = 0,
-                text = query,
-            )
-            val queryVector = queryChunk.vector
+            val queryVector = RagChunkGenerator(document.id, ragRankerFactory.embeddingModel)
+                .generate(section = 0, text = query)
+                .vector
 
             val bestChunks = PriorityQueue<Pair<Double, RagDocumentChunk>>(
                 compareBy { it.first }

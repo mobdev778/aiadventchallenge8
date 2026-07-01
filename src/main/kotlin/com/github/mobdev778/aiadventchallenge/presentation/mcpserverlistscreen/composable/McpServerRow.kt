@@ -32,6 +32,7 @@ fun McpServerRow(
     ) {
         Checkbox(
             checked = server.active,
+            enabled = !server.isLocal,
             onCheckedChange = onCheckedChange,
         )
 
@@ -44,7 +45,10 @@ fun McpServerRow(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        DefaultButton(onClick = onDeleteClick) {
+        DefaultButton(
+            onClick = onDeleteClick,
+            enabled = !server.isLocal
+        ) {
             Text(text = "Удалить")
         }
     }

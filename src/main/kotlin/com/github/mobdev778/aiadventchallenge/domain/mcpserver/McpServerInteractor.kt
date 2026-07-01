@@ -3,6 +3,8 @@ package com.github.mobdev778.aiadventchallenge.domain.mcpserver
 import com.github.mobdev778.aiadventchallenge.data.mcpserver.repository.McpServerRepository
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.ToolResponse
 import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ToolCall
+import com.github.mobdev778.aiadventchallenge.domain.mcpserver.model.McpServer
+import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.MyMcpServerInteractor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.sse.SSE
@@ -15,52 +17,33 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 import org.koin.core.annotation.Single
-import org.slf4j.LoggerFactory
+import java.util.UUID
 
 @Single
 class McpServerInteractor(
     private val mcpServerRepository: McpServerRepository,
+    private val myMcpServerInteractor: MyMcpServerInteractor,
     private val cachedChecker: CachedMcpToolsChecker,
     private val scope: CoroutineScope,
 ) {
 
-    val logger = LoggerFactory.getLogger("McpServerInteractor")
-
     val toolUrlMap = HashMap<String, String>()
 
-    val activeTools: StateFlow<List<Tool>> = mcpServerRepository.observeServers()
-        .map { servers ->
-            val jobs = servers
-                .filter { it.active }
-                .map { server ->
-                    scope.async {
-                        try {
-                            val tools = cachedChecker.loadTools(server.url)
-                            tools.forEach { toolUrlMap[it.name] = server.url }
-                            tools
-                        } catch (e: Exception) {
-                            emptyList()
-                        }
-                    }
-                }
-            val lists: List<List<Tool>> = jobs.awaitAll()
-            lists.flatten()
-        }
-        .stateIn(
-            scope = scope,
-            started = SharingStarted.Eagerly,
-            initialValue = emptyList(),
-        )
+    val allServersFlow: Flow<List<McpServer>> = combine(
+        mcpServerRepository.observeServers(),
+        myMcpServerInteractor.localServersFlow,
+    ) { remoteServers, localServers ->
+        remoteServers + localServers
+    }.distinctUntilChanged()
 
-    val activeToolsFlow : Flow<List<Tool>> = mcpServerRepository.observeServers()
+    val activeToolsFlow : Flow<List<Tool>> = allServersFlow
         .map { servers ->
             val jobs = servers
                 .filter { it.active }
@@ -134,5 +117,13 @@ class McpServerInteractor(
             name = toolCall.function.name,
             content = mergedContent
         )
+    }
+
+    suspend fun updateServerActive(serverId: UUID, active: Boolean) {
+        mcpServerRepository.updateServerActive(serverId, active)
+    }
+
+    suspend fun deleteServer(serverId: UUID) {
+        mcpServerRepository.deleteServer(serverId = serverId)
     }
 }
