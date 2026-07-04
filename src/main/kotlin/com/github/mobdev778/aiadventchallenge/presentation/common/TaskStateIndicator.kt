@@ -3,20 +3,23 @@ package com.github.mobdev778.aiadventchallenge.presentation.common
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
 import org.jetbrains.jewel.ui.component.Text
+
+@Suppress("MagicNumber")
+private val INDICATOR_BACKGROUND_COLOR = Color(0xFF3F3F3F)
+@Suppress("MagicNumber")
+private val AUTO_PLAY_ON_COLOR = Color(0xFF70ee7d)
+@Suppress("MagicNumber")
+private val AUTO_PLAY_OFF_COLOR = Color(0xFF777777)
 
 @Composable
 fun TaskStateIndicator(
@@ -27,7 +30,7 @@ fun TaskStateIndicator(
     Row(
         modifier = modifier
             .background(
-                color = Color(0xFF3F3F3F),
+                color = INDICATOR_BACKGROUND_COLOR,
                 shape = RoundedCornerShape(16.dp),
             ),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -48,12 +51,12 @@ fun TaskStateIndicator(
                 if (autoPlay) {
                     Text(
                         text = "ON",
-                        color = Color(0xFF70ee7d)
+                        color = AUTO_PLAY_ON_COLOR
                     )
                 } else {
                     Text(
                         text = "OFF",
-                        color = Color(0xFF777777)
+                        color = AUTO_PLAY_OFF_COLOR
                     )
                 }
             }
@@ -78,19 +81,8 @@ fun TaskStateIndicator(
     }
 }
 
+@Suppress("MagicNumber")
 val taskStateColors = listOf(
     Color(0xFF7c4eba), Color(0xFF4daced), Color(0xFFf5a551), Color(0xFFF485F8), Color(0xFF70ee7d),
 )
 
-@Composable
-private fun Dot(
-    color: Color,
-    enabled: Boolean,
-) {
-    Box(
-        modifier = Modifier
-            .size(16.dp)
-            .alpha(if (enabled) 1f else 0.2f)
-            .background(color = color, shape = CircleShape)
-    )
-}

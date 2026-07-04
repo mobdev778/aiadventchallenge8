@@ -163,6 +163,37 @@ fun AppRouterContent(
             )
         }
 
+        else -> SecondaryScreenContent(router = router, screen = s)
+    }
+}
+
+@Composable
+private fun SecondaryScreenContent(
+    router: AppRouter,
+    screen: Screen,
+) {
+    when (screen) {
+        is Screen.ProfileList, is Screen.AddProfile, is Screen.EditProfile ->
+            ProfileScreensContent(router = router, screen = screen)
+
+        is Screen.RagDocumentList, is Screen.RagConfig, is Screen.AddRagDocument,
+        is Screen.ViewRagDocument, is Screen.AddingRagDocument ->
+            RagScreensContent(router = router, screen = screen)
+
+        is Screen.McpServerList, is Screen.MyMcpServer, is Screen.AddMcpServer,
+        is Screen.McpInfo ->
+            McpScreensContent(router = router, screen = screen)
+
+        is Screen.TaskContext ->
+            TaskContextScreenContent(router = router, screen = screen)
+
+        else -> {} // ChatList, Chat, Settings handled by parent
+    }
+}
+
+@Composable
+private fun ProfileScreensContent(router: AppRouter, screen: Screen) {
+    when (screen) {
         is Screen.ProfileList -> {
             ProfileListScreen(
                 onBack = { router.openSettings() },
@@ -170,20 +201,22 @@ fun AppRouterContent(
                 onOpenEditProfile = { router.openEditProfile(it) },
             )
         }
-
         is Screen.AddProfile -> {
-            AddProfileScreen(
-                onBack = { router.openProfileList() },
-            )
+            AddProfileScreen(onBack = { router.openProfileList() })
         }
-
         is Screen.EditProfile -> {
             EditProfileScreen(
-                profileId = s.profileId,
+                profileId = screen.profileId,
                 onBack = { router.openProfileList() },
             )
         }
+        else -> {}
+    }
+}
 
+@Composable
+private fun RagScreensContent(router: AppRouter, screen: Screen) {
+    when (screen) {
         is Screen.RagDocumentList -> {
             RagDocumentListScreen(
                 onBack = { router.openSettings() },
@@ -192,13 +225,9 @@ fun AppRouterContent(
                 onOpenRagConfig = { router.openRagConfig() },
             )
         }
-
         is Screen.RagConfig -> {
-            RagConfigScreen(
-                onBack = { router.openRagDocumentList() },
-            )
+            RagConfigScreen(onBack = { router.openRagDocumentList() })
         }
-
         is Screen.AddRagDocument -> {
             AddRagDocumentScreen(
                 onBack = { router.openRagDocumentList() },
@@ -211,24 +240,28 @@ fun AppRouterContent(
                 },
             )
         }
-
         is Screen.ViewRagDocument -> {
             ViewRagDocumentScreen(
-                document = s.document,
+                document = screen.document,
                 onBack = { router.openRagDocumentList() },
             )
         }
-
         is Screen.AddingRagDocument -> {
             AddingRagDocumentScreen(
-                source = s.source,
-                title = s.title,
-                chunkingStrategy = s.chunkingStrategy,
+                source = screen.source,
+                title = screen.title,
+                chunkingStrategy = screen.chunkingStrategy,
                 onBackToAddDocument = { router.openAddRagDocument() },
                 onBackToDocumentList = { router.openRagDocumentList() },
             )
         }
+        else -> {}
+    }
+}
 
+@Composable
+private fun McpScreensContent(router: AppRouter, screen: Screen) {
+    when (screen) {
         is Screen.McpServerList -> {
             McpServerListScreen(
                 onBack = { router.openSettings() },
@@ -236,32 +269,28 @@ fun AppRouterContent(
                 onOpenServerInfo = { router.openMcpInfo(it) },
             )
         }
-
         is Screen.MyMcpServer -> {
-            MyMcpServerScreen(
-                onBack = { router.openSettings() },
-            )
+            MyMcpServerScreen(onBack = { router.openSettings() })
         }
-
         is Screen.AddMcpServer -> {
-            AddMcpServerScreen(
-                onBack = { router.openMcpServerList() },
-            )
+            AddMcpServerScreen(onBack = { router.openMcpServerList() })
         }
-
         is Screen.McpInfo -> {
             McpInfoScreen(
-                serverId = s.serverId,
+                serverId = screen.serverId,
                 onBack = { router.openMcpServerList() },
             )
         }
-
-        is Screen.TaskContext -> {
-            TaskContextScreen(
-                taskContextId = s.taskContextId,
-                chatId = s.chatId,
-                onBack = { router.openChat(it) },
-            )
-        }
+        else -> {}
     }
+}
+
+@Composable
+private fun TaskContextScreenContent(router: AppRouter, screen: Screen) {
+    val taskScreen = screen as Screen.TaskContext
+    TaskContextScreen(
+        taskContextId = taskScreen.taskContextId,
+        chatId = taskScreen.chatId,
+        onBack = { router.openChat(it) },
+    )
 }

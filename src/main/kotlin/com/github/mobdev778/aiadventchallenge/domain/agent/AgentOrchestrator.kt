@@ -32,12 +32,16 @@ class AgentOrchestrator(
         AgentType.entries
             .map { type ->
                 val agents = mutableListOf<Agent>()
-                repeat(3) { agents.add(factory.create(type)) }
+                repeat(AGENTS_PER_POOL) { agents.add(factory.create(type)) }
                 AgentPool(type, agents) { response ->
                     onResponseReady(response)
                 }
             }
             .associateBy { it.type }
+    }
+
+    private companion object {
+        const val AGENTS_PER_POOL = 3
     }
 
     /**

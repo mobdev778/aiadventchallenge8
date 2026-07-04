@@ -22,7 +22,11 @@ class McpServerListScreenStateHolder(
     val servers: StateFlow<List<McpServer>> = mcpServerInteractor
         .allServersFlow
         .flowOn(Dispatchers.IO)
-        .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(
+            scope,
+            SharingStarted.WhileSubscribed(SUBSCRIPTION_TIMEOUT),
+            emptyList()
+        )
 
     val commands = MutableSharedFlow<McpServerListScreenCommand>(
         extraBufferCapacity = 1,
@@ -30,13 +34,21 @@ class McpServerListScreenStateHolder(
 
     fun onEvent(event: McpServerListScreenEvent) {
         when (event) {
-            McpServerListScreenEvent.OnBackClick -> commands.tryEmit(McpServerListScreenCommand.Back)
-            McpServerListScreenEvent.OnAddClick -> commands.tryEmit(McpServerListScreenCommand.OpenAddServer)
-            is McpServerListScreenEvent.OnActiveChanged -> updateActive(event.serverId, event.active)
+            McpServerListScreenEvent.OnBackClick -> {
+                commands.tryEmit(McpServerListScreenCommand.Back)
+            }
+            McpServerListScreenEvent.OnAddClick -> {
+                commands.tryEmit(McpServerListScreenCommand.OpenAddServer)
+            }
+            is McpServerListScreenEvent.OnActiveChanged -> {
+                updateActive(event.serverId, event.active)
+            }
             is McpServerListScreenEvent.OnServerClick -> {
                 commands.tryEmit(McpServerListScreenCommand.OpenServerInfo(event.serverId))
             }
-            is McpServerListScreenEvent.OnDeleteClick -> deleteServer(event.serverId)
+            is McpServerListScreenEvent.OnDeleteClick -> {
+                deleteServer(event.serverId)
+            }
         }
     }
 
@@ -52,3 +64,5 @@ class McpServerListScreenStateHolder(
         }
     }
 }
+
+const val SUBSCRIPTION_TIMEOUT = 5000L

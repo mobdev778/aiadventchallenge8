@@ -15,6 +15,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class AddRagDocumentScreenStateHolder(
+    @Suppress("UnusedPrivateProperty")
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(AddRagDocumentScreenState())

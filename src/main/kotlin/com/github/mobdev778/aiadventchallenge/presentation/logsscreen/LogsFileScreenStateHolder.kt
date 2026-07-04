@@ -11,6 +11,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
+private const val LOG_POLLING_INTERVAL_MS = 1_000L
+
 @Single
 class LogsFileScreenStateHolder(
     private val pluginLogFileManager: PluginLogFileManager,
@@ -34,7 +36,7 @@ class LogsFileScreenStateHolder(
                     fileName = file.fileName.toString(),
                     logs = if (content.isBlank()) emptyList() else content.lines(),
                 )
-                delay(1_000)
+                delay(LOG_POLLING_INTERVAL_MS)
             }
         }
     }

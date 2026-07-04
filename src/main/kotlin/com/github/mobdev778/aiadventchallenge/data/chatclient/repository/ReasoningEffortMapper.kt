@@ -7,7 +7,7 @@ import org.koin.core.annotation.Single
 @Single
 class ReasoningEffortMapper {
 
-    fun map(reasoningEffort: ReasoningEffort): com.github.mobdev778.aiadventchallenge.data.chatclient.datasource.model.ReasoningEffortDto {
+    fun map(reasoningEffort: ReasoningEffort): ReasoningEffortDto {
         return when (reasoningEffort) {
             ReasoningEffort.High -> ReasoningEffortDto.High
             ReasoningEffort.Medium -> ReasoningEffortDto.Medium

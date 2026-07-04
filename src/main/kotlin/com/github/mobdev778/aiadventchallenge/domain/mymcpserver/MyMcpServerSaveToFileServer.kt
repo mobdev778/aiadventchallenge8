@@ -69,14 +69,15 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
         val root = projectRoot()
         val target = root.resolve(fileName).normalize()
 
-        if (!target.startsWith(root)) return "Access denied: $fileName"
-        if (target.fileName?.toString() != fileName) return "Only file names in the project root are allowed: $fileName"
-
-        return try {
-            target.writeText(markdown, StandardCharsets.UTF_8)
-            "Saved to ${target.fileName}"
-        } catch (error: Exception) {
-            "Failed to save file: ${error.message.orEmpty()}"
+        return when {
+            !target.startsWith(root) -> "Access denied: $fileName"
+            target.fileName?.toString() != fileName -> "Only file names in the project root are allowed: $fileName"
+            else -> try {
+                target.writeText(markdown, StandardCharsets.UTF_8)
+                "Saved to ${target.fileName}"
+            } catch (error: Exception) {
+                "Failed to save file: ${error.message.orEmpty()}"
+            }
         }
     }
 

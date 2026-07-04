@@ -24,6 +24,7 @@ import java.util.UUID
 @Factory
 class AddingRagDocumentScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
+    @Suppress("UnusedPrivateProperty")
     private val ragConfigRepository: RagConfigRepository,
     private val rankerFactory: RankerFactory,
     private val scope: CoroutineScope,
@@ -88,6 +89,7 @@ class AddingRagDocumentScreenStateHolder(
         val fileChunker = FileChunkerFactory().create(File(source), chunkingStrategy)
         var chunks = 0
         while (true) {
+            @Suppress("UNUSED_VARIABLE")
             val chunk = fileChunker.next() ?: break
             chunks++
         }

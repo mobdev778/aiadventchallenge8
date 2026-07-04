@@ -50,13 +50,14 @@ class ParagraphsFileChunker(val file: File) : FileChunker {
     }
 
     private fun readLine(): String? {
-        if (cachedLine != null) {
+        val line = if (cachedLine != null) {
             val result = cachedLine
             cachedLine = null
-            return result
+            result
+        } else {
+            bufferedReader.readLine()?.replace("\t", "    ")
         }
-        val line = bufferedReader.readLine() ?: return null
-        return line.replace("\t", "    ")
+        return line
     }
 
     private fun pushBackLine(line: String) {

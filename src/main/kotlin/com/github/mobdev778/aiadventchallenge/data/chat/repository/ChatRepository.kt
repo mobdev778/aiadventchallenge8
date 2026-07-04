@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+@Suppress("TooManyFunctions")
 @Single
 class ChatRepository(
     private val chatDao: ChatDao,

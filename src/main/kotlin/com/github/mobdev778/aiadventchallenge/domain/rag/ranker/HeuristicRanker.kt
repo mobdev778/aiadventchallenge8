@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.rag.ranker
 
+@Suppress("MagicNumber")
 class HeuristicRanker : Ranker {
 
     val sourceHashes = HashSet<Int>()

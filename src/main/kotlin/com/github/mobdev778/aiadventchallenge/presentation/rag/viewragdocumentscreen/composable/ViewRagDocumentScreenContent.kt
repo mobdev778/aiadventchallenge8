@@ -87,14 +87,19 @@ fun ViewRagDocumentScreenContent(
         }
 
         if (state.results.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                items(state.results) { result ->
-                    SearchResultRow(result = result)
-                }
-            }
+            SearchResultsList(results = state.results)
+        }
+    }
+}
+
+@Composable
+private fun SearchResultsList(results: List<ViewRagDocumentSearchResult>) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(results) { result ->
+            SearchResultRow(result = result)
         }
     }
 }

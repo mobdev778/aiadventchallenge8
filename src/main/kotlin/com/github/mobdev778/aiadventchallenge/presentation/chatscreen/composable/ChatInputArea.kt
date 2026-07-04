@@ -45,21 +45,7 @@ fun ChatInputArea(
         )
     }
 
-    // Keep internal TextFieldValue in sync with external state.
-    // If text length increases (e.g. programmatic append), move cursor to the end.
-    LaunchedEffect(inputText) {
-        val oldText = fieldValue.text
-        val shouldMoveCursorToEnd = inputText.length > oldText.length
-
-        fieldValue = if (shouldMoveCursorToEnd) {
-            TextFieldValue(
-                text = inputText,
-                selection = TextRange(inputText.length),
-            )
-        } else {
-            fieldValue.copy(text = inputText)
-        }
-    }
+    SyncFieldValueWithInput(inputText, fieldValue) { fieldValue = it }
 
     Row(
         modifier = modifier,
@@ -109,5 +95,27 @@ fun ChatInputArea(
         ) {
             Text("Отправить")
         }
+    }
+}
+
+@Composable
+private fun SyncFieldValueWithInput(
+    inputText: String,
+    fieldValue: TextFieldValue,
+    onUpdate: (TextFieldValue) -> Unit,
+) {
+    LaunchedEffect(inputText) {
+        val oldText = fieldValue.text
+        val shouldMoveCursorToEnd = inputText.length > oldText.length
+
+        val newValue = if (shouldMoveCursorToEnd) {
+            TextFieldValue(
+                text = inputText,
+                selection = TextRange(inputText.length),
+            )
+        } else {
+            fieldValue.copy(text = inputText)
+        }
+        onUpdate(newValue)
     }
 }

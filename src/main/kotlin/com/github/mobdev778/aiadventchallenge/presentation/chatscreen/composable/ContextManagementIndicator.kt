@@ -15,6 +15,21 @@ import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ContextManagementState
 import org.jetbrains.jewel.ui.component.Text
 
+@Suppress("MagicNumber")
+private val ContextManagementIndicatorBackgroundColor = Color(0xFF2B2B2B)
+
+private const val HIGH_USAGE_THRESHOLD = 0.75
+private const val MEDIUM_USAGE_THRESHOLD = 0.50
+
+@Suppress("MagicNumber")
+private val HighUsageColor = Color(0xFFFE019A)
+
+@Suppress("MagicNumber")
+private val MediumUsageColor = Color(0xFFFF5C00)
+
+@Suppress("MagicNumber")
+private val LowUsageColor = Color(0xFF39FF14)
+
 @Composable
 fun ContextManagementIndicator(
     state: ContextManagementState,
@@ -97,9 +112,9 @@ private fun usedRatio(state: ContextManagementState): Double? {
 private fun indicatorColor(usedRatio: Double?): Color {
     val ratio = usedRatio ?: return Color.White
     return when {
-        ratio >= 0.75 -> Color(0xFFFE019A) // неоновый розовый
-        ratio >= 0.50 -> Color(0xFFFF5C00) // неоновый оранжевый
-        else -> Color(0xFF39FF14) // неоновый зеленый
+        ratio >= HIGH_USAGE_THRESHOLD -> HighUsageColor
+        ratio >= MEDIUM_USAGE_THRESHOLD -> MediumUsageColor
+        else -> LowUsageColor
     }
 }
 
@@ -114,7 +129,7 @@ private fun IndicatorProgressBar(
     Box(
         modifier = modifier
             .background(
-                color = Color(0xFF2B2B2B),
+                color = ContextManagementIndicatorBackgroundColor,
                 shape = shape,
             )
             .border(

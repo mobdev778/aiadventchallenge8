@@ -21,7 +21,7 @@ class RankedRagSearcher(
 
         // 1) сначала получаем обычный результат
         if (config.useQueryRewriting) {
-            val queries = queryRewriter.getQueries(query, 3)
+            val queries = queryRewriter.getQueries(query, QUERY_REWRITE_COUNT)
             queries.forEach {
                 result.addAll(searcher.search(it))
             }
@@ -36,10 +36,10 @@ class RankedRagSearcher(
         ranker.init(query)
 
         val rankedResult = result.map {
-            val rank = ranker.rank(it.text, it.vector)
-            rank to it
+            val score = ranker.rank(it.text, it.vector)
+            it.copy(score = score)
         }
-        val sorted = rankedResult.sortedByDescending { it.first }.map { it.second }
+        val sorted = rankedResult.sortedByDescending { it.score }
 
         // 3) обираем "topKAfter" записей
         val filtered = sorted.take(config.topKAfter)
@@ -50,11 +50,15 @@ class RankedRagSearcher(
                 val similarityRanker = rankerFactory.create(RagFilterType.Similarity)
                 similarityRanker.init(query)
                 filtered.filter {
-                    val rank = similarityRanker.rank(it.text, it.vector)
-                    rank >= config.minSimilarity
+                    val score = similarityRanker.rank(it.text, it.vector)
+                    score >= config.minSimilarity
                 }
             }
             else -> filtered
         }
+    }
+
+    companion object {
+        private const val QUERY_REWRITE_COUNT = 3
     }
 }

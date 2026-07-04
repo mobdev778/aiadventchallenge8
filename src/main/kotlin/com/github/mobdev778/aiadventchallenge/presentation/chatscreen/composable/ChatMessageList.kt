@@ -36,48 +36,6 @@ fun ChatMessageList(
                     isBranchingEnabled = isBranchingEnabled,
                     onEvent = onEvent,
                 )
-
-                if (message.expanded && message.children.isNotEmpty()) {
-                    ChatMessageChildren(
-                        messages = message.children,
-                        parentPath = message.lazyKey(parentPath = "root", siblingIndex = index),
-                        isBranchingEnabled = isBranchingEnabled,
-                        modifier = Modifier.padding(start = 24.dp),
-                        onEvent = onEvent,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ChatMessageChildren(
-    messages: List<ChatUiMessage>,
-    parentPath: String,
-    isBranchingEnabled: Boolean,
-    modifier: Modifier = Modifier,
-    onEvent: (ChatScreenEvent) -> Unit,
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        messages.forEachIndexed { index, message ->
-            ChatMessageRow(
-                message = message,
-                isBranchingEnabled = isBranchingEnabled,
-                onEvent = onEvent,
-            )
-
-            if (message.expanded && message.children.isNotEmpty()) {
-                ChatMessageChildren(
-                    messages = message.children,
-                    parentPath = message.lazyKey(parentPath = parentPath, siblingIndex = index),
-                    isBranchingEnabled = isBranchingEnabled,
-                    modifier = Modifier.padding(start = 24.dp),
-                    onEvent = onEvent,
-                )
             }
         }
     }

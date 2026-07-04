@@ -28,7 +28,7 @@ class SimpleRagSearcher(
         val bestChunks = PriorityQueue<Pair<Double, RagDocumentChunk>>(
             compareBy { it.first }
         )
-        val pageSize = 10
+        val pageSize = CHUNK_PAGE_SIZE
         var offset = 0
 
         while (true) {
@@ -40,8 +40,8 @@ class SimpleRagSearcher(
             if (page.isEmpty()) break
 
             page.forEach { chunk ->
-                val similarity = cosineSimilarity(queryVector, chunk.vector)
-                bestChunks.offer(similarity to chunk)
+                val score = cosineSimilarity(queryVector, chunk.vector)
+                bestChunks.offer(score to chunk)
                 if (bestChunks.size > config.topKBefore) {
                     bestChunks.poll()
                 }
@@ -52,12 +52,13 @@ class SimpleRagSearcher(
 
         val results = bestChunks
             .sortedByDescending { it.first }
-            .map { (_, chunk) ->
+            .map { (score, chunk) ->
                 RagSearchResult(
                     source = document.source,
                     section = chunk.section,
                     text = chunk.text,
                     vector = chunk.vector,
+                    score = score,
                 )
             }
 
@@ -81,8 +82,15 @@ class SimpleRagSearcher(
             rightNorm += r * r
         }
 
-        if (leftNorm == 0.0 || rightNorm == 0.0) return Double.NEGATIVE_INFINITY
+        val result = if (leftNorm == 0.0 || rightNorm == 0.0) {
+            Double.NEGATIVE_INFINITY
+        } else {
+            dot / (sqrt(leftNorm) * sqrt(rightNorm))
+        }
+        return result
+    }
 
-        return dot / (sqrt(leftNorm) * sqrt(rightNorm))
+    companion object {
+        private const val CHUNK_PAGE_SIZE = 10
     }
 }

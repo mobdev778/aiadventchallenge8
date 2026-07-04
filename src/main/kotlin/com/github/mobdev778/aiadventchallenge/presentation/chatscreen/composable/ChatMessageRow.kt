@@ -20,74 +20,83 @@ import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
+@Suppress("MagicNumber")
+private val BotAnswerColor = Color(0xFF04D9FF)
+@Suppress("MagicNumber")
+private val StickyFactsColor = Color(0xFF8c6700)
+@Suppress("MagicNumber")
+private val UserTextColor = Color(0xFFFFFF)
+@Suppress("MagicNumber")
+private val TokenColor = Color(0xFFFF8C00)
+
+private data class MessageStyle(
+    val alignment: Alignment,
+    val borderColor: Color,
+    val textColor: Color,
+    val tokenColor: Color,
+    val rowPadding: Modifier,
+)
+
+private fun getMessageStyle(type: MessageType, insideWindow: Boolean): MessageStyle {
+    val alpha = if (insideWindow) 1.0f else 0.3f
+    return when (type) {
+        MessageType.User -> MessageStyle(
+            alignment = Alignment.CenterStart,
+            borderColor = Color.White.copy(alpha = alpha),
+            textColor = UserTextColor.copy(alpha = alpha),
+            tokenColor = TokenColor.copy(alpha = alpha),
+            rowPadding = Modifier.padding(start = 8.dp, end = 24.dp, top = 4.dp, bottom = 4.dp),
+        )
+        MessageType.StickyFacts -> MessageStyle(
+            alignment = Alignment.Center,
+            borderColor = StickyFactsColor.copy(alpha = alpha),
+            textColor = StickyFactsColor,
+            tokenColor = TokenColor.copy(alpha = alpha),
+            rowPadding = Modifier.padding(start = 24.dp, end = 24.dp, top = 4.dp, bottom = 4.dp),
+        )
+        MessageType.Bot, MessageType.Tool -> MessageStyle(
+            alignment = Alignment.CenterEnd,
+            borderColor = BotAnswerColor.copy(alpha = alpha),
+            textColor = BotAnswerColor,
+            tokenColor = TokenColor.copy(alpha = alpha),
+            rowPadding = Modifier.padding(start = 24.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
+        )
+    }
+}
+
 @Composable
 fun ChatMessageRow(
     message: ChatUiMessage,
     isBranchingEnabled: Boolean,
     onEvent: (ChatScreenEvent) -> Unit
 ) {
-    val botAnswerColor = Color(0xFF04D9FF)
-    val stickyFactsColor = Color(0xFF8c6700)
-
-    val type = message.message.type
-    val insideWindow = message.insideWindow
-    val alignment = when (type) {
-        MessageType.User -> Alignment.CenterStart
-        MessageType.StickyFacts -> Alignment.Center
-        MessageType.Bot -> Alignment.CenterEnd
-        MessageType.Tool -> Alignment.CenterEnd
-    }
-
-    val borderColor = when (type) {
-        MessageType.User -> Color.White
-        MessageType.Bot -> botAnswerColor
-        MessageType.Tool -> botAnswerColor
-        MessageType.StickyFacts -> stickyFactsColor
-    }
-        .copy(alpha = if (insideWindow) 1.0f else 0.3f)
-
-    val textColor = when (type) {
-        MessageType.User -> Color(0xFFFFFF).copy(alpha = if (insideWindow) 1.0f else 0.3f)
-        MessageType.Bot -> botAnswerColor
-        MessageType.Tool -> botAnswerColor
-        MessageType.StickyFacts -> stickyFactsColor
-    }
-
-    val tokenColor = Color(0xFFFF8C00).copy(alpha = if (insideWindow) 1.0f else 0.3f)
-
+    val style = getMessageStyle(message.message.type, message.insideWindow)
     val shape = RoundedCornerShape(12.dp)
-
-    val rowPadding = when (type) {
-        MessageType.User -> Modifier.padding(start = 8.dp, end = 24.dp, top = 4.dp, bottom = 4.dp)
-        MessageType.StickyFacts -> Modifier.padding(start = 24.dp, end = 24.dp, top = 4.dp, bottom = 4.dp)
-        MessageType.Bot -> Modifier.padding(start = 24.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
-        MessageType.Tool -> Modifier.padding(start = 24.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
-    }
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .then(rowPadding)
+            .then(style.rowPadding)
             .clickable(
                 onClick = {
                     onEvent(ChatScreenEvent.OnMessageClicked(message))
                 }
             ),
-        contentAlignment = alignment,
+        contentAlignment = style.alignment,
     ) {
         Column(
             modifier = Modifier
-                .border(width = 1.dp, color = borderColor, shape = shape)
+                .border(width = 1.dp, color = style.borderColor, shape = shape)
                 // subtle fill so the border is visible on both light/dark themes
-                .background(color = borderColor.copy(alpha = 0.06f), shape = shape)
+                .background(color = style.borderColor.copy(alpha = 0.06f), shape = shape)
                 .padding(horizontal = 10.dp, vertical = 8.dp),
         ) {
-            when (type) {
+            when (message.message.type) {
                 MessageType.StickyFacts -> {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
                         text = "Sticky Facts",
-                        color = stickyFactsColor,
+                        color = StickyFactsColor,
                     )
                     Divider(
                         modifier = Modifier
@@ -95,12 +104,12 @@ fun ChatMessageRow(
                             .padding(vertical = 6.dp),
                         orientation = Orientation.Horizontal,
                     )
-                    MarkdownText(text = message.message.text, color = textColor)
+                    MarkdownText(text = message.message.text, color = style.textColor)
                 }
- 
+
                 else -> {
-                    MarkdownText(text = message.message.text, color = textColor)
- 
+                    MarkdownText(text = message.message.text, color = style.textColor)
+
                     ChatSwitcher(
 message = message,
                         isBranchingEnabled = isBranchingEnabled,
@@ -116,7 +125,7 @@ message = message,
 
                     Text(
                         text = "tokens: ${message.message.tokens}",
-                        color = tokenColor,
+                        color = style.tokenColor,
                     )
                 }
             }

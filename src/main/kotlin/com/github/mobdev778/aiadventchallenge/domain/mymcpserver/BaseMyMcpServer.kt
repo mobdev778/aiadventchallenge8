@@ -53,7 +53,7 @@ abstract class BaseMyMcpServer(
     }
 
     override suspend fun stop() {
-        engine?.stop(2000, 3000)
+        engine?.stop(STOP_GRACE_PERIOD_MS, STOP_TIMEOUT_MS)
         engine = null
         state.update {
             it.copy(isRunning = false)
@@ -71,4 +71,9 @@ abstract class BaseMyMcpServer(
     }
 
     protected abstract fun createServer(): Server
+
+    private companion object {
+        const val STOP_GRACE_PERIOD_MS = 2000L
+        const val STOP_TIMEOUT_MS = 3000L
+    }
 }

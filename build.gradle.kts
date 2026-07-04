@@ -6,10 +6,22 @@ plugins {
 
     // Room (KMP/JVM) uses KSP for annotation processing
     id("com.google.devtools.ksp") version "2.3.9"
+
+    // Static code analysis for Kotlin
+    id("io.gitlab.arturbosch.detekt") version "1.23.7"
 }
 
 ksp {
     arg("KOIN_DEFAULT_MODULE", "true")
+}
+
+detekt {
+    // Use default detekt config; run 'detektGenerateConfig' to generate a default config file
+    config.from(rootProject.file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    allRules = false
+    autoCorrect = false
+    parallel = true
 }
 
 group = "com.github.mobdev778.aiadventchallenge"

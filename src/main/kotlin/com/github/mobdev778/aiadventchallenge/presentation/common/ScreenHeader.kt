@@ -19,6 +19,7 @@ fun ScreenHeader(
     modifier: Modifier = Modifier,
     text: String,
 ) {
+    @Suppress("MagicNumber")
     val neonHighlightedText = Color(0xFF04D9FF)
 
     Box(

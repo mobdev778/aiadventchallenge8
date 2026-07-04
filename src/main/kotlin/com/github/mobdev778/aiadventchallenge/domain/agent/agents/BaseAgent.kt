@@ -58,7 +58,7 @@ abstract class BaseAgent(
 
         // 4. ОБНОВЛЕНИЕ РАБОЧЕЙ ПАМЯТИ
         // Передаем ответ в стейт-машину. Если там есть "next_step", рабочая память обновится
-        val newTaskContext = context.taskContext?.let { currentContext ->
+        val newTaskContext = context.taskContext.let { currentContext ->
             updateContext(currentContext, response.message)
         }
 
@@ -75,121 +75,11 @@ abstract class BaseAgent(
         systemPrompt: String,
         request: AgentRequest,
     ): AgentResponse {
-        val userMessage = ChatMessage(
-            id = UUID.randomUUID(),
-            chatId = request.chatId,
-            parentId = request.parentMessageId,
-            branchB = false,
-            time = System.currentTimeMillis(),
-            text = request.query,
-            type = MessageType.User,
-            tokens = 0,
-            rank = 0
-        )
+        val userMessage = buildUserMessage(request)
+        val currentMessages = buildCurrentMessages(context, systemPrompt, userMessage)
 
-        // Инициализируем локальную историю сообщений для текущей сессии генерации
-        val currentMessages = ArrayList<Message>()
-
-        // Добавляем системный промт
-        currentMessages.add(Message(Role.System, systemPrompt))
-
-        // Переносим существующий контекст
-        context.windowMessages.forEach { message ->
-            val mapped = when (message.type) {
-                MessageType.User -> Message(Role.User, content = message.text)
-                MessageType.Bot -> Message(Role.Assistant, content = message.text)
-                MessageType.Tool -> Message(
-                    Role.Tool,
-                    content = message.text,
-                    toolCallId = message.toolCallId,
-                    name = message.name
-                )
-
-                MessageType.StickyFacts -> Message(
-                    Role.System,
-                    content = "[CRITICAL_STICKY_FACTS]\nИспользуй следующие неизменяемые пары ключ-значение...\n${message.text}"
-                )
-            }
-            currentMessages.add(mapped)
-        }
-
-        // Добавляем новое сообщение пользователя
-        currentMessages.add(Message(Role.User, content = userMessage.text))
-
-        val baseModel = settingsRepository.getSettings().baseModel.trim().replace("\n", "")
-        val toolMessages = ArrayList<ToolResponse>()
-
-        var totalPromptTokens = 0
-        var totalCompletionTokens = 0
-        var finalAnswer = "- no response -"
-
-        var maxIterations = 5 // Защита от бесконечного цикла
-        var shouldContinue = true
-
-        try {
-            while (shouldContinue && maxIterations > 0) {
-                maxIterations--
-
-                val response = chatClient.execute(
-                    ChatRequest(
-                        model = baseModel,
-                        messages = currentMessages,
-                        tools = context.tools,
-                    ),
-                )
-
-                totalPromptTokens += response.usage?.promptTokens ?: 0
-                totalCompletionTokens += response.usage?.completionTokens ?: 0
-
-                val firstChoice = response.choices.firstOrNull()
-                val assistantMessage = firstChoice?.message
-                val toolCalls = assistantMessage?.toolCalls
-
-                // 1. Обязательно добавляем ответ ассистента в историю (даже если там только tool_calls)
-                val assistantMessageToHistory = Message(
-                    role = Role.Assistant,
-                    content = assistantMessage?.content,
-                    toolCalls = toolCalls // Передаем tool_calls API-клиенту
-                )
-                currentMessages.add(assistantMessageToHistory)
-
-                // 2. Проверяем, хочет ли модель вызвать инструменты
-                if (!toolCalls.isNullOrEmpty()) {
-                    println("!!! Вызов инструментов: $toolCalls")
-
-                    val jobs = toolCalls.map { toolCall ->
-                        scope.async {
-                            // Важно: MCP может требовать тип "function", приводим к нужному формату
-                            sendMcpMessage(toolCall.copy(type = "function"))
-                        }
-                    }
-
-                    val results = jobs.awaitAll()
-
-                    // 3. Добавляем результаты выполнения инструментов сразу после tool_calls
-                    results.filterNotNull().forEach { toolResponse ->
-                        toolMessages.add(toolResponse)
-
-                        currentMessages.add(
-                            Message(
-                                role = Role.Tool,
-                                content = toolResponse.content, // Результат работы функции
-                                toolCallId = toolResponse.toolCallId, // Должен совпадать с id из toolCalls
-                                name = toolResponse.name
-                            )
-                        )
-                    }
-
-                    // Цикл продолжается, отправляя обновленную историю обратно в LLM
-                } else {
-                    // Если вызовов инструментов больше нет, сохраняем финальный текст и выходим
-                    finalAnswer = assistantMessage?.content?.takeIf { it.isNotBlank() } ?: "- no response -"
-                    shouldContinue = false
-                }
-            }
-        } catch (e: Exception) {
-            finalAnswer = "Ошибка: ${e.message ?: e::class.java.simpleName}"
-        }
+        val (finalAnswer, totalPromptTokens, totalCompletionTokens) =
+            executeAgentLoop(context, currentMessages)
 
         val responseMessage = ChatMessage(
             id = UUID.randomUUID(),
@@ -212,6 +102,132 @@ abstract class BaseAgent(
             responseTokens = responseMessage.tokens,
             taskContext = null,
         )
+    }
+
+    private fun buildUserMessage(request: AgentRequest): ChatMessage {
+        return ChatMessage(
+            id = UUID.randomUUID(),
+            chatId = request.chatId,
+            parentId = request.parentMessageId,
+            branchB = false,
+            time = System.currentTimeMillis(),
+            text = request.query,
+            type = MessageType.User,
+            tokens = 0,
+            rank = 0
+        )
+    }
+
+    private fun buildCurrentMessages(
+        context: AgentContext,
+        systemPrompt: String,
+        userMessage: ChatMessage,
+    ): ArrayList<Message> {
+        val currentMessages = ArrayList<Message>()
+        currentMessages.add(Message(Role.System, systemPrompt))
+
+        context.windowMessages.forEach { message ->
+            val mapped = when (message.type) {
+                MessageType.User -> Message(Role.User, content = message.text)
+                MessageType.Bot -> Message(Role.Assistant, content = message.text)
+                MessageType.Tool -> Message(
+                    Role.Tool,
+                    content = message.text,
+                    toolCallId = message.toolCallId,
+                    name = message.name
+                )
+
+                MessageType.StickyFacts -> Message(
+                    Role.System,
+                    content = "[CRITICAL_STICKY_FACTS]\n" +
+                        "Используй следующие неизменяемые пары ключ-значение...\n" +
+                        "${message.text}"
+                )
+            }
+            currentMessages.add(mapped)
+        }
+
+        currentMessages.add(Message(Role.User, content = userMessage.text))
+        return currentMessages
+    }
+
+    private suspend fun executeAgentLoop(
+        context: AgentContext,
+        currentMessages: ArrayList<Message>,
+    ): Triple<String, Int, Int> {
+        val baseModel = settingsRepository.getSettings().baseModel.trim().replace("\n", "")
+
+        var totalPromptTokens = 0
+        var totalCompletionTokens = 0
+        var finalAnswer = "- no response -"
+        var maxIterations = MAX_AGENT_ITERATIONS
+        var shouldContinue = true
+
+        try {
+            while (shouldContinue && maxIterations > 0) {
+                maxIterations--
+
+                val response = chatClient.execute(
+                    ChatRequest(
+                        model = baseModel,
+                        messages = currentMessages,
+                        tools = context.tools,
+                    ),
+                )
+
+                totalPromptTokens += response.usage?.promptTokens ?: 0
+                totalCompletionTokens += response.usage?.completionTokens ?: 0
+
+                val assistantMessage = response.choices.firstOrNull()?.message
+                val toolCalls = assistantMessage?.toolCalls
+
+                currentMessages.add(
+                    Message(
+                        role = Role.Assistant,
+                        content = assistantMessage?.content,
+                        toolCalls = toolCalls
+                    )
+                )
+
+                if (!toolCalls.isNullOrEmpty()) {
+                    executeToolCalls(currentMessages, toolCalls)
+                } else {
+                    finalAnswer = assistantMessage?.content?.takeIf { it.isNotBlank() }
+                        ?: "- no response -"
+                    shouldContinue = false
+                }
+            }
+        } catch (e: Exception) {
+            finalAnswer = "Ошибка: ${e.message ?: e::class.java.simpleName}"
+        }
+
+        return Triple(finalAnswer, totalPromptTokens, totalCompletionTokens)
+    }
+
+    private suspend fun executeToolCalls(
+        currentMessages: ArrayList<Message>,
+        toolCalls: List<ToolCall>,
+    ) {
+        println("!!! Вызов инструментов: $toolCalls")
+
+        val jobs = toolCalls.map { toolCall ->
+            scope.async {
+                sendMcpMessage(toolCall.copy(type = "function"))
+            }
+        }
+
+        val results = jobs.awaitAll()
+
+        results.filterNotNull().forEach { toolResponse ->
+            currentMessages.add(
+                Message(
+                    role = Role.Tool,
+                    content = toolResponse.content,
+                    toolCallId = toolResponse.toolCallId,
+                    name = toolResponse.name
+                )
+            )
+        }
     }
 
     /**
@@ -238,5 +254,9 @@ abstract class BaseAgent(
 
     suspend fun sendMcpMessage(toolCall: ToolCall): ToolResponse? {
         return mcpServerInteractor.sendRequest(toolCall)
+    }
+
+    companion object {
+        private const val MAX_AGENT_ITERATIONS = 5
     }
 }

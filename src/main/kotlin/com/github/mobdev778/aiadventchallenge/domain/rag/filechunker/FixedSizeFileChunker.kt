@@ -8,7 +8,7 @@ class FixedSizeFileChunker(
 ) : FileChunker {
 
     val raf = RandomAccessFile(file, "r")
-    val buffer = ByteArray(1024)
+    val buffer = ByteArray(CHUNK_SIZE_BYTES)
     var offset = 0L
     var index = 0
 
@@ -19,7 +19,7 @@ class FixedSizeFileChunker(
 
         raf.seek(offset)
 
-        val chunkSize = Math.min(raf.length() - offset, 1024L)
+        val chunkSize = Math.min(raf.length() - offset, CHUNK_SIZE_BYTES.toLong())
         raf.read(buffer, 0, chunkSize.toInt())
 
         val text = String(buffer, 0, chunkSize.toInt())
@@ -27,7 +27,12 @@ class FixedSizeFileChunker(
 
         return FileChunk(file, index, text).also {
             index++
-            offset += buffer.size / 2
+            offset += buffer.size / CHUNK_OVERLAP_FACTOR
         }
+    }
+
+    companion object {
+        private const val CHUNK_SIZE_BYTES = 512
+        private const val CHUNK_OVERLAP_FACTOR = 2
     }
 }

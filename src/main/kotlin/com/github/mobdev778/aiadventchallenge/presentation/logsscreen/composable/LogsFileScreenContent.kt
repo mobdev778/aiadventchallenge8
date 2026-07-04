@@ -16,11 +16,13 @@ import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
 import com.github.mobdev778.aiadventchallenge.presentation.logsscreen.LogsFileScreenState
 import org.jetbrains.jewel.ui.component.Text
 
+@Suppress("MagicNumber")
+private val NeonHighlightedTextColor = Color(0xFF04D9FF)
+
 @Composable
 fun LogsFileScreenContent(
     state: LogsFileScreenState,
 ) {
-    val neonHighlightedText = Color(0xFF04D9FF)
 
     Column(
         modifier = Modifier
@@ -36,7 +38,7 @@ fun LogsFileScreenContent(
         if (state.logs.isEmpty()) {
             Text(
                 text = "Логи за текущий день пока отсутствуют",
-                color = neonHighlightedText,
+                color = NeonHighlightedTextColor,
             )
         } else {
             LazyColumn(
@@ -48,7 +50,7 @@ fun LogsFileScreenContent(
                 itemsIndexed(state.logs) { index, line ->
                     Text(
                         text = line.ifEmpty { " " },
-                        color = neonHighlightedText,
+                        color = NeonHighlightedTextColor,
                         fontFamily = FontFamily.Monospace,
                     )
                 }

@@ -38,7 +38,7 @@ You are a professional prompt engineer and visual director. Your sole objective 
         - Color Palette: Dominant hues and overall tonality (e.g., 'muted earthy tones', 'vibrant neon synthwave palette', 'monochromatic with a splash of crimson').
 
         ### OUTPUT FORMAT:
-        Output ONLY the final enriched prompt in English inside a single code block. Do not include any greetings, explanations, introduction, or conversational filler. Only the ready-to-copy prompt text.                
+        Output ONLY the final enriched prompt in English inside a single code block. Do not include any greetings, explanations, introduction, or conversational filler. Only the ready-to-copy prompt text.
         """.trimIndent()
 
     override suspend fun generateImage(
@@ -65,12 +65,12 @@ You are a professional prompt engineer and visual director. Your sole objective 
         )
 
         val base64String = response.data.firstOrNull()?.b64Json
-            ?: throw IllegalStateException("API OpenAI не вернул Base64 данные изображения.")
+            ?: error("API OpenAI не вернул Base64 данные изображения.")
 
         // Декодируем в BufferedImage
         val imageBytes = Base64.getDecoder().decode(base64String)
         return ByteArrayInputStream(imageBytes).use { inputStream ->
-            ImageIO.read(inputStream) ?: throw IllegalStateException("Не удалось преобразовать байты в BufferedImage.")
+            ImageIO.read(inputStream) ?: error("Не удалось преобразовать байты в BufferedImage.")
         }
     }
 }

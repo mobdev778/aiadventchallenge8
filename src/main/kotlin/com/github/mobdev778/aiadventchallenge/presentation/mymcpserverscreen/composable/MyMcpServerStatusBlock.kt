@@ -15,21 +15,26 @@ import com.github.mobdev778.aiadventchallenge.presentation.mymcpserverscreen.MyM
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+@Suppress("MagicNumber")
+private val NeonHighlightedTextColor = Color(0xFF04D9FF)
+@Suppress("MagicNumber")
+private val NeonPinkColor = Color(0xFFFE019A)
+@Suppress("MagicNumber")
+private val NeonGreenColor = Color(0xFF39FF14)
+
 @Composable
 fun MyMcpServerStatusBlock(
     state: MyMcpServerState,
     onEvent: (MyMcpServerScreenEvent) -> Unit,
 ) {
-    val neonHighlightedText = Color(0xFF04D9FF)
-    val neonPink = Color(0xFFFE019A) // неоновый розовый
-    val neonGreen = Color(0xFF39FF14) // неоновый зеленый
+
 
     Spacer(Modifier.size(8.dp))
 
     Text(
         modifier = Modifier.fillMaxWidth(),
         text = state.name,
-        color = neonHighlightedText,
+        color = NeonHighlightedTextColor,
         textAlign = TextAlign.Center,
     )
     Spacer(Modifier.size(8.dp))
@@ -44,12 +49,12 @@ fun MyMcpServerStatusBlock(
         if (state.isRunning) {
             Text(
                 text = "Запущен",
-                color = neonGreen,
+                color = NeonGreenColor,
             )
         } else {
             Text(
                 text = "Остановлен",
-                color = neonPink,
+                color = NeonPinkColor,
             )
         }
     }
@@ -69,12 +74,12 @@ fun MyMcpServerStatusBlock(
             if (state.isRunning) {
                 Text(
                     text = "Остановить",
-                    color = neonPink,
+                    color = NeonPinkColor,
                 )
             } else {
                 Text(
                     text = "Запустить",
-                    color = neonGreen,
+                    color = NeonGreenColor,
                 )
             }
         }

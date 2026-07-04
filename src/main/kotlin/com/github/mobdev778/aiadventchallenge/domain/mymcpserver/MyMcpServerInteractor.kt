@@ -2,6 +2,7 @@ package com.github.mobdev778.aiadventchallenge.domain.mymcpserver
 
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.model.McpServer
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.model.MyMcpServerState
+import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.rag.MyMcpRagSearchServer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -18,7 +19,6 @@ class MyMcpServerInteractor(
 
     private val servers: List<MyMcpServer> = listOf(
         MyMcpReadFileServer(),
-        MyMcpCalcPrimeNumbersServer(scope),
         MyMcpServerSaveToFileServer(),
         ragServer,
     )

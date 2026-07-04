@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class RagDocumentListScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
@@ -49,7 +51,7 @@ class RagDocumentListScreenStateHolder(
         )
     }.stateIn(
         scope = scope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
         initialValue = RagDocumentListScreenState(
             ragConfig = RagConfigRepository.default,
             documents = emptyList(),

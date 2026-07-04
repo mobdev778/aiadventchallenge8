@@ -17,11 +17,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocumentscreen.AddingRagDocumentScreenEvent
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocumentscreen.model.AddingRagDocumentScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.common.ScreenHeader
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
+
+@Suppress("MagicNumber")
+private val ProgressBarBackgroundColor = Color(0xFF2B2B2B)
+@Suppress("MagicNumber")
+private val ProgressBarFillColor = Color(0xFF39FF14)
 
 @Composable
 fun AddingRagDocumentScreenContent(
@@ -72,7 +78,7 @@ private fun RagDocumentProgressBar(
                 shape = shape,
             )
             .background(
-                color = Color(0xFF2B2B2B),
+                color = ProgressBarBackgroundColor,
                 shape = shape,
             )
             .padding(2.dp),
@@ -82,7 +88,7 @@ private fun RagDocumentProgressBar(
                 .fillMaxWidth(progress.coerceIn(0f, 1f))
                 .height(10.dp)
                 .background(
-                    color = Color(0xFF39FF14),
+                    color = ProgressBarFillColor,
                     shape = shape,
                 ),
         )

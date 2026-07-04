@@ -20,8 +20,10 @@ class ValidatorAgent(
 ) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     override suspend fun getAgentRules(): String {
-        return "Верни [SUMMARIZE] в конце ответа, если считаешь, что валидация решения завершена и пользователю можно показать окончательное." +
-                "Если текущее решение в ходе проверки оказалось неправильным (маловероятно, но все же) - верни в конце [EXECUTION]."
+        return "Верни [SUMMARIZE] в конце ответа, если считаешь, что валидация решения завершена " +
+                "и пользователю можно показать окончательное." +
+                "Если текущее решение в ходе проверки оказалось неправильным (маловероятно, но все же) - " +
+                "верни в конце [EXECUTION]."
     }
 
     override suspend fun handle(

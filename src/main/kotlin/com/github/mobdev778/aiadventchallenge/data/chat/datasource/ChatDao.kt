@@ -10,6 +10,7 @@ import com.github.mobdev778.aiadventchallenge.data.chat.datasource.model.ChatMes
 import kotlinx.coroutines.flow.Flow
 import java.util.UUID
 
+@Suppress("TooManyFunctions")
 @Dao
 interface ChatDao {
 

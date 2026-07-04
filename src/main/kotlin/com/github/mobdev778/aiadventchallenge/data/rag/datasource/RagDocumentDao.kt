@@ -34,7 +34,9 @@ interface RagDocumentDao {
     suspend fun getChunkCount(documentId: String): Int
 
     @Query(
-        "SELECT * FROM rag_document_chunks WHERE document_id = :documentId ORDER BY section ASC LIMIT :limit OFFSET :offset"
+        "SELECT * FROM rag_document_chunks " +
+            "WHERE document_id = :documentId " +
+            "ORDER BY section ASC LIMIT :limit OFFSET :offset"
     )
     suspend fun getChunksPage(documentId: String, limit: Int, offset: Int): List<RagDocumentChunkEntity>
 

@@ -12,6 +12,8 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.ui.component.Slider
 import org.jetbrains.jewel.ui.component.Text
 
+private const val FLOAT_SLIDER_STEP_INCREMENT = 0.05f
+
 @Composable
 fun FloatSliderSetting(
     label: String,
@@ -37,7 +39,7 @@ fun FloatSliderSetting(
             var steps = 0
             var current = min
             while (current <= max) {
-                current += 0.05f
+                current += FLOAT_SLIDER_STEP_INCREMENT
                 steps++
             }
 

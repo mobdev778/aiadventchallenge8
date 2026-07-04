@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class ProfileListScreenStateHolder(
     private val profileRepository: ProfileRepository,
@@ -22,7 +24,7 @@ class ProfileListScreenStateHolder(
     val profiles: StateFlow<List<Profile>> = profileRepository
         .observeProfiles()
         .flowOn(Dispatchers.IO)
-        .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS), emptyList())
 
     val commands = MutableSharedFlow<ProfileListScreenCommand>(
         // Так команда дождется, пока Compose-экран будет готов ее принять.

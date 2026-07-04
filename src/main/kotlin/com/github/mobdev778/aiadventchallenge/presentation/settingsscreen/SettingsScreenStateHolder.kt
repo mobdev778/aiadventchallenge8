@@ -18,6 +18,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class SettingsScreenStateHolder(
     private val settingsInteractor: SettingsInteractor,
@@ -49,7 +51,7 @@ class SettingsScreenStateHolder(
     }
         .stateIn(
             scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
             initialValue = SettingsScreenState(
                 saved = AppSettings(
                     contextManagementType = ContextManagementType.None,

@@ -77,21 +77,20 @@ private class PluginSlf4jLogger(
     }
 
     private fun formatMessage(format: String?, vararg arguments: Any?): String {
-        if (format == null) return ""
-        if (arguments.isEmpty()) return format
+        val resolvedFormat = format ?: return ""
 
         val builder = StringBuilder()
         var searchStart = 0
         var argumentIndex = 0
 
         while (true) {
-            val placeholderIndex = format.indexOf("{}", startIndex = searchStart)
+            val placeholderIndex = resolvedFormat.indexOf("{}", startIndex = searchStart)
             if (placeholderIndex < 0) {
-                builder.append(format.substring(searchStart))
+                builder.append(resolvedFormat.substring(searchStart))
                 break
             }
 
-            builder.append(format.substring(searchStart, placeholderIndex))
+            builder.append(resolvedFormat.substring(searchStart, placeholderIndex))
             if (argumentIndex < arguments.size) {
                 builder.append(arguments[argumentIndex])
                 argumentIndex++

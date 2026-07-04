@@ -17,7 +17,10 @@ fun FloatArray.cosineSimilarity(other: FloatArray): Double {
         rightNorm += r * r
     }
 
-    if (leftNorm == 0.0 || rightNorm == 0.0) return Double.NEGATIVE_INFINITY
-
-    return dot / (sqrt(leftNorm) * sqrt(rightNorm))
+    val result = if (leftNorm == 0.0 || rightNorm == 0.0) {
+        Double.NEGATIVE_INFINITY
+    } else {
+        dot / (sqrt(leftNorm) * sqrt(rightNorm))
+    }
+    return result
 }

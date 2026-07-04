@@ -1,8 +1,10 @@
 package com.github.mobdev778.aiadventchallenge.domain.rag.queryrewriter
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class RewrittenQueriesResponse(
-    val rewritten_queries: List<String>
+    @SerialName("rewritten_queries")
+    val rewrittenQueries: List<String>
 )

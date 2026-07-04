@@ -39,8 +39,16 @@ fun McpServerRow(
         Spacer(modifier = Modifier.width(8.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = server.name)
-            Text(text = if (server.url.length > 35) server.url.take(35) + "..." else server.url)
+            Text(
+                text = server.name
+            )
+            Text(
+                text = if (server.url.length > VISIBLE_URL_LENGTH) {
+                    server.url.take(VISIBLE_URL_LENGTH) + "..."
+                } else {
+                    server.url
+                }
+            )
         }
 
         Spacer(modifier = Modifier.width(8.dp))
@@ -53,3 +61,5 @@ fun McpServerRow(
         }
     }
 }
+
+const val VISIBLE_URL_LENGTH = 35

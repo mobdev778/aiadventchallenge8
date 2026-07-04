@@ -41,7 +41,8 @@ class MyMcpReadFileServer : BaseMyMcpServer(
 
         server.addTool(
             name = "readFile",
-            description = "Reads a file by relative path from the project root and returns its content as a single string",
+            description = "Reads a file by relative path from the project root " +
+                "and returns its content as a single string",
             inputSchema = ToolSchema(
                 properties = buildJsonObject {
                     put("fileName", buildJsonObject {
@@ -66,14 +67,15 @@ class MyMcpReadFileServer : BaseMyMcpServer(
         val root = projectRoot()
         val target = root.resolve(fileName).normalize()
 
-        if (!target.startsWith(root)) return ""
-        if (!target.exists()) return ""
-        if (target.isDirectory()) return ""
-
-        return try {
-            target.readText(StandardCharsets.UTF_8)
-        } catch (_: Exception) {
-            ""
+        return when {
+            !target.startsWith(root) -> ""
+            !target.exists() -> ""
+            target.isDirectory() -> ""
+            else -> try {
+                target.readText(StandardCharsets.UTF_8)
+            } catch (_: Exception) {
+                ""
+            }
         }
     }
 

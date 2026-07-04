@@ -20,8 +20,10 @@ class ExecutorAgent(
 ) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     override suspend fun getAgentRules(): String {
-        return "Верни [VALIDATION], если считаешь, что реализация решения завершена и можно перейти к проверке. " +
-                "Верни [PLANNING], если считаешь, что реализация получилась плохой/неправильной  (маловероятно, но все же) и нужно доуточнить требования"
+        return "Верни [VALIDATION], если считаешь, что реализация решения завершена " +
+                "и можно перейти к проверке. " +
+                "Верни [PLANNING], если считаешь, что реализация получилась плохой/неправильной " +
+                "(маловероятно, но все же) и нужно доуточнить требования"
     }
 
     override suspend fun handle(

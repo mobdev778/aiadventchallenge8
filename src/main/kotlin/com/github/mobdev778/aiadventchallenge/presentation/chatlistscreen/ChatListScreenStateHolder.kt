@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class ChatListScreenStateHolder(
     private val chatRepository: ChatRepository,
@@ -21,7 +23,7 @@ class ChatListScreenStateHolder(
     val chats: StateFlow<List<Chat>> = chatRepository
         .observeChats()
         .flowOn(Dispatchers.IO)
-        .stateIn(scope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .stateIn(scope, SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS), emptyList())
 
     val commands = MutableSharedFlow<ChatListScreenCommand>(
         // Так команда дождется, пока Compose-экран будет готов ее принять.

@@ -7,6 +7,4 @@ class ImageRequestDto(
     val model: String,
     val prompt: String,
     val size: String,
-) {
-
-}
+)

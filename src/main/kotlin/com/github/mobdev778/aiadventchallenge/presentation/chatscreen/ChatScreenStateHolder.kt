@@ -29,6 +29,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class ChatScreenStateHolder(
     private val chatInteractor: ChatInteractor,
@@ -143,7 +145,7 @@ class ChatScreenStateHolder(
         .flowOn(Dispatchers.Default)
         .stateIn(
             scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
             initialValue = ChatScreenState(
                 chat = Chat(
                     id = UUID(0, 0),
@@ -247,7 +249,10 @@ class ChatScreenStateHolder(
         }
     }
 
-    private fun mapTokenLimitState(strategyState: StrategyState, windowMessages: List<ChatUiMessage>): ContextManagementState {
+    private fun mapTokenLimitState(
+        strategyState: StrategyState,
+        windowMessages: List<ChatUiMessage>,
+    ): ContextManagementState {
         return when (strategyState.contextManagementType) {
             ContextManagementType.None -> {
                 ContextManagementState.None

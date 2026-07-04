@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
+private const val STATE_FLOW_TIMEOUT_MS = 5000L
+
 @Single
 class MyMcpServerScreenStateHolder(
     private val interactor: MyMcpServerInteractor,
@@ -17,7 +19,7 @@ class MyMcpServerScreenStateHolder(
     val uiState  = interactor.serverStatesFlow
         .stateIn(
             scope = scope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS),
             initialValue = emptyList(),
         )
 

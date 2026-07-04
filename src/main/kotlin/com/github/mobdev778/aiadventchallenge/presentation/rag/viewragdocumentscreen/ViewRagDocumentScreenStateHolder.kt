@@ -19,6 +19,9 @@ import org.koin.core.annotation.Factory
 import java.util.PriorityQueue
 import kotlin.math.sqrt
 
+private const val SEARCH_PAGE_SIZE = 10
+private const val MAX_SEARCH_RESULTS = 3
+
 @Factory
 class ViewRagDocumentScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
@@ -64,7 +67,7 @@ class ViewRagDocumentScreenStateHolder(
             val bestChunks = PriorityQueue<Pair<Double, RagDocumentChunk>>(
                 compareBy { it.first }
             )
-            val pageSize = 10
+            val pageSize = SEARCH_PAGE_SIZE
             var offset = 0
 
             while (true) {
@@ -78,7 +81,7 @@ class ViewRagDocumentScreenStateHolder(
                 page.forEach { chunk ->
                     val similarity = cosineSimilarity(queryVector, chunk.vector)
                     bestChunks.offer(similarity to chunk)
-                    if (bestChunks.size > 3) {
+                    if (bestChunks.size > MAX_SEARCH_RESULTS) {
                         bestChunks.poll()
                     }
                 }
@@ -100,6 +103,7 @@ class ViewRagDocumentScreenStateHolder(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun cosineSimilarity(left: FloatArray, right: FloatArray): Double {
         if (left.isEmpty() || right.isEmpty() || left.size != right.size) return Double.NEGATIVE_INFINITY
 

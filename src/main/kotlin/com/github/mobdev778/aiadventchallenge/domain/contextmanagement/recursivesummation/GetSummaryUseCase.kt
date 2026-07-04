@@ -24,32 +24,48 @@ class GetSummaryUseCase(
      * @return "саммари".
      */
     suspend fun invoke(messages: List<ChatMessage>): ChatMessage? {
-        val chatText = messages.mapNotNull {
+        val chatText = buildChatText(messages)
+        val prompt = buildSummaryPrompt(chatText)
+        val baseModel = settingsRepository.getSettings().baseModel.trim().replace("\n", "")
+        return executeSummaryRequest(messages, baseModel, prompt)
+    }
+
+    private fun buildChatText(messages: List<ChatMessage>): String {
+        return messages.mapNotNull {
             when (it.type) {
                 MessageType.User -> "Пользователь: ${it.text}"
                 MessageType.Bot -> "Ассистент: ${it.text}"
                 else -> null
             }
         }.joinToString("\n")
+    }
 
-        val prompt =
-            "Ты — модуль сжатия контекста диалога. Твоя задача — превратить чат в одну компактную, но информационно плотную выжимку (summary).\n" +
-                    "\n" +
-                    "        КРИТИЧЕСКИЕ ПРАВИЛА:\n" +
-                    "        1. Сохраняй все конкретные факты: имена, даты, числа, названия технологий, ссылки, коды ошибок и цитаты.\n" +
-                    "        2. Четко фиксируй суть: кто (пользователь или ассистент), какое действие совершил, какую проблему решил или какой вопрос задал.\n" +
-                    "        3. Опускай весь \"шум\": приветствия, вежливость, слова-паразиты и вводные фразы (например, вместо \"Пользователь вежливо поздоровался и спросил...\" пиши \"Запрос пользователя:...\").\n" +
-                    "        4. Формат вывода должен быть максимально сжатым (список тезисов или плотный текст). Никаких вводных слов от себя (\"Вот ваше краткое содержание:\"). Только сам результат.\n" +
+    private fun buildSummaryPrompt(chatText: String): String {
+        return "Ты — модуль сжатия контекста диалога. " +
+                "Твоя задача — превратить чат в одну компактную, но информационно плотную выжимку (summary).\n" +
+                "\n" +
+                "        КРИТИЧЕСКИЕ ПРАВИЛА:\n" +
+                "        1. Сохраняй все конкретные факты: имена, даты, числа, названия технологий, " +
+                "ссылки, коды ошибок и цитаты.\n" +
+                "        2. Четко фиксируй суть: кто (пользователь или ассистент), какое действие совершил, " +
+                "какую проблему решил или какой вопрос задал.\n" +
+                "        3. Опускай весь \"шум\": приветствия, вежливость, слова-паразиты и вводные фразы " +
+                "(например, вместо \"Пользователь вежливо поздоровался и спросил...\" " +
+                "пиши \"Запрос пользователя:...\").\n" +
+                "        4. Формат вывода должен быть максимально сжатым (список тезисов или плотный текст). " +
+                "Никаких вводных слов от себя (\"Вот ваше краткое содержание:\"). Только сам результат.\n" +
         "\n" +
                 "        Входные сообщения для сжатия:\n" +
                 "        ${chatText}\n" +
                 "\n" +
                 "        Результат сжатия:"
+    }
 
-        val baseModel = settingsRepository.getSettings().baseModel
-            .trim()
-            .replace("\n", "")
-
+    private suspend fun executeSummaryRequest(
+        messages: List<ChatMessage>,
+        baseModel: String,
+        prompt: String,
+    ): ChatMessage? {
         var result: ChatMessage? = null
         runCatching {
             chatClient.execute(
