@@ -36,6 +36,7 @@ abstract class BaseAgent(
     ): AgentResponse {
         // 1. СБОРКА СИСТЕМНОГО ПРОМПТА ИЗ ТРЕХ СЛОЕВ ПАМЯТИ
         val systemPrompt = SystemPromptBuilder()
+            .chatId(request.chatId)
             .profile(context.profile)     // Долговременная память
             .context(context.taskContext!!) // Рабочая память
             .query(request.query)

@@ -5,6 +5,7 @@ import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagFilterType
 import com.github.mobdev778.aiadventchallenge.domain.rag.queryrewriter.QueryRewriter
 import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.RankerFactory
 import org.koin.core.annotation.Single
+import java.util.UUID
 
 @Single
 class RankedRagSearcher(
@@ -14,7 +15,7 @@ class RankedRagSearcher(
     private val rankerFactory: RankerFactory,
 ) : RagSearcher {
 
-    override suspend fun search(query: String): List<RagSearchResult> {
+    override suspend fun search(documentId: UUID, query: String, maxResults: Int): List<RagSearchResult> {
         val config = configRepository.getConfig()
 
         val result = ArrayList<RagSearchResult>()
@@ -23,10 +24,10 @@ class RankedRagSearcher(
         if (config.useQueryRewriting) {
             val queries = queryRewriter.getQueries(query, QUERY_REWRITE_COUNT)
             queries.forEach {
-                result.addAll(searcher.search(it))
+                result.addAll(searcher.search(documentId, it, config.topKBefore))
             }
         } else {
-            result.addAll(searcher.search(query))
+            result.addAll(searcher.search(documentId, query, config.topKAfter))
         }
 
         // 2) затем используем ranker для ресортировки результатов

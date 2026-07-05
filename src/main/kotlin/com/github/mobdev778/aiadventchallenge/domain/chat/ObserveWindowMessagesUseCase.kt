@@ -1,7 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.chat
 
-import com.github.mobdev778.aiadventchallenge.data.chat.repository.ChatRepository
 import com.github.mobdev778.aiadventchallenge.data.chat.repository.StickyFactsRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 import com.github.mobdev778.aiadventchallenge.domain.contextmanagement.NoStrategy
@@ -25,7 +25,7 @@ import java.util.UUID
  */
 @Single
 class ObserveWindowMessagesUseCase(
-    private val chatRepository: ChatRepository,
+    private val chatRepository: RagChatRepository,
     private val settingsRepository: SettingsRepository,
     private val getStickyFactsUseCase: GetStickyFactsUseCase,
     private val convertTextToMapUseCase: ConvertTextToMapUseCase,

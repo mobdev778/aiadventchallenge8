@@ -3,7 +3,7 @@ package com.github.mobdev778.aiadventchallenge.domain.mymcpserver
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.model.McpServer
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.model.MyMcpServerState
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.rag.MyMcpRagSearchServer
-import kotlinx.coroutines.CoroutineScope
+import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.ragchat.MyMcpRagChatServer
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -13,14 +13,15 @@ import java.util.UUID
 
 @Single
 class MyMcpServerInteractor(
-    scope: CoroutineScope,
     ragServer: MyMcpRagSearchServer,
+    ragChatServer: MyMcpRagChatServer,
 ) {
 
     private val servers: List<MyMcpServer> = listOf(
         MyMcpReadFileServer(),
         MyMcpServerSaveToFileServer(),
         ragServer,
+        ragChatServer,
     )
 
     val localServersFlow: Flow<List<McpServer>> = combine(

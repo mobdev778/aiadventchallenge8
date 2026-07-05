@@ -1,27 +1,29 @@
 package com.github.mobdev778.aiadventchallenge.domain.rag
 
-import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagConfigRepository
 import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRepository
 import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagDocumentChunk
 import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.RankerFactory
-import kotlinx.coroutines.flow.first
+import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.cosineSimilarity
+import kotlinx.coroutines.flow.firstOrNull
 import org.koin.core.annotation.Single
 import java.util.PriorityQueue
-import kotlin.math.sqrt
+import java.util.UUID
 
 @Single
 class SimpleRagSearcher(
     private val documentRepository: RagDocumentRepository,
-    private val configRepository: RagConfigRepository,
     private val rankerFactory: RankerFactory,
 ) : RagSearcher {
 
-    override suspend fun search(query: String): List<RagSearchResult> {
-        val config = configRepository.getConfig()
+    override suspend fun search(
+        documentId: UUID,
+        query: String,
+        maxResults: Int
+    ): List<RagSearchResult> {
+        val document = documentRepository.observeDocuments().firstOrNull()
+            ?.firstOrNull { it.id == documentId } ?: return emptyList()
 
-        val document = documentRepository.observeDocuments().first().firstOrNull() ?: return emptyList()
-
-        val queryVector = RagChunkGenerator(document.id, rankerFactory.embeddingModel)
+        val queryVector = RagChunkGenerator(documentId, rankerFactory.embeddingModel)
             .generate(section = 0, text = query)
             .vector
 
@@ -33,16 +35,16 @@ class SimpleRagSearcher(
 
         while (true) {
             val page = documentRepository.getChunksPage(
-                documentId = document.id,
+                documentId = documentId,
                 limit = pageSize,
                 offset = offset,
             )
             if (page.isEmpty()) break
 
             page.forEach { chunk ->
-                val score = cosineSimilarity(queryVector, chunk.vector)
+                val score = queryVector.cosineSimilarity(chunk.vector)
                 bestChunks.offer(score to chunk)
-                if (bestChunks.size > config.topKBefore) {
+                if (bestChunks.size > maxResults) {
                     bestChunks.poll()
                 }
             }
@@ -65,29 +67,6 @@ class SimpleRagSearcher(
         println("!!! RAG searcher. results: ${results}")
 
         return results
-    }
-
-    private fun cosineSimilarity(left: FloatArray, right: FloatArray): Double {
-        if (left.isEmpty() || right.isEmpty() || left.size != right.size) return Double.NEGATIVE_INFINITY
-
-        var dot = 0.0
-        var leftNorm = 0.0
-        var rightNorm = 0.0
-
-        for (index in left.indices) {
-            val l = left[index].toDouble()
-            val r = right[index].toDouble()
-            dot += l * r
-            leftNorm += l * l
-            rightNorm += r * r
-        }
-
-        val result = if (leftNorm == 0.0 || rightNorm == 0.0) {
-            Double.NEGATIVE_INFINITY
-        } else {
-            dot / (sqrt(leftNorm) * sqrt(rightNorm))
-        }
-        return result
     }
 
     companion object {

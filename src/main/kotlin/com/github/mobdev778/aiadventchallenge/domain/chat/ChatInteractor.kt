@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.chat
 
-import com.github.mobdev778.aiadventchallenge.data.chat.repository.ChatRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
 import com.github.mobdev778.aiadventchallenge.data.taskcontext.repository.TaskContextRepository
 import com.github.mobdev778.aiadventchallenge.domain.agent.AgentOrchestrator
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
@@ -29,7 +29,7 @@ import java.util.UUID
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @Single
 class ChatInteractor(
-    private val chatRepository: ChatRepository,
+    private val ragChatRepository: RagChatRepository,
     private val observeWindowMessagesUseCase: ObserveWindowMessagesUseCase,
     private val taskContextRepository: TaskContextRepository,
     private val agentOrchestrator: AgentOrchestrator,
@@ -42,11 +42,11 @@ class ChatInteractor(
     private var windowMessages: List<ChatMessage> = emptyList()
 
     fun observeChat(chatId: UUID): Flow<Chat?> =
-        chatRepository.observeChat(chatId)
+        ragChatRepository.observeChat(chatId)
             .flowOn(Dispatchers.IO)
 
     fun observeMessages(chatId: UUID): Flow<List<ChatMessage>> =
-        chatRepository.observeMessages(chatId)
+        ragChatRepository.observeMessages(chatId)
             .flowOn(Dispatchers.IO)
 
     fun observeWindowMessages(chatId: UUID): Flow<List<ChatMessage>> =
@@ -61,7 +61,7 @@ class ChatInteractor(
         .distinctUntilChanged()
 
     fun observeTaskContext(chatId: UUID): Flow<TaskContext?> =
-        chatRepository.observeChat(chatId)
+        ragChatRepository.observeChat(chatId)
             .flatMapLatest { chat ->
                 if (chat?.taskContextId == null) {
                     flowOf(null)
@@ -71,7 +71,7 @@ class ChatInteractor(
             }
 
     suspend fun updateMessage(message: ChatMessage) {
-        chatRepository.add(message)
+        ragChatRepository.add(message)
     }
 
     suspend fun isAutoPlayEnabled(chatId: UUID): Boolean {
@@ -121,11 +121,11 @@ class ChatInteractor(
     private suspend fun handleAgentResponse(response: AgentResponse) {
         sentMessages.value = null
 
-        val chat = chatRepository.observeChat(response.request.chatId).first()!!
+        val chat = ragChatRepository.observeChat(response.request.chatId).first()!!
 
         if (response.taskContext != null) {
             taskContextRepository.saveTaskContext(response.taskContext)
-            chatRepository.add(chat.copy(taskContextId = response.taskContext.id))
+            ragChatRepository.add(chat.copy(taskContextId = response.taskContext.id))
         }
 
         val userMessage = ChatMessage(
@@ -150,7 +150,7 @@ class ChatInteractor(
             tokens = response.requestTokens,
             rank = 0,
         )
-        chatRepository.add(listOf(userMessage, botMessage))
+        ragChatRepository.add(listOf(userMessage, botMessage))
 
         val isAutoMessagePossible = containsAutoPlayMessage(response.message) &&
                 response.taskContext?.state != TaskState.Done &&
@@ -185,7 +185,7 @@ class ChatInteractor(
     }
 
     suspend fun deleteAllMessages(chatId: UUID) {
-        chatRepository.clearMessages(chatId)
+        ragChatRepository.clearMessages(chatId)
         taskContextRepository.clearTaskContext()
         stopAutoPlay(chatId)
     }

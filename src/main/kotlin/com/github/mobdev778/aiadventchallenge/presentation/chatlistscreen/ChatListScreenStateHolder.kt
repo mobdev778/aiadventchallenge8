@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen
 
-import com.github.mobdev778.aiadventchallenge.data.chat.repository.ChatRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.Chat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,10 +17,10 @@ private const val STATE_FLOW_TIMEOUT_MS = 5000L
 
 @Single
 class ChatListScreenStateHolder(
-    private val chatRepository: ChatRepository,
+    private val ragChatRepository: RagChatRepository,
     private val scope: CoroutineScope,
 ) {
-    val chats: StateFlow<List<Chat>> = chatRepository
+    val chats: StateFlow<List<Chat>> = ragChatRepository
         .observeChats()
         .flowOn(Dispatchers.IO)
         .stateIn(scope, SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS), emptyList())
@@ -62,14 +62,14 @@ class ChatListScreenStateHolder(
                 parentId = null,
                 taskContextId = null,
             )
-            chatRepository.add(chat)
+            ragChatRepository.add(chat)
             commands.tryEmit(ChatListScreenCommand.OpenChat(chat.id))
         }
     }
 
     private fun deleteChat(chatId: UUID) {
         scope.launch(Dispatchers.IO) {
-            chatRepository.deleteChat(chatId)
+            ragChatRepository.deleteChat(chatId)
         }
     }
 }

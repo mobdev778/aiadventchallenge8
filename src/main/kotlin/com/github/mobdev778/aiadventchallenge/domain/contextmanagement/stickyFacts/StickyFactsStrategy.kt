@@ -1,7 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.contextmanagement.stickyFacts
 
-import com.github.mobdev778.aiadventchallenge.data.chat.repository.ChatRepository
 import com.github.mobdev778.aiadventchallenge.data.chat.repository.StickyFactsRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.MessageType
 import com.github.mobdev778.aiadventchallenge.domain.contextmanagement.ContextManagementStrategy
@@ -15,7 +15,7 @@ class StickyFactsStrategy(
     private val convertMapToTextUseCase: ConvertMapToTextUseCase,
     private val maxMessages: Int,
     private val stickyFactsRepository: StickyFactsRepository,
-    private val chatRepository: ChatRepository,
+    private val chatRepository: RagChatRepository,
 ) : ContextManagementStrategy {
 
     override suspend fun selectMessages(chatId: UUID, history: List<ChatMessage>): List<ChatMessage> {

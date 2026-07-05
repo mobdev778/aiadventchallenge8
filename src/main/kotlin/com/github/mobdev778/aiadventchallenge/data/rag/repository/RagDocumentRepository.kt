@@ -45,6 +45,14 @@ class RagDocumentRepository(
         ragDocumentDao.deleteById(documentId.toString())
     }
 
+    suspend fun deleteChunks(documentId: UUID) {
+        ragDocumentDao.deleteChunks(documentId.toString())
+    }
+
+    suspend fun deleteChunk(id: UUID) {
+        ragDocumentDao.deleteChunkById(id.toString())
+    }
+
     private fun RagDocumentEntity.toDomain(): RagDocument =
         RagDocument(
             id = UUID.fromString(id),

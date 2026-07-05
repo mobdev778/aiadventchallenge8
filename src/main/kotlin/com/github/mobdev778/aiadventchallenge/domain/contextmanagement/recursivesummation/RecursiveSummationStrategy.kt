@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.contextmanagement.recursivesummation
 
-import com.github.mobdev778.aiadventchallenge.data.chat.repository.ChatRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
 import com.github.mobdev778.aiadventchallenge.domain.chat.model.ChatMessage
 import com.github.mobdev778.aiadventchallenge.domain.contextmanagement.ContextManagementStrategy
 import java.util.UUID
@@ -11,7 +11,7 @@ import java.util.UUID
 class RecursiveSummationStrategy(
     private val maxMessages: Int,
     private val getSummaryUseCase: GetSummaryUseCase,
-    private val chatRepository: ChatRepository,
+    private val chatRepository: RagChatRepository,
 ) : ContextManagementStrategy {
 
     override suspend fun selectMessages(

@@ -42,4 +42,10 @@ interface RagDocumentDao {
 
     @Query("DELETE FROM rag_documents WHERE id = :id")
     suspend fun deleteById(id: String)
+
+    @Query("DELETE FROM rag_document_chunks WHERE document_id = :documentId")
+    suspend fun deleteChunks(documentId: String)
+
+    @Query("DELETE FROM rag_document_chunks WHERE id = :id")
+    suspend fun deleteChunkById(id: String)
 }

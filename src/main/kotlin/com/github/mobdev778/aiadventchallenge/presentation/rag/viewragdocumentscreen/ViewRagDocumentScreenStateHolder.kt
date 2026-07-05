@@ -4,6 +4,7 @@ import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRep
 import com.github.mobdev778.aiadventchallenge.domain.rag.RagChunkGenerator
 import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagDocumentChunk
 import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.RankerFactory
+import com.github.mobdev778.aiadventchallenge.domain.rag.ranker.cosineSimilarity
 import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistscreen.model.RagDocumentListItem
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.model.ViewRagDocumentScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.model.ViewRagDocumentSearchResult
@@ -79,7 +80,7 @@ class ViewRagDocumentScreenStateHolder(
                 if (page.isEmpty()) break
 
                 page.forEach { chunk ->
-                    val similarity = cosineSimilarity(queryVector, chunk.vector)
+                    val similarity = queryVector.cosineSimilarity(chunk.vector)
                     bestChunks.offer(similarity to chunk)
                     if (bestChunks.size > MAX_SEARCH_RESULTS) {
                         bestChunks.poll()
@@ -101,26 +102,5 @@ class ViewRagDocumentScreenStateHolder(
 
             _state.update { it.copy(isSearching = false, results = results) }
         }
-    }
-
-    @Suppress("ReturnCount")
-    private fun cosineSimilarity(left: FloatArray, right: FloatArray): Double {
-        if (left.isEmpty() || right.isEmpty() || left.size != right.size) return Double.NEGATIVE_INFINITY
-
-        var dot = 0.0
-        var leftNorm = 0.0
-        var rightNorm = 0.0
-
-        for (index in left.indices) {
-            val l = left[index].toDouble()
-            val r = right[index].toDouble()
-            dot += l * r
-            leftNorm += l * l
-            rightNorm += r * r
-        }
-
-        if (leftNorm == 0.0 || rightNorm == 0.0) return Double.NEGATIVE_INFINITY
-
-        return dot / (sqrt(leftNorm) * sqrt(rightNorm))
     }
 }

@@ -3,15 +3,20 @@ package com.github.mobdev778.aiadventchallenge.domain.agent.agents
 import com.github.mobdev778.aiadventchallenge.domain.invariant.Invariant
 import com.github.mobdev778.aiadventchallenge.domain.profile.model.Profile
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskContext
-import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
+import java.util.UUID
 
 class SystemPromptBuilder {
 
+    private var chatId: UUID? = null
     private var query: String = ""
     private lateinit var ctx: TaskContext
     private lateinit var profile: Profile
     private lateinit var invariants: List<Invariant>
     private lateinit var agentRules: String
+
+    fun chatId(chatId: UUID) = apply {
+        this.chatId = chatId
+    }
 
     fun query(query: String) = apply {
         this.query = query
@@ -38,13 +43,14 @@ class SystemPromptBuilder {
         val totalSteps = ctx.plan.size
 
         return """
+            chatId: \"$chatId\"
             [STATE] ${ctx.state}, step ${ctx.step}/$totalSteps
             [CURRENT] ${ctx.current}
             [PLAN] ${ctx.plan.joinToString(separator = ", ")}
             [DONE] ${ctx.done.joinToString(separator = ", ")}
             [PROFILE] ${profile.content}
             [QUERY] $query
-            
+
             Rules:
                 - Работай только в рамках current step
                 - Не перепрыгивай этапы

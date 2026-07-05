@@ -1,10 +1,7 @@
 package com.github.mobdev778.aiadventchallenge.domain.mymcpserver.rag
 
-import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
-import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
-import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.ChatRequest
-import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
-import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Role
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRepository
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.BaseMyMcpServer
 import com.github.mobdev778.aiadventchallenge.domain.rag.RankedRagSearcher
 import com.github.mobdev778.aiadventchallenge.domain.rag.model.RagFilterType
@@ -18,6 +15,7 @@ import io.modelcontextprotocol.kotlin.sdk.types.ServerCapabilities
 import io.modelcontextprotocol.kotlin.sdk.types.TextContent
 import io.modelcontextprotocol.kotlin.sdk.types.ToolSchema
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonPrimitive
@@ -29,8 +27,9 @@ import org.koin.core.annotation.Single
 class MyMcpRagSearchServer(
     private val rankerFactory: RankerFactory,
     private val ragSearcher: RankedRagSearcher,
-    private val chatClient: ChatClient,
-    private val settingsRepository: SettingsRepository,
+    private val ragRussianFilter: RagRussianFilter,
+    private val documentRepository: RagDocumentRepository,
+    private val chatRepository: RagChatRepository,
 ) : BaseMyMcpServer(
     name = "MyMcpRagSearchServer",
     description = "Локальный MCP-сервер семантического RAG-поиска по документам " +
@@ -47,7 +46,7 @@ class MyMcpRagSearchServer(
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
-                name = "my-mcp-vector-document-searcher-server",
+                name = "my-mcp-rag-search-server",
                 version = "1.1.0",
             ),
             options = ServerOptions(
@@ -67,6 +66,12 @@ class MyMcpRagSearchServer(
                     "3. Never invent facts outside the provided 'text' fragments.",
         )
 
+        addTool(server)
+
+        return server
+    }
+
+    private fun addTool(server: Server) {
         server.addTool(
             name = "searchKnowledgeBase",
             description = "Searches the document knowledge base using semantic/vector search. " +
@@ -90,12 +95,10 @@ class MyMcpRagSearchServer(
                 textResult(executeVectorSearch(query))
             }
         }
-
-        return server
     }
 
     private suspend fun executeVectorSearch(query: String): String {
-        val query = filterRussian(query)
+        val query = ragRussianFilter.filter(query)
 
         println("!!! MyMCP Vector Search: executeVectorSearch(query='$query')")
         if (query.isBlank()) return Json.encodeToString(
@@ -104,7 +107,13 @@ class MyMcpRagSearchServer(
         )
 
         val foundResults = try {
-            ragSearcher.search(query)
+            val documents = documentRepository.observeDocuments().firstOrNull()
+                ?: throw IllegalStateException("No documents found")
+            val chats = chatRepository.observeChats().firstOrNull() ?: emptyList()
+            val chatIds = chats.map { it.id }
+            val documentId = documents.filter { !chatIds.contains(it.id) }.firstOrNull()?.id
+                ?: throw IllegalStateException("Unable to find non-chat document")
+            ragSearcher.search(documentId, query, 1)
         } catch (e: Exception) {
             println("!!! MyMCP Error during vector search: ${e.message}")
             emptyList()
@@ -145,42 +154,6 @@ class MyMcpRagSearchServer(
         }
 
         return Json.encodeToString(MyMcpRagSearchResponseDto.serializer(), response)
-    }
-
-
-    private suspend fun filterRussian(query: String): String {
-        return if (hasRussianLetters(query)) {
-            val settings = settingsRepository.getSettings()
-            val response = chatClient.execute(
-                request = ChatRequest(
-                    model = settings.baseModel,
-                    messages = listOf(
-                        Message(
-                            role = Role.System,
-                            content = "Translate user prompt into English",
-                        ),
-                        Message(
-                            role = Role.User,
-                            content = query
-                        )
-                    )
-                )
-            )
-            response.choices.firstOrNull()?.message?.content ?: query
-        } else {
-            query
-        }
-    }
-
-    private val RUSSIAN_LETTERS = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя".toSet()
-
-    private fun hasRussianLetters(query: String): Boolean {
-        for (c in query) {
-            if (RUSSIAN_LETTERS.contains(c)) {
-                return true
-            }
-        }
-        return false
     }
 
     private fun textResult(text: String): CallToolResult =
