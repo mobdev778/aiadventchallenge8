@@ -29,7 +29,7 @@ class MyMcpRagChatServer(
     description = "Локальный MCP-сервер семантического RAG-поиска по сообщениям чата " +
             "с верификацией источников",
     port = 3005,
-    launchAtStartup = true,
+    launchAtStartup = false,
 ) {
 
     override fun createServer(): Server {

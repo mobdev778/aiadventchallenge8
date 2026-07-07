@@ -42,7 +42,7 @@ abstract class BaseMyMcpServer(
     override suspend fun start() {
         if (engine != null) return
 
-        val newEngine = embeddedServer(Netty, port = port, host = "localhost") {
+        val newEngine = embeddedServer(Netty, port = port) {
             configureMyMcpServer()
         }
         newEngine.start(wait = false)

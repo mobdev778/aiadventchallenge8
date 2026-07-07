@@ -8,4 +8,5 @@ data class ChatUiMessage(
     val insideWindow: Boolean,         // признак попадания сообщения "в окно"
     val children: List<ChatUiMessage>, // список из "детей" текущего сообщения
     val expanded: Boolean,             // признак того, раскрыт список детей или не раскрыт
+    val time: Long,
 )

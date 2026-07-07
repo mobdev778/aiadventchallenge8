@@ -81,7 +81,7 @@ dependencies {
     }
 
     // зависимости для старта MCP-сервера
-    implementation("io.modelcontextprotocol:kotlin-sdk-server-jvm:0.9.0") {
+    implementation("io.modelcontextprotocol:kotlin-sdk-server-jvm:0.14.0") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     }

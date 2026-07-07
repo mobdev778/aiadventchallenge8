@@ -22,7 +22,7 @@ class MyMcpReadFileServer : BaseMyMcpServer(
     name = "MyMcpReadFileServer",
     description = "Локальный MCP-сервер чтения файлов проекта",
     port = 3000,
-    launchAtStartup = true,
+    launchAtStartup = false,
 ) {
 
     override fun createServer(): Server {

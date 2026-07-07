@@ -103,7 +103,11 @@ class RagChatRepository(
             vector = messageVector,
         )
 
-        documentRepository.add(chunk)
+        try {
+            documentRepository.add(chunk)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private suspend fun addRagMessage(message: ChatMessage) {
@@ -121,7 +125,11 @@ class RagChatRepository(
             text = text,
             vector = messageVector,
         )
-        documentRepository.add(chunk)
+        try {
+            documentRepository.add(chunk)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private suspend fun convertToDto(message: ChatMessage): RagChatMessageDto {

@@ -99,7 +99,8 @@ class ChatScreenStateHolder(
                     message = it,
                     insideWindow = windowIds.contains(it.id),
                     children = emptyList(),
-                    expanded = expandedIds.contains(it.id)
+                    expanded = expandedIds.contains(it.id),
+                    time = it.time
                 )
             }
             .toMap()
@@ -129,7 +130,8 @@ class ChatScreenStateHolder(
                 message = intermediateState.sentMessage,
                 insideWindow = true,
                 children = emptyList(),
-                expanded = false
+                expanded = false,
+                time = intermediateState.sentMessage.time
             )
         } else windowMessages
 

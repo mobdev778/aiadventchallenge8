@@ -20,7 +20,7 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
     name = "MyMcpServerSaveToFileServer",
     description = "Локальный MCP-сервер сохранения Markdown-файлов в корень проекта",
     port = 3002,
-    launchAtStartup = true,
+    launchAtStartup = false,
 ) {
 
     override fun createServer(): Server {

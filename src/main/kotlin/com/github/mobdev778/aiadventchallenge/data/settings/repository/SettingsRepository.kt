@@ -69,8 +69,8 @@ class SettingsRepository(
             recursiveSummationMaxMessages = 6,
             stickyFactsMaxMessages = 6,
             apiKey = "",
-            baseUrl = "https://api.proxyapi.ru/openai/v1",
-            baseModel = "gpt-5.2",
+            baseUrl = "http://localhost:1234/v1",
+            baseModel = "qwen/qwen3-14b",
         )
     }
 }

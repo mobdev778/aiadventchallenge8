@@ -19,6 +19,9 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.Chat
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @Suppress("MagicNumber")
 private val BotAnswerColor = Color(0xFF04D9FF)
@@ -64,6 +67,15 @@ private fun getMessageStyle(type: MessageType, insideWindow: Boolean): MessageSt
     }
 }
 
+private const val TIME_PATTERN = "dd.MM.yyyy HH:mm"
+private val timeFormatter = DateTimeFormatter.ofPattern(TIME_PATTERN)
+    .withZone(ZoneId.systemDefault())
+
+private fun formatMessageTime(epochMillis: Long): String {
+    val formatted = timeFormatter.format(Instant.ofEpochMilli(epochMillis))
+    return "$formatted"
+}
+
 @Composable
 fun ChatMessageRow(
     message: ChatUiMessage,
@@ -91,6 +103,17 @@ fun ChatMessageRow(
                 .background(color = style.borderColor.copy(alpha = 0.06f), shape = shape)
                 .padding(horizontal = 10.dp, vertical = 8.dp),
         ) {
+            Text(
+                text = formatMessageTime(message.time),
+                color = style.borderColor,
+            )
+            Divider(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                orientation = Orientation.Horizontal,
+            )
+
             when (message.message.type) {
                 MessageType.StickyFacts -> {
                     Text(

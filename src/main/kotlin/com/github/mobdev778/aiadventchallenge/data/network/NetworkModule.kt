@@ -44,6 +44,7 @@ class NetworkModule {
         return OkHttpClient.Builder()
             .connectTimeout(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .addInterceptor(logging)
             .addInterceptor { chain ->
                 val newRequest = chain.request().newBuilder()
@@ -81,7 +82,8 @@ class NetworkModule {
     }
 
     companion object {
-        private const val CONNECT_TIMEOUT_SECONDS = 30L
+        private const val CONNECT_TIMEOUT_SECONDS = 600L
         private const val READ_TIMEOUT_SECONDS = 600L
+        private const val WRITE_TIMEOUT_SECONDS = 600L
     }
 }
