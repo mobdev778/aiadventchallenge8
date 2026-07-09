@@ -40,6 +40,7 @@ private data class MessageStyle(
     val rowPadding: Modifier,
 )
 
+@Suppress("MagicNumber")
 private fun getMessageStyle(type: MessageType, insideWindow: Boolean): MessageStyle {
     val alpha = if (insideWindow) 1.0f else 0.3f
     return when (type) {
