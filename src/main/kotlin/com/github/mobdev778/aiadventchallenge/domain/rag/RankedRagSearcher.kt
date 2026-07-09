@@ -53,9 +53,9 @@ class RankedRagSearcher(
                 filtered.filter {
                     val score = similarityRanker.rank(it.text, it.vector)
                     score >= config.minSimilarity
-                }
+                }.take(maxResults)
             }
-            else -> filtered
+            else -> filtered.take(maxResults)
         }
     }
 

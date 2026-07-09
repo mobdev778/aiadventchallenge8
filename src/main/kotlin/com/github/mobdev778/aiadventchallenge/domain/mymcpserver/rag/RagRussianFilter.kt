@@ -21,13 +21,9 @@ class RagRussianFilter(
                     model = settings.baseModel,
                     messages = listOf(
                         Message(
-                            role = Role.System,
-                            content = "Translate user prompt into English",
-                        ),
-                        Message(
                             role = Role.User,
-                            content = query
-                        )
+                            content = "Переведи текст из запроса пользователя на английский. Верни только перевод, без комментариев и дополнительных рассуждений. Вот текст: $query",
+                        ),
                     )
                 )
             )

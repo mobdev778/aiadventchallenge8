@@ -1,6 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.mymcpserver.rag
 
-import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagChatRepository
+import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagConfigRepository
 import com.github.mobdev778.aiadventchallenge.data.rag.repository.RagDocumentRepository
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.BaseMyMcpServer
 import com.github.mobdev778.aiadventchallenge.domain.rag.RankedRagSearcher
@@ -29,7 +29,7 @@ class MyMcpRagSearchServer(
     private val ragSearcher: RankedRagSearcher,
     private val ragRussianFilter: RagRussianFilter,
     private val documentRepository: RagDocumentRepository,
-    private val chatRepository: RagChatRepository,
+    private val ragConfigRepository: RagConfigRepository,
 ) : BaseMyMcpServer(
     name = "MyMcpRagSearchServer",
     description = "Локальный MCP-сервер семантического RAG-поиска по документам " +
@@ -38,16 +38,11 @@ class MyMcpRagSearchServer(
     launchAtStartup = true,
 ) {
 
-    companion object {
-        // Установите ваш порог релевантности (например, 0.65 для косинусного сходства)
-        private const val RELEVANCE_THRESHOLD = 0.73f
-    }
-
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
                 name = "my-mcp-rag-search-server",
-                version = "1.1.0",
+                version = "1.0.0",
             ),
             options = ServerOptions(
                 capabilities = ServerCapabilities(
@@ -66,12 +61,6 @@ class MyMcpRagSearchServer(
                     "3. Never invent facts outside the provided 'text' fragments.",
         )
 
-        addTool(server)
-
-        return server
-    }
-
-    private fun addTool(server: Server) {
         server.addTool(
             name = "searchKnowledgeBase",
             description = "Searches the document knowledge base using semantic/vector search. " +
@@ -81,9 +70,9 @@ class MyMcpRagSearchServer(
                     put("query", buildJsonObject {
                         put("type", JsonPrimitive("string"))
                         put(
-                            "description", JsonPrimitive(
-                                "The natural language search query or question to look up in the documents"
-                            )
+                            "description",
+                            JsonPrimitive(
+                                "The natural language search query or question to look up in the documents")
                         )
                     })
                 },
@@ -91,29 +80,30 @@ class MyMcpRagSearchServer(
             ),
         ) { request: CallToolRequest ->
             val query = request.params.arguments?.get("query")?.jsonPrimitive?.content.orEmpty()
-            runBlocking(Dispatchers.Default) {
+            runBlocking(Dispatchers.IO) {
                 textResult(executeVectorSearch(query))
             }
         }
+
+        return server
     }
 
     private suspend fun executeVectorSearch(query: String): String {
-        val query = ragRussianFilter.filter(query)
-
         println("!!! MyMCP Vector Search: executeVectorSearch(query='$query')")
         if (query.isBlank()) return Json.encodeToString(
             MyMcpRagSearchResponseDto.serializer(),
             MyMcpRagSearchResponseDto(status = "EMPTY_QUERY"),
         )
 
+        val enQuery = ragRussianFilter.filter(query)
+
         val foundResults = try {
             val documents = documentRepository.observeDocuments().firstOrNull()
                 ?: throw IllegalStateException("No documents found")
-            val chats = chatRepository.observeChats().firstOrNull() ?: emptyList()
-            val chatIds = chats.map { it.id }
-            val documentId = documents.filter { !chatIds.contains(it.id) }.firstOrNull()?.id
+            val documentId = documents.filter { !it.source.contains("[Chat]:") }.firstOrNull()?.id
                 ?: throw IllegalStateException("Unable to find non-chat document")
-            ragSearcher.search(documentId, query, 1)
+
+            ragSearcher.search(documentId, query, 5) + ragSearcher.search(documentId, enQuery, 5)
         } catch (e: Exception) {
             println("!!! MyMCP Error during vector search: ${e.message}")
             emptyList()
@@ -124,18 +114,38 @@ class MyMcpRagSearchServer(
         finalRanker.init(query)
         var minScore = 1.0
 
-        val filteredResults = foundResults.filter {
+        val config = ragConfigRepository.getConfig()
+
+        val filteredResults1 = foundResults.filter {
             val score = finalRanker.rank(it.text, it.vector)
             minScore = Math.min(minScore, score)
             println("!!! minScore: $minScore")
-            score >= RELEVANCE_THRESHOLD
+            if (config.useMinSimilarity) {
+                score >= config.minSimilarity
+            } else {
+                true
+            }
         }
+
+        finalRanker.init(enQuery)
+        val filteredResults2 = foundResults.filter {
+            val score = finalRanker.rank(it.text, it.vector)
+            minScore = Math.min(minScore, score)
+            println("!!! minScore: $minScore")
+            if (config.useMinSimilarity) {
+                score >= config.minSimilarity
+            } else {
+                true
+            }
+        }
+
+        val filteredResults = (filteredResults1 + filteredResults2).take(config.topKAfter)
 
         val response = if (filteredResults.isEmpty()) {
             // 2. Если ничего не нашли выше порога — возвращаем специальный маркер для LLM
             MyMcpRagSearchResponseDto(
                 status = "LOW_RELEVANCE",
-                message = "No documents matched the query above the required relevance threshold ($RELEVANCE_THRESHOLD). Min score: $minScore",
+                message = "No documents matched the query above the required relevance threshold (${config.minSimilarity}). Min score: $minScore",
                 chunks = emptyList(),
             )
         } else {
@@ -147,7 +157,7 @@ class MyMcpRagSearchServer(
                         source = result.source,
                         section = result.section,
                         text = result.text,
-                        relevance_score = result.score,
+                        relevanceScore = result.score,
                     )
                 },
             )

@@ -69,7 +69,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:5.3.2")
     implementation("org.slf4j:slf4j-api:1.7.36")
 
-    implementation("io.modelcontextprotocol:kotlin-sdk-client-jvm:0.9.0") {
+    implementation("io.modelcontextprotocol:kotlin-sdk-client-jvm:0.14.0") {
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core")
         exclude(group = "org.jetbrains.kotlinx", module = "kotlinx-coroutines-core-jvm")
     }
