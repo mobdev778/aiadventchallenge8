@@ -19,6 +19,16 @@ import org.jetbrains.jewel.ui.component.Text
 @Suppress("MagicNumber")
 private val NeonHighlightedTextColor = Color(0xFF04D9FF)
 
+/**
+ * Контент экрана просмотра файла логов.
+ *
+ * Отображает заголовок с именем файла через компонент [ScreenHeader] и список строк логов,
+ * используя неоновую подсветку текста. Если логов нет, выводится сообщение об их отсутствии.
+ * Компонент полностью задаёт UI-представление экрана логов, опираясь на переданное состояние.
+ *
+ * @param state Состояние экрана ([LogsFileScreenState]), содержащее имя файла и список записей логов.
+ *              При пустом имени файла заголовок отображается как "Logs".
+ */
 @Composable
 fun LogsFileScreenContent(
     state: LogsFileScreenState,

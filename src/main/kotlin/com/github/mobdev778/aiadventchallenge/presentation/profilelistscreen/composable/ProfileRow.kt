@@ -17,6 +17,17 @@ import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.RadioButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Composable-элемент, представляющий одну строку в списке профилей.
+ *
+ * Отображает радио-кнопку для выбора профиля, имя профиля (кликабельное для редактирования)
+ * и кнопку удаления. Кнопка удаления недоступна для дефолтного профиля, который нельзя удалить.
+ *
+ * @param profile Модель данных профиля, содержащая его идентификатор, имя и статус выбранности.
+ * @param onSelect Колбэк, вызываемый при выборе профиля (клик по всей строке или радио-кнопке).
+ * @param onEdit Колбэк, вызываемый при клике на имя профиля для его редактирования.
+ * @param onDelete Колбэк, вызываемый при нажатии на кнопку удаления профиля.
+ */
 @Composable
 fun ProfileRow(
     profile: Profile,

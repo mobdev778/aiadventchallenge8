@@ -12,8 +12,25 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.ui.component.Slider
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Шаг изменения значения слайдера для чисел с плавающей точкой.
+ */
 private const val FLOAT_SLIDER_STEP_INCREMENT = 0.05f
 
+/**
+ * Компонент настройки с ползунком для выбора значения с плавающей точкой.
+ *
+ * Используется на экране списка документов RAG для задания числовых параметров
+ * с визуальной обратной связью в виде метки, минимального и максимального значений,
+ * а также дискретного слайдера.
+ *
+ * @param label текстовая метка настройки, отображаемая над слайдером.
+ * @param value текущее выбранное значение в диапазоне [min]..[max].
+ * @param min минимально допустимое значение.
+ * @param max максимально допустимое значение.
+ * @param onValueChange callback, вызываемый при изменении положения слайдера,
+ *        получает новое значение типа [Double].
+ */
 @Composable
 fun FloatSliderSetting(
     label: String,

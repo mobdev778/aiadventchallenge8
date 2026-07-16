@@ -29,6 +29,18 @@ private val ProgressBarBackgroundColor = Color(0xFF2B2B2B)
 @Suppress("MagicNumber")
 private val ProgressBarFillColor = Color(0xFF39FF14)
 
+/**
+ * Основное содержимое экрана добавления RAG-документа.
+ *
+ * Отображает заголовок "Добавление RAG документа" с неоновой подсветкой,
+ * прогресс-бар операции, процент выполнения и кнопку прерывания.
+ * Компонент связывает состояние [AddingRagDocumentScreenState] с обработчиком
+ * пользовательских событий [AddingRagDocumentScreenEvent] через паттерн UDF.
+ *
+ * @param state Текущее неизменяемое состояние экрана, включающее прогресс операции.
+ * @param onEvent Функция для отправки событий наверх (например,
+ *   [AddingRagDocumentScreenEvent.OnAbortClick] при нажатии кнопки "Прервать").
+ */
 @Composable
 fun AddingRagDocumentScreenContent(
     state: AddingRagDocumentScreenState,
@@ -63,6 +75,17 @@ fun AddingRagDocumentScreenContent(
     }
 }
 
+/**
+ * Визуальный индикатор прогресса в стиле неоновой полосы.
+ *
+ * Представляет собой прямоугольный контейнер со скруглёнными краями, внутри которого
+ * отображается заполненная часть, отражающая текущий прогресс. Используется для
+ * наглядного отображения хода операции добавления документа.
+ *
+ * @param progress Значение прогресса от 0.0 (ничего не выполнено) до 1.0 (завершено).
+ *   Автоматически ограничивается диапазоном [0, 1].
+ * @param modifier Модификатор, применяемый к корневому контейнеру прогресс-бара.
+ */
 @Composable
 private fun RagDocumentProgressBar(
     progress: Float,

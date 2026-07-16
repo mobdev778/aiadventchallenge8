@@ -30,6 +30,14 @@ private val MediumUsageColor = Color(0xFFFF5C00)
 @Suppress("MagicNumber")
 private val LowUsageColor = Color(0xFF39FF14)
 
+/**
+ * Composable-индикатор состояния управления контекстом диалога.
+ * Отображает текстовое описание текущей стратегии и, при необходимости,
+ * прогресс-бар, показывающий заполненность контекстного окна.
+ *
+ * @param state текущее состояние управления контекстом ([ContextManagementState]).
+ * @param modifier модификатор для корневого контейнера.
+ */
 @Composable
 fun ContextManagementIndicator(
     state: ContextManagementState,
@@ -75,6 +83,12 @@ fun ContextManagementIndicator(
     }
 }
 
+/**
+ * Возвращает текстовое описание стратегии управления контекстом для индикатора.
+ *
+ * @param state состояние контекста.
+ * @return строка с описанием, например "Sliding Window: 3 из 10 сообщений".
+ */
 private fun indicatorText(state: ContextManagementState): String {
     return when (state) {
         is ContextManagementState.None -> {
@@ -95,6 +109,13 @@ private fun indicatorText(state: ContextManagementState): String {
     }
 }
 
+/**
+ * Вычисляет долю использованного контекстного окна (от 0.0 до 1.0).
+ * Применимо только для стратегий [ContextManagementState.SlidingWindow] и [ContextManagementState.StickFacts].
+ *
+ * @param state состояние контекста.
+ * @return доля заполненности или null, если расчёт невозможен (например, [ContextManagementState.None], [ContextManagementState.Branching] или maxMessages ≤ 0).
+ */
 private fun usedRatio(state: ContextManagementState): Double? {
     return when (state) {
         is ContextManagementState.SlidingWindow -> {
@@ -109,6 +130,14 @@ private fun usedRatio(state: ContextManagementState): Double? {
     }
 }
 
+/**
+ * Определяет цвет индикатора на основе доли использования контекста.
+ * Белый для null (неприменимый случай), красный при высокой загрузке (≥75%),
+ * оранжевый при средней (≥50%), зелёный при низкой.
+ *
+ * @param usedRatio доля использования окна (может быть null).
+ * @return цвет для текста и прогресс-бара.
+ */
 private fun indicatorColor(usedRatio: Double?): Color {
     val ratio = usedRatio ?: return Color.White
     return when {
@@ -118,6 +147,13 @@ private fun indicatorColor(usedRatio: Double?): Color {
     }
 }
 
+/**
+ * Отрисовывает настраиваемый прогресс-бар, заполняемый пропорционально переданному значению.
+ *
+ * @param progress прогресс заполнения от 0f до 1f.
+ * @param indicatorColor цвет заполнения.
+ * @param modifier модификатор для контейнера прогресс-бара.
+ */
 @Composable
 private fun IndicatorProgressBar(
     progress: Float,

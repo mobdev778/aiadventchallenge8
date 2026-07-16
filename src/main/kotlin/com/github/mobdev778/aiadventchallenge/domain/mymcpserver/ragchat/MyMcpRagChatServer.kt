@@ -21,6 +21,20 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+/**
+ * Локальный MCP-сервер, реализующий семантический (векторный) поиск по сообщениям чата
+ * с верификацией источников.
+ *
+ * Сервер работает поверх протокола [Model Context Protocol](https://modelcontextprotocol.io)
+ * и предоставляет единственный инструмент `searchChatMessages`, который позволяет внешним
+ * MCP-клиентам (например, AI-ассистентам) выполнять RAG-поиск по истории сообщений
+ * конкретного чата.
+ *
+ * Наследуется от [BaseMyMcpServer], используя общую инфраструктуру запуска и конфигурации
+ * MCP-серверов. Зависит от [RagChatRepository] для выполнения фактического поиска.
+ *
+ * @property ragChatRepository Репозиторий, обеспечивающий семантический поиск по сообщениям чата.
+ */
 @Single
 class MyMcpRagChatServer(
     private val ragChatRepository: RagChatRepository,
@@ -32,6 +46,17 @@ class MyMcpRagChatServer(
     launchAtStartup = false,
 ) {
 
+    /**
+     * Создаёт и конфигурирует экземпляр [Server] — ядро MCP-сервера.
+     *
+     * В процессе создания:
+     * - Устанавливаются метаданные сервера (название, версия).
+     * - Объявляются поддерживаемые возможности (tools).
+     * - Регистрируется инструмент `searchChatMessages`.
+     * - Задаются инструкции для AI-ассистента, описывающие правила использования инструмента.
+     *
+     * @return Сконфигурированный и готовый к запуску экземпляр [Server].
+     */
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
@@ -56,6 +81,18 @@ class MyMcpRagChatServer(
         return server
     }
 
+    /**
+     * Регистрирует инструмент `searchChatMessages` на переданном экземпляре [Server].
+     *
+     * Инструмент принимает два обязательных параметра:
+     * - `chatId` — UUID чата, в котором производится поиск.
+     * - `query` — поисковый запрос на естественном языке.
+     *
+     * Результат выполнения возвращается в виде JSON-строки, сериализованной из
+     * [MyMcpRagChatSearchResponseDto].
+     *
+     * @param server Экземпляр MCP-сервера, на котором регистрируется инструмент.
+     */
     private fun addTool(server: Server) {
         server.addTool(
             name = "searchChatMessages",
@@ -91,6 +128,21 @@ class MyMcpRagChatServer(
         }
     }
 
+    /**
+     * Выполняет семантический поиск сообщений в чате.
+     *
+     * Алгоритм работы:
+     * 1. Проверяет, что `chatIdStr` и `query` не пусты. При пустом значении возвращает
+     *    соответствующий статус ошибки (`EMPTY_CHAT_ID` или `EMPTY_QUERY`).
+     * 2. Парсит `chatIdStr` в [UUID]. При неудаче возвращает статус `INVALID_CHAT_ID`.
+     * 3. Вызывает [RagChatRepository.find] для выполнения векторного поиска.
+     * 4. Формирует и сериализует [MyMcpRagChatSearchResponseDto] с найденными сообщениями
+     *    либо со статусом `NO_RESULTS`, если ничего не найдено.
+     *
+     * @param chatIdStr Строковое представление UUID чата.
+     * @param query Поисковый запрос на естественном языке.
+     * @return JSON-строка, представляющая [MyMcpRagChatSearchResponseDto].
+     */
     private suspend fun executeChatSearch(chatIdStr: String, query: String): String {
         println("!!! MyMCP Chat Search: executeChatSearch(chatId='$chatIdStr', query='$query')")
 
@@ -146,6 +198,12 @@ class MyMcpRagChatServer(
         return Json.encodeToString(MyMcpRagChatSearchResponseDto.serializer(), response)
     }
 
+    /**
+     * Оборачивает текстовую строку в [CallToolResult], пригодный для возврата MCP-клиенту.
+     *
+     * @param text Текстовое содержимое результата (как правило, JSON-строка).
+     * @return Объект [CallToolResult] с единственным элементом [TextContent] и флагом `isError = false`.
+     */
     private fun textResult(text: String): CallToolResult =
         CallToolResult(
             content = listOf(TextContent(text = text)),
@@ -153,6 +211,18 @@ class MyMcpRagChatServer(
         )
 }
 
+/**
+ * DTO-ответа инструмента `searchChatMessages`, возвращаемый MCP-клиенту в виде JSON.
+ *
+ * @property status Статус выполнения поиска. Возможные значения:
+ *   - `SUCCESS` — поиск выполнен успешно, найдено одно или более сообщений.
+ *   - `NO_RESULTS` — поиск выполнен, но релевантных сообщений не найдено.
+ *   - `EMPTY_CHAT_ID` — идентификатор чата не указан или пуст.
+ *   - `EMPTY_QUERY` — поисковый запрос не указан или пуст.
+ *   - `INVALID_CHAT_ID` — переданная строка не является корректным UUID.
+ * @property message Дополнительное поясняющее сообщение (например, при ошибке или отсутствии результатов).
+ * @property messages Список найденных сообщений чата.
+ */
 @Serializable
 data class MyMcpRagChatSearchResponseDto(
     val status: String,
@@ -160,6 +230,13 @@ data class MyMcpRagChatSearchResponseDto(
     val messages: List<MyMcpRagChatMessageDto>,
 )
 
+/**
+ * DTO отдельного сообщения чата, возвращаемого в составе результата поиска.
+ *
+ * @property text Текстовое содержимое сообщения.
+ * @property time Временная метка сообщения в формате Unix timestamp (миллисекунды).
+ * @property role Роль отправителя сообщения (например, `"user"` или `"assistant"`).
+ */
 @Serializable
 data class MyMcpRagChatMessageDto(
     val text: String,

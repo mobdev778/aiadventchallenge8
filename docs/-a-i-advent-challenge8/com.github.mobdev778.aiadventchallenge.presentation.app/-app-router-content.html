@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AppRouterContent</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                            AIAdventChallenge8
+                    </a>
+            </div>
+            <div class="library-version">
+1.0-SNAPSHOT            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageIds="AIAdventChallenge8::com.github.mobdev778.aiadventchallenge.presentation.app//AppRouterContent/#com.github.mobdev778.aiadventchallenge.presentation.app.AppRouter/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">AIAdventChallenge8</a><span class="delimiter">/</span><a href="index.html">com.github.mobdev778.aiadventchallenge.presentation.app</a><span class="delimiter">/</span><span class="current">AppRouterContent</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>App</span><wbr></wbr><span>Router</span><wbr></wbr><span><span>Content</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="androidx.compose.runtime/Composable///PointingToDeclaration/"><span class="token annotation builtin">Composable</span></span></div></div><span class="token keyword">fun </span><a href="-app-router-content.html"><span class="token function">AppRouterContent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">router<span class="token operator">: </span><a href="-app-router/index.html">AppRouter</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">Корневая Composable-функция, отображающая контент текущего экрана на основе состояния <a href="-app-router/index.html">AppRouter</a>.</p><p class="paragraph">Анализирует текущий экран из router.screen и делегирует отрисовку соответствующим Composable-функциям экранов (например, <a href="../com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen/-chat-list-screen.html">ChatListScreen</a>, <a href="../com.github.mobdev778.aiadventchallenge.presentation.chatscreen/-chat-screen.html">ChatScreen</a>, <a href="../com.github.mobdev778.aiadventchallenge.presentation.settingsscreen/-settings-screen.html">SettingsScreen</a>). Для вложенных групп экранов (профили, RAG, MCP, контекст задачи) передаёт управление внутренним приватным функциям (<span data-unresolved-link="com.github.mobdev778.aiadventchallenge.presentation.app//SecondaryScreenContent/#com.github.mobdev778.aiadventchallenge.presentation.app.AppRouter#com.github.mobdev778.aiadventchallenge.presentation.app.Screen/PointingToDeclaration/">SecondaryScreenContent</span>), которые осуществляют дальнейшую диспетчеризацию.</p><p class="paragraph">Все колбэки навигации, передаваемые экранам, замыкаются на вызовах методов <a href="-app-router/index.html">AppRouter</a>, таким образом создавая замкнутую систему навигации.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>router</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Экземпляр маршрутизатора, предоставляющий текущий экран и методы переходов.</p></div></div></div></div></div></div></div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2026 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

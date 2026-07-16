@@ -14,14 +14,42 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 
+/**
+ * Время ожидания (в миллисекундах) для стратегии [SharingStarted.WhileSubscribed],
+ * определяющее, как долго удерживается активная подписка на [StateFlow] после
+ * исчезновения всех коллекторов.
+ */
 private const val STATE_FLOW_TIMEOUT_MS = 5000L
 
+/**
+ * Холдер состояния экрана конфигурации Retrieval-Augmented Generation (RAG).
+ *
+ * Выступает посредником между UI-слоем и [RagConfigRepository], предоставляя
+ * реактивное состояние текущей конфигурации ([uiState]) и канал команд
+ * навигации ([commands]). Обрабатывает пользовательские события (например,
+ * изменение параметров или выбор файла) через [onEvent], инициируя
+ * соответствующие обновления в репозитории.
+ *
+ * Создаётся как синглтон (аннотация [Single]) и использует внешний
+ * [CoroutineScope] для выполнения асинхронных операций.
+ *
+ * @property ragConfigRepository Репозиторий для доступа к конфигурации RAG.
+ * @property scope Контекст корутины, в котором выполняются обновления.
+ */
 @Single
 class RagConfigScreenStateHolder(
     private val ragConfigRepository: RagConfigRepository,
     private val scope: CoroutineScope,
 ) {
 
+    /**
+     * Реактивное состояние текущей конфигурации RAG. Поток значений эмиттится
+     * при каждом изменении конфигурации в базе данных через [RagConfigRepository.observeConfig].
+     * Использует стратегию [SharingStarted.WhileSubscribed] с таймаутом
+     * [STATE_FLOW_TIMEOUT_MS] для экономии ресурсов.
+     *
+     * Начальным значением служит [RagConfigRepository.default].
+     */
     val uiState: StateFlow<RagConfig> = ragConfigRepository
         .observeConfig()
         .stateIn(
@@ -30,10 +58,27 @@ class RagConfigScreenStateHolder(
             initialValue = RagConfigRepository.default,
         )
 
+    /**
+     * Горячий поток ([MutableSharedFlow]) команд навигации, в который помещаются
+     * одноразовые события, например, запрос на переход назад.
+     * Имеет дополнительный буфер ёмкостью 1 для предотвращения потери команд
+     * при быстром поступлении.
+     */
     val commands = MutableSharedFlow<RagConfigScreenCommand>(
         extraBufferCapacity = 1,
     )
 
+    /**
+     * Диспетчер событий экрана.
+     *
+     * В зависимости от типа поступившего [события][event] либо немедленно
+     * отправляет команду (например, [RagConfigScreenEvent.OnBackClick]),
+     * либо инициирует обновление конфигурации в репозитории. Для событий
+     * выбора файла запускает диалог выбора файла с последующим асинхронным
+     * обновлением соответствующего пути в конфигурации.
+     *
+     * @param event Пользовательское событие, требующее реакции.
+     */
     fun onEvent(event: RagConfigScreenEvent) {
         when (event) {
             RagConfigScreenEvent.OnBackClick -> {
@@ -76,6 +121,16 @@ class RagConfigScreenStateHolder(
         }
     }
 
+    /**
+     * Открывает диалог выбора файла, соответствующий типу [action].
+     *
+     * Для моделей (реранкер, эмбеддинги) используются фильтры `*.onnx`,
+     * для токенизаторов — `*.json`. После выбора файла асинхронно
+     * (на [Dispatchers.IO]) считывает текущую конфигурацию из репозитория,
+     * обновляет соответствующий путь и сохраняет изменения.
+     *
+     * @param action Тип файла, определяющий фильтр диалога и целевое поле конфигурации.
+     */
     private fun chooseFile(action: FileType) {
         val descriptor = when (action) {
             FileType.RankModel -> FileChooserDescriptorFactory.createSingleFileDescriptor("onnx")
@@ -97,6 +152,15 @@ class RagConfigScreenStateHolder(
         }
     }
 
+    /**
+     * Применяет [трансформацию][transform] к текущей конфигурации RAG,
+     * полученной из репозитория, и сохраняет обновлённый объект обратно.
+     *
+     * Выполняется асинхронно в контексте [Dispatchers.IO], чтобы не
+     * блокировать поток UI.
+     *
+     * @param transform Лямбда-функция трансформации, возвращающая новую [RagConfig].
+     */
     private fun updateConfig(transform: RagConfig.() -> RagConfig) {
         scope.launch(Dispatchers.IO) {
             val updatedConfig = ragConfigRepository.getConfig().transform()
@@ -104,10 +168,19 @@ class RagConfigScreenStateHolder(
         }
     }
 
+    /**
+     * Тип файла, выбираемого пользователем в диалоговом окне.
+     * Каждый элемент соответствует определённому полю конфигурации
+     * [RagConfig] и связан с характерным расширением.
+     */
     enum class FileType {
+        /** Модель реранкера (формат ONNX). */
         RankModel,
+        /** Токенизатор модели реранкера (формат JSON). */
         RankTokenizer,
+        /** Модель эмбеддингов (формат ONNX). */
         EmbModel,
+        /** Токенизатор модели эмбеддингов (формат JSON). */
         EmbTokenizer,
     }
 }

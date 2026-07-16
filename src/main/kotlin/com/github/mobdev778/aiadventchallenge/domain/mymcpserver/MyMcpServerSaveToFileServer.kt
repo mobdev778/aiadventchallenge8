@@ -16,6 +16,18 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import kotlin.io.path.writeText
 
+/**
+ * Локальный MCP-сервер, предоставляющий инструмент для сохранения Markdown-текста в файл
+ * в корневой директории проекта.
+ *
+ * Наследует базовые настройки от [BaseMyMcpServer] и реализует метод [createServer],
+ * в котором регистрируется инструмент `saveToFile`.
+ *
+ * @property name Имя сервера, используемое в системе.
+ * @property description Человекочитаемое описание сервера.
+ * @property port Порт, на котором сервер ожидает подключения.
+ * @property launchAtStartup Флаг, указывающий, следует ли запускать сервер автоматически при старте приложения.
+ */
 class MyMcpServerSaveToFileServer : BaseMyMcpServer(
     name = "MyMcpServerSaveToFileServer",
     description = "Локальный MCP-сервер сохранения Markdown-файлов в корень проекта",
@@ -23,6 +35,11 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
     launchAtStartup = false,
 ) {
 
+    /**
+     * Создаёт и конфигурирует экземпляр [Server] с инструментом для сохранения Markdown-файлов.
+     *
+     * @return Готовый к использованию MCP-сервер.
+     */
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
@@ -62,6 +79,13 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
         return server
     }
 
+    /**
+     * Сохраняет переданный Markdown-текст в файл с указанным именем в корне проекта.
+     *
+     * @param fileName Имя файла (без пути). Должно быть непустым и не содержать переходов в другие директории.
+     * @param markdown Текст в формате Markdown для сохранения.
+     * @return Сообщение о результате операции (успех или причина ошибки).
+     */
     private fun saveToFile(fileName: String, markdown: String): String {
         println("!!! MyMCP: saveToFile($fileName)")
         if (fileName.isBlank()) return "File name is empty"
@@ -81,12 +105,23 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
         }
     }
 
+    /**
+     * Формирует успешный результат вызова инструмента с текстовым содержимым.
+     *
+     * @param text Текст, который будет передан клиенту.
+     * @return Объект [CallToolResult] с одним текстовым элементом.
+     */
     private fun textResult(text: String): CallToolResult =
         CallToolResult(
             content = listOf(TextContent(text = text)),
             isError = false,
         )
 
+    /**
+     * Возвращает путь к корневой директории проекта.
+     *
+     * @return Абсолютный путь к фиксированной корневой директории.
+     */
     private fun projectRoot(): Path = File("/home/ruslan/AI/AIAdventChallenge8/GitHub/aiadventchallenge8")
         .toPath()
 }

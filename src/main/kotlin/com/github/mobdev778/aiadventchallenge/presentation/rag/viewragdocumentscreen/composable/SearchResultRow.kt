@@ -13,6 +13,14 @@ import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Composable-функция для отображения одной строки результата поиска в RAG-документе.
+ *
+ * Выводит разделитель, источник, раздел и текст результата. Используется
+ * в списке результатов на экране просмотра RAG-документа.
+ *
+ * @param result модель данных результата поиска, содержащая источник, раздел и текст.
+ */
 @Composable
 fun SearchResultRow(
     result: ViewRagDocumentSearchResult,

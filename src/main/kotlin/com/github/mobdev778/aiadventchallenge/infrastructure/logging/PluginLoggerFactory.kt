@@ -7,11 +7,24 @@ import org.slf4j.Logger
 import org.slf4j.helpers.MarkerIgnoringBase
 import java.util.concurrent.ConcurrentHashMap
 
+/**
+ * Фабрика логгеров SLF4J для плагина, реализующая [ILoggerFactory].
+ * Интегрируется с Koin для получения [PluginLogFileManager] и создаёт экземпляры [PluginSlf4jLogger],
+ * кэшируя их по имени для повторного использования.
+ * Каждый созданный логгер записывает сообщения через [PluginLogFileManager] в файл и консоль.
+ */
 class PluginLoggerFactory : ILoggerFactory, KoinComponent {
 
     private val logFileManager: PluginLogFileManager by inject()
     private val loggers = ConcurrentHashMap<String, Logger>()
 
+    /**
+     * Возвращает или создаёт логгер с указанным именем.
+     * Логгеры кэшируются в потокобезопасном словаре для обеспечения синглтон-поведения.
+     *
+     * @param name имя логгера (обычно соответствует имени класса/компонента)
+     * @return экземпляр [Logger] (конкретно [PluginSlf4jLogger]), связанный с данным именем
+     */
     override fun getLogger(name: String): Logger {
         return loggers.computeIfAbsent(name) {
             PluginSlf4jLogger(
@@ -22,6 +35,16 @@ class PluginLoggerFactory : ILoggerFactory, KoinComponent {
     }
 }
 
+/**
+ * Внутренняя реализация SLF4J-логгера, которая перенаправляет все сообщения
+ * в [PluginLogFileManager] с соответствующим уровнем и именем логгера.
+ * Все уровни логирования (TRACE, DEBUG, INFO, WARN, ERROR) включены.
+ * Наследуется от [MarkerIgnoringBase] — базового класса SLF4J, игнорирующего маркеры,
+ * что достаточно для логирования плагина.
+ *
+ * @param name имя логгера, используемое в записях
+ * @param logFileManager менеджер лог-файлов для записи сообщений
+ */
 private class PluginSlf4jLogger(
     name: String,
     private val logFileManager: PluginLogFileManager,

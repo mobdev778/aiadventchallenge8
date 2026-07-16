@@ -15,6 +15,21 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+/**
+ * State-холдер экрана информации MCP-сервера, отвечающий за управление
+ * состоянием экрана, загрузку данных о сервере и выполнение проверки инструментов.
+ *
+ * Является центральным компонентом UI-слоя экрана, реализуя паттерн unidirectional
+ * data flow (UDF). Получает данные через [McpServerInteractor], проверяет доступность
+ * инструментов с помощью [McpToolsChecker] и предоставляет реактивные потоки состояния
+ * ([state]) и команд ([commands]) для View-слоя. Обрабатывает события
+ * [McpInfoScreenEvent], преобразуя их в соответствующие действия и команды.
+ *
+ * @param mcpServerInteractor интерактор для получения списка MCP-серверов и доступа к их данным
+ * @param mcpToolsChecker компонент для загрузки инструментов конкретного сервера по URL
+ * @param scope корутинный скоуп, в котором выполняются асинхронные операции
+ *              (обычно привязанный к жизненному циклу компонента)
+ */
 @Single
 class McpInfoScreenStateHolder(
     private val mcpServerInteractor: McpServerInteractor,
@@ -22,12 +37,27 @@ class McpInfoScreenStateHolder(
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(McpInfoScreenState())
+    /**
+     * Поток состояния экрана информации MCP. Содержит текущие данные сервера,
+     * флаг загрузки и текстовое представление инструментов.
+     */
     val state: StateFlow<McpInfoScreenState> = _state.asStateFlow()
 
+    /**
+     * Поток однократных команд для навигации или других одноразовых действий UI.
+     * Связывается с [McpInfoScreenCommand], обеспечивая обработку в `when`-выражениях.
+     */
     val commands = MutableSharedFlow<McpInfoScreenCommand>(
         extraBufferCapacity = 1,
     )
 
+    /**
+     * Устанавливает идентификатор сервера, для которого необходимо отобразить информацию.
+     * Загружает объект [McpServer] из общего потока всех серверов, используя [McpServerInteractor],
+     * и обновляет состояние экрана. Если идентификатор совпадает с текущим, метод ничего не делает.
+     *
+     * @param serverId уникальный идентификатор сервера MCP
+     */
     fun setServerId(serverId: UUID) {
         if (state.value.server?.id == serverId) return
 
@@ -44,6 +74,14 @@ class McpInfoScreenStateHolder(
         }
     }
 
+    /**
+     * Обрабатывает пользовательские события экрана информации MCP.
+     *
+     * При событии [McpInfoScreenEvent.OnBackClick] генерирует команду [McpInfoScreenCommand.Back].
+     * При событии [McpInfoScreenEvent.OnCheckClick] запускает проверку инструментов сервера.
+     *
+     * @param event событие, инициированное пользователем
+     */
     fun onEvent(event: McpInfoScreenEvent) {
         when (event) {
             McpInfoScreenEvent.OnBackClick -> commands.tryEmit(McpInfoScreenCommand.Back)

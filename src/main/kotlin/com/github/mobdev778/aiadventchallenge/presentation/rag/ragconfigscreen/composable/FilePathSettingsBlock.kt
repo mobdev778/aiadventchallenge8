@@ -10,6 +10,19 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.ragconfigscreen.R
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 
+/**
+ * Блок настроек путей к файлам моделей и токенизаторов конфигурации RAG.
+ *
+ * Содержит две группы элементов [FilePathSetting]:
+ * - для модели-реранкера и её токенизатора;
+ * - для модели эмбеддингов и её токенизатора.
+ *
+ * Группы разделены горизонтальным разделителем.
+ *
+ * @param ragConfig Текущая конфигурация RAG, из которой извлекаются значения путей.
+ * @param onEvent Функция-обработчик событий экрана, вызываемая при изменении путей
+ *                или инициировании выбора файла.
+ */
 @Composable
 fun FilePathSettingsBlock(
     ragConfig: RagConfig,

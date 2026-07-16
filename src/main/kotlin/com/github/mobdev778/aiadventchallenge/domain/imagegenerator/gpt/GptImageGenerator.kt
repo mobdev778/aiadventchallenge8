@@ -13,12 +13,32 @@ import java.io.ByteArrayInputStream
 import java.util.Base64
 import javax.imageio.ImageIO
 
+/**
+ * Реализация [ImageGenerator], выполняющая двухэтапную генерацию изображения с помощью моделей OpenAI.
+ *
+ * Сначала пользовательский запрос обогащается через GPT-4o ({{@link ChatClient}}) до детализированного
+ * промпта в фотореалистичном стиле. Затем обогащённый промпт передаётся в [ImageClient] для генерации
+ * изображения моделью `gpt-image-1`. Результат декодируется из Base64 и возвращается в виде
+ * [BufferedImage].
+ *
+ * Аннотирован [@Single][Single] (Koin), поэтому во всём приложении используется один экземпляр.
+ *
+ * @property chatClient Клиент для взаимодействия с Chat API (обогащение промпта).
+ * @property imageClient Клиент для выполнения запросов на генерацию изображений.
+ */
 @Single
 class GptImageGenerator(
     private val chatClient: ChatClient,
     private val imageClient: ImageClient,
 ) : ImageGenerator {
 
+    /**
+     * Системный промпт, определяющий правила преобразования короткого или абстрактного
+     * пользовательского запроса в высокодетализированный промпт для генератора изображений.
+     *
+     * Инструктирует модель GPT-4o соблюдать фотореалистичный стиль по умолчанию,
+     * избегать пустых терминов и выдавать только итоговый обогащённый промпт без лишнего текста.
+     */
     val systemPrompt =
         """
 You are a professional prompt engineer and visual director. Your sole objective is to transform short, simple, or abstract user inputs into highly detailed, cinematic, and visually stunning prompts for the 'gpt-image-2' image generator.
@@ -41,6 +61,23 @@ You are a professional prompt engineer and visual director. Your sole objective 
         Output ONLY the final enriched prompt in English inside a single code block. Do not include any greetings, explanations, introduction, or conversational filler. Only the ready-to-copy prompt text.
         """.trimIndent()
 
+    /**
+     * Генерирует изображение на основе текстового описания, предварительно обогащая запрос с помощью
+     * языковой модели.
+     *
+     * Процесс состоит из двух основных шагов:
+     * 1. Обогащение исходного [userPrompt] через [chatClient] с использованием системного промпта
+     *    [systemPrompt] и указанной [temperature]. Если модель не вернула сообщение, используется
+     *    исходный текст без изменений.
+     * 2. Отправка обогащённого промпта в [imageClient] для генерации изображения размером 1024x1024.
+     *    Полученные данные в формате Base64 декодируются в [BufferedImage].
+     *
+     * @param temperature Степень случайности/креативности при обогащении промпта (значение от 0.0 до 1.0+).
+     * @param userPrompt Исходное текстовое описание желаемого изображения, предоставленное пользователем.
+     * @return Сгенерированное растровое изображение в виде [BufferedImage].
+     * @throws IllegalStateException если API генерации изображений не вернул Base64-строку с данными,
+     *         или если байты не удалось преобразовать в допустимое изображение.
+     */
     override suspend fun generateImage(
         temperature: Double,
         userPrompt: String,

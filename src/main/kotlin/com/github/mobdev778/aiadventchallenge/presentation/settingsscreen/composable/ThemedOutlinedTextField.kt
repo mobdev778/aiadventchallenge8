@@ -13,6 +13,27 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.foundation.theme.LocalContentColor
 import org.jetbrains.jewel.foundation.theme.LocalTextStyle
 
+/**
+ * Тематизированное текстовое поле с контурным стилем (outlined), адаптированное под
+ * текущую цветовую схему IntelliJ Jewel.
+ *
+ * Компонент оборачивает стандартный [BasicTextField] и применяет к нему стилизацию
+ * на основе значений [LocalContentColor] и [LocalTextStyle]: рамка и фон окрашиваются
+ * в производные от текущего контентного цвета с заданной прозрачностью, а текст
+ * наследует актуальный стиль темы.
+ *
+ * Используется в экранах настроек и других местах, где требуется поле ввода,
+ * визуально согласованное с текущей темой IDE.
+ *
+ * @param value Текущее текстовое значение поля ввода.
+ * @param onValueChange Callback, вызываемый при изменении текста пользователем.
+ * @param modifier [Modifier], применяемый к корневому контейнеру поля ввода.
+ *   По умолчанию — [Modifier.Companion].
+ * @param singleLine Флаг, определяющий, ограничивается ли поле ввода одной строкой.
+ *   По умолчанию `true`.
+ * @param visualTransformation Визуальная трансформация отображаемого текста
+ *   (например, маскирование пароля). По умолчанию — [VisualTransformation.None].
+ */
 @Composable
 fun ThemedOutlinedTextField(
     value: String,

@@ -9,6 +9,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.com
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
 
+/**
+ * Основной экран со списком профилей.
+ *
+ * Этот Composable компонент отвечает за отображение списка профилей, используя [ProfileListScreenContent],
+ * и за обработку команд, исходящих из UI, через [ProfileListScreenStateHolder].
+ * Команды, такие как навигация назад, добавление или редактирование профиля,
+ * преобразуются в вызовы переданных колбеков.
+ *
+ * @param onBack вызывается при необходимости вернуться на предыдущий экран.
+ * @param onOpenAddProfile вызывается для открытия экрана добавления нового профиля.
+ * @param onOpenEditProfile вызывается для открытия экрана редактирования профиля; принимает [UUID] идентификатор профиля.
+ */
 @Composable
 fun ProfileListScreen(
     onBack: () -> Unit,
@@ -36,4 +48,3 @@ fun ProfileListScreen(
         }
     }
 }
-

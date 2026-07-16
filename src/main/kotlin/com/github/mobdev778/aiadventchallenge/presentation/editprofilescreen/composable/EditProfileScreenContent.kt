@@ -22,6 +22,26 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основной composable-компонент экрана редактирования профиля.
+ *
+ * Отображает форму для изменения имени и содержимого профиля в соответствии
+ * с текущим состоянием [EditProfileScreenState]. Все пользовательские действия
+ * передаются в виде типизированных событий [EditProfileScreenEvent] через
+ * колбэк [onEvent], что обеспечивает соответствие архитектурному паттерну UDF
+ * (Unidirectional Data Flow).
+ *
+ * Компонент включает:
+ * - кнопку «Назад» для возврата на предыдущий экран без сохранения;
+ * - декоративный заголовок [ScreenHeader] с текстом «Редактирование профиля»;
+ * - поля ввода для имени (однострочное) и содержимого в формате Markdown
+ *   (многострочное, с возможностью вертикальной прокрутки), построенные на базе
+ *   [LabeledTextField];
+ * - кнопку «Изменить» для сохранения внесённых правок.
+ *
+ * @param state Текущее состояние экрана редактирования профиля.
+ * @param onEvent Колбэк для обработки событий, инициируемых пользователем.
+ */
 @Composable
 fun EditProfileScreenContent(
     state: EditProfileScreenState,

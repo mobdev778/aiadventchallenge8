@@ -19,6 +19,19 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Содержимое экрана добавления MCP-сервера.
+ *
+ * Визуальное представление экрана, включающее заголовок [ScreenHeader],
+ * поля ввода "Название" и "URL" на основе компонента [LabeledTextField],
+ * а также кнопки "Назад" и "Добавить". Обрабатывает взаимодействие пользователя
+ * через события, определённые в [AddMcpServerScreenEvent].
+ *
+ * @param state текущее состояние экрана, содержащее введённые пользователем имя и URL.
+ * @param onEvent колбэк, вызываемый при наступлении событий пользовательского интерфейса
+ *                (нажатие кнопок, изменение текста). Позволяет вышестоящим слоям
+ *                обрабатывать навигацию и обновление данных.
+ */
 @Composable
 fun AddMcpServerScreenContent(
     state: AddMcpServerScreenState,

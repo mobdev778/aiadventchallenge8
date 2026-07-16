@@ -17,6 +17,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen.ChatLi
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Composable-функция, отображающая список чатов.
+ *
+ * Элементы списка формируются из переданной коллекции [Chat] и отображаются в вертикальном
+ * [LazyColumn]. Каждый элемент состоит из кликабельного названия чата (при нажатии генерируется
+ * событие [ChatListScreenEvent.OnOpenChatClick]) и кнопки «Удалить», которая вызывает
+ * [ChatListScreenEvent.OnDeleteChatClick].
+ *
+ * @param chats Список чатов, подлежащих отображению.
+ * @param modifier Модификатор, применяемый к корневому [LazyColumn].
+ * @param onEvent Обработчик событий, связанных с экраном списка чатов.
+ */
 @Composable
 fun ChatListItems(
     chats: List<Chat>,

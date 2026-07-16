@@ -27,6 +27,20 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Контентная область экрана просмотра RAG-документа. Отображает навигационную
+ * панель, заголовок, информацию о выбранном документе, поле поискового запроса,
+ * кнопку поиска и список результатов семантического поиска по фрагментам.
+ *
+ * Элементы экрана реагируют на события пользователя, передаваемые через единый
+ * колбэк [onEvent]: возврат к предыдущему экрану, изменение поискового запроса
+ * и запуск поиска.
+ *
+ * @param state Текущее состояние экрана, включая документ, поисковый запрос,
+ *   индикатор загрузки и результаты поиска.
+ * @param onEvent Лямбда-обработчик событий экрана. Принимает экземпляры
+ *   [ViewRagDocumentScreenEvent] для выполнения соответствующих действий.
+ */
 @Composable
 fun ViewRagDocumentScreenContent(
     state: ViewRagDocumentScreenState,
@@ -103,4 +117,3 @@ private fun SearchResultsList(results: List<ViewRagDocumentSearchResult>) {
         }
     }
 }
-

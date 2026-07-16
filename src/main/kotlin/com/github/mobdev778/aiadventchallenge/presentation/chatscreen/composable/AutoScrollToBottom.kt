@@ -6,6 +6,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatUiMessage
 
+/**
+ * Автоматически прокручивает список сообщений к последнему элементу, обеспечивая его полную видимость
+ * в области просмотра. При появлении нового сообщения (изменении [messages]) скроллит список так,
+ * чтобы последнее сообщение было полностью отображено, не оставляя его частично скрытым за нижней границей.
+ *
+ * @param listState состояние прокрутки [LazyListState], управляющее позицией списка.
+ * @param messages список сообщений [ChatUiMessage], по последнему элементу которого определяется момент
+ * автоматической прокрутки.
+ */
 @Composable
 fun AutoScrollToBottom(
     listState: LazyListState,

@@ -23,15 +23,32 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+/** Цвет рамки и основного акцента для сообщений ассистента (Bot/Tool). */
 @Suppress("MagicNumber")
 private val BotAnswerColor = Color(0xFF04D9FF)
+
+/** Цвет рамки и текста для закреплённых фактов (StickyFacts). */
 @Suppress("MagicNumber")
 private val StickyFactsColor = Color(0xFF8c6700)
+
+/** Цвет текста пользовательских сообщений. */
 @Suppress("MagicNumber")
-private val UserTextColor = Color(0xFFFFFF)
+private val UserTextColor = Color(0xFFFFFFFF)
+
+/** Цвет текста для отображения количества токенов. */
 @Suppress("MagicNumber")
 private val TokenColor = Color(0xFFFF8C00)
 
+/**
+ * Вспомогательная модель, описывающая визуальный стиль отдельного сообщения.
+ * Содержит параметры выравнивания, цвета и отступов в зависимости от типа сообщения.
+ *
+ * @property alignment выравнивание контейнера сообщения внутри строки.
+ * @property borderColor цвет рамки.
+ * @property textColor цвет основного текста.
+ * @property tokenColor цвет метки с токенами.
+ * @property rowPadding паддинги вокруг сообщения.
+ */
 private data class MessageStyle(
     val alignment: Alignment,
     val borderColor: Color,
@@ -40,6 +57,16 @@ private data class MessageStyle(
     val rowPadding: Modifier,
 )
 
+/**
+ * Возвращает стиль отображения для сообщения в зависимости от его типа и видимости.
+ *
+ * Если сообщение находится вне видимой области экрана ([insideWindow] = false),
+ * ко всем цветам применяется коэффициент прозрачности 0.3, чтобы снизить нагрузку на отрисовку.
+ *
+ * @param type тип сообщения (User, Bot, Tool, StickyFacts).
+ * @param insideWindow флаг нахождения сообщения в видимой области списка.
+ * @return [MessageStyle] с подобранными параметрами.
+ */
 @Suppress("MagicNumber")
 private fun getMessageStyle(type: MessageType, insideWindow: Boolean): MessageStyle {
     val alpha = if (insideWindow) 1.0f else 0.3f
@@ -72,11 +99,41 @@ private const val TIME_PATTERN = "dd.MM.yyyy HH:mm"
 private val timeFormatter = DateTimeFormatter.ofPattern(TIME_PATTERN)
     .withZone(ZoneId.systemDefault())
 
+/**
+ * Форматирует Unix-время (в миллисекундах) в строку вида `dd.MM.yyyy HH:mm`
+ * с использованием локального часового пояса.
+ *
+ * @param epochMillis временная метка в миллисекундах.
+ * @return отформатированная строка времени.
+ */
 private fun formatMessageTime(epochMillis: Long): String {
     val formatted = timeFormatter.format(Instant.ofEpochMilli(epochMillis))
     return "$formatted"
 }
 
+/**
+ * Composable-компонент, отображающий отдельное сообщение в списке чата.
+ *
+ * В зависимости от типа сообщения ([MessageType]) применяется различное выравнивание,
+ * цветовая схема и отступы. Сообщения пользователя выравниваются по левому краю,
+ * ответы ассистента и вызовы инструментов — по правому, а закреплённые факты — по центру.
+ * Если сообщение находится вне видимой области ([ChatUiMessage.insideWindow] == false),
+ * прозрачность всех элементов снижается до 30% для уменьшения нагрузки на рендеринг.
+ *
+ * Компонент также отображает:
+ * - отформатированное время создания сообщения;
+ * - визуальный разделитель;
+ * - Markdown-содержимое сообщения через [MarkdownText];
+ * - для сообщений типа [MessageType.StickyFacts] дополнительно выводится заголовок "Sticky Facts";
+ * - для сообщений типа [MessageType.Bot] и [MessageType.Tool] — переключатель ветвления [ChatSwitcher]
+ *   и количество затраченных токенов;
+ * - весь блок кликабелен: по нажатию генерируется событие [ChatScreenEvent.OnMessageClicked].
+ *
+ * @param message UI-модель сообщения, содержащая все необходимые данные.
+ * @param isBranchingEnabled флаг, разрешающий переключение веток диалога. Если `false`,
+ *                           [ChatSwitcher] не показывается для ботовых сообщений.
+ * @param onEvent лямбда-обработчик событий экрана чата, используется для передачи пользовательских действий.
+ */
 @Composable
 fun ChatMessageRow(
     message: ChatUiMessage,
@@ -135,7 +192,7 @@ fun ChatMessageRow(
                     MarkdownText(text = message.message.text, color = style.textColor)
 
                     ChatSwitcher(
-message = message,
+                        message = message,
                         isBranchingEnabled = isBranchingEnabled,
                         onEvent = onEvent
                     )

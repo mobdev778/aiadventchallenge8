@@ -15,21 +15,52 @@ import java.util.UUID
 
 private const val STATE_FLOW_TIMEOUT_MS = 5000L
 
+/**
+ * Хранитель состояния экрана списка чатов.
+ *
+ * Отвечает за предоставление списка чатов и обработку пользовательских событий,
+ * преобразуя их в команды для навигации или в действия по изменению данных.
+ *
+ * Получает чаты из [RagChatRepository] в виде реактивного потока [chats] и
+ * предоставляет поток команд [commands] для однократной обработки в UI-слое.
+ * События, поступающие через [onEvent], преобразуются в соответствующие операции
+ * с репозиторием или эмиссию команд.
+ *
+ * @property chats Поток состояния списка всех чатов, обновляемый из репозитория.
+ * @property commands Поток команд для однократного выполнения, например, навигации.
+ * @param ragChatRepository Репозиторий для доступа к данным чатов.
+ * @param scope CoroutineScope, используемый для запуска асинхронных операций.
+ */
 @Single
 class ChatListScreenStateHolder(
     private val ragChatRepository: RagChatRepository,
     private val scope: CoroutineScope,
 ) {
+    /**
+     * Поток состояния списка всех чатов, полученный из репозитория.
+     * Обновляется автоматически при изменении данных в [RagChatRepository].
+     */
     val chats: StateFlow<List<Chat>> = ragChatRepository
         .observeChats()
         .flowOn(Dispatchers.IO)
         .stateIn(scope, SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS), emptyList())
 
+    /**
+     * Общий поток команд, эмитирующий однократные навигационные или иные действия.
+     * Используется с буфером в одну команду, чтобы гарантировать доставку до подписчика.
+     */
     val commands = MutableSharedFlow<ChatListScreenCommand>(
-        // Так команда дождется, пока Compose-экран будет готов ее принять.
         extraBufferCapacity = 1
     )
 
+    /**
+     * Обрабатывает событие от пользовательского интерфейса.
+     *
+     * В зависимости от типа события выполняет создание чата, удаление, эмиссию команд
+     * для открытия чата или настроек.
+     *
+     * @param event Событие, произошедшее на экране списка чатов.
+     */
     fun onEvent(event: ChatListScreenEvent) {
         when (event) {
             is ChatListScreenEvent.OnCreateChatClick -> {

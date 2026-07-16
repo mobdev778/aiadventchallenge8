@@ -22,6 +22,24 @@ import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основное содержимое экрана контекста задачи.
+ *
+ * Формирует прокручиваемую колонку с элементами:
+ * - кнопка «Назад»;
+ * - заголовок экрана [ScreenHeader] с текстом «Контекст задачи»;
+ * - название задачи, её состояние (через [TaskStateLabel] и [TaskStateIndicator]),
+ *   номер шага, утверждённый план в виде списка отмеченных/неотмеченных пунктов ([CheckedItem]),
+ *   а также описание текущего выполняемого шага.
+ *
+ * Если контекст задачи отсутствует ([state.taskContext] == null), отображается
+ * сообщение «Контекст не найден» и дальнейший рендеринг прекращается.
+ *
+ * @param state Состояние экрана, содержащее идентификаторы и объект контекста задачи.
+ *              При наличии [TaskContext] строится детальное представление,
+ *              иначе — заглушка.
+ * @param onBack Колбэк, вызываемый при нажатии на кнопку «Назад».
+ */
 @Composable
 fun TaskContextScreenContent(
     state: TaskContextScreenState,

@@ -1,5 +1,6 @@
 package com.github.mobdev778.aiadventchallenge.domain.agent.pool
 
+import com.github.mobdev778.aiadventchallenge.domain.agent.AgentOrchestrator
 import com.github.mobdev778.aiadventchallenge.domain.agent.agents.Agent
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentContext
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
@@ -25,8 +26,8 @@ class AgentPool<A : Agent>(
 
     private val activeJobs = mutableListOf<Job>()
 
-    fun enqueue(context: AgentContext, request: AgentRequest) {
-        queue.enqueue(context, request)
+    suspend fun enqueue(agentOrchestrator: AgentOrchestrator, context: AgentContext, request: AgentRequest) {
+        queue.enqueue(agentOrchestrator, context, request)
     }
 
     fun start(scope: CoroutineScope) {
@@ -38,10 +39,15 @@ class AgentPool<A : Agent>(
             val job = scope.launch(Dispatchers.Default) {
                 try {
                     while (isActive) {
-                        val (context, request) = queue.dequeue() // Берут задачу по очереди (кто первый успел)
+                        val (orchestrator, context, request) = queue.dequeue() // Берут задачу по очереди (кто первый успел)
                         println("Агенту: $agent пришло новое сообщение: ${request.query}")
-                        val response = agent.handle(context, request)
-                        onResponseReady(response)
+                        try {
+                            val response = agent.handle(orchestrator, context, request)
+                            onResponseReady(response)
+                        } catch (e: Exception) {
+                            println("[Система] Исключение при обработке запроса: $e. Агент ${agent::class.simpleName} #${agent.id}")
+                            e.printStackTrace()
+                        }
                     }
                 } catch (e: CancellationException) {
                     throw e

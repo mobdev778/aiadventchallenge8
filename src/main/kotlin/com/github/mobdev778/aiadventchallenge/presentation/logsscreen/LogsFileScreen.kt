@@ -7,6 +7,17 @@ import androidx.compose.runtime.remember
 import com.github.mobdev778.aiadventchallenge.presentation.logsscreen.composable.LogsFileScreenContent
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Экран просмотра файла логов.
+ *
+ * Является точкой входа презентационного слоя для отображения содержимого лог-файла.
+ * Отвечает за создание и запуск [LogsFileScreenStateHolder] (через Koin-инъекцию), который
+ * управляет состоянием экрана и периодически считывает данные из файловой системы.
+ *
+ * При появлении на экране вызывает [LogsFileScreenStateHolder.startObserving], запуская
+ * цикл обновления состояния в отдельной корутине. Полученное состояние передаётся в
+ * [LogsFileScreenContent] для построения пользовательского интерфейса.
+ */
 @Composable
 fun LogsFileScreen() {
     val stateHolder = remember {

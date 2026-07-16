@@ -7,6 +7,7 @@ import com.github.mobdev778.aiadventchallenge.domain.mcpserver.model.McpServer
 import com.github.mobdev778.aiadventchallenge.domain.mymcpserver.MyMcpServerInteractor
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.sse.SSE
 import io.modelcontextprotocol.kotlin.sdk.client.Client
 import io.modelcontextprotocol.kotlin.sdk.client.mcpStreamableHttp
@@ -26,6 +27,20 @@ import kotlinx.serialization.json.jsonObject
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+/**
+ * Основной интерактор для работы с MCP-серверами (Model Context Protocol).
+ *
+ * Объединяет управление удалёнными и локальными серверами, предоставляет реактивные потоки
+ * списков серверов и доступных инструментов, а также выполняет вызовы инструментов от имени
+ * AI-агента. Использует [CachedMcpToolsChecker] для кэширования списка инструментов,
+ * [McpServerRepository] для работы с хранилищем удалённых серверов и [MyMcpServerInteractor]
+ * для локальных серверов.
+ *
+ * @property mcpServerRepository репозиторий удалённых MCP-серверов.
+ * @property myMcpServerInteractor интерактор локальных MCP-серверов.
+ * @property cachedChecker кэширующий загрузчик инструментов.
+ * @property scope корутин-скоуп для асинхронных операций.
+ */
 @Single
 class McpServerInteractor(
     private val mcpServerRepository: McpServerRepository,
@@ -34,8 +49,17 @@ class McpServerInteractor(
     private val scope: CoroutineScope,
 ) {
 
+    /**
+     * Маппинг имени инструмента на URL MCP-сервера, с которого этот инструмент был загружен.
+     * Заполняется автоматически при загрузке инструментов в [activeToolsFlow].
+     */
     val toolUrlMap = HashMap<String, String>()
 
+    /**
+     * Реактивный поток, эмитирующий актуальный список всех MCP-серверов (удалённых и локальных).
+     * Объединяет потоки [McpServerRepository.observeServers] и [MyMcpServerInteractor.localServersFlow]
+     * с помощью [combine], отфильтровывая дублирующиеся эмиссии.
+     */
     val allServersFlow: Flow<List<McpServer>> = combine(
         mcpServerRepository.observeServers(),
         myMcpServerInteractor.localServersFlow,
@@ -43,6 +67,12 @@ class McpServerInteractor(
         remoteServers + localServers
     }.distinctUntilChanged()
 
+    /**
+     * Поток, предоставляющий полный список активных инструментов со всех доступных серверов.
+     * Загружает инструменты параллельно для каждого активного сервера, используя [CachedMcpToolsChecker.loadTools].
+     * Одновременно заполняет [toolUrlMap] для последующего использования в [sendRequest].
+     * В случае ошибки загрузки инструментов для конкретного сервера, он пропускается (возвращается пустой список).
+     */
     val activeToolsFlow : Flow<List<Tool>> = allServersFlow
         .map { servers ->
             val jobs = servers
@@ -62,6 +92,16 @@ class McpServerInteractor(
             lists.flatten()
         }
 
+    /**
+     * Отправляет вызов инструмента на соответствующий MCP-сервер и возвращает ответ [ToolResponse].
+     *
+     * Определяет URL сервера по имени инструмента через [toolUrlMap]. Если URL не найден, возвращает `null`.
+     * Создаёт HTTP-клиент с поддержкой Server-Sent Events (SSE), инициирует соединение с сервером через
+     * MCP-протокол и делегирует выполнение приватному методу [sendRequest].
+     *
+     * @param toolCall информация о вызове инструмента, включая имя и аргументы.
+     * @return [ToolResponse] с результатом выполнения инструмента, или `null`, если сервер не определён.
+     */
     suspend fun sendRequest(toolCall: ToolCall): ToolResponse? {
         println("!!! sendRequest($toolCall)")
 
@@ -71,6 +111,11 @@ class McpServerInteractor(
 
         val httpClient = HttpClient(CIO) {
             install(SSE)
+            install(HttpTimeout) {
+                requestTimeoutMillis = 300_000
+                connectTimeoutMillis = 30_000
+                socketTimeoutMillis = 300_000
+            }
         }
 
         val result = httpClient.use { httpClient ->
@@ -119,10 +164,21 @@ class McpServerInteractor(
         )
     }
 
+    /**
+     * Изменяет флаг активности для указанного MCP-сервера.
+     *
+     * @param serverId уникальный идентификатор сервера.
+     * @param active новое значение активности (`true` — активен, `false` — неактивен).
+     */
     suspend fun updateServerActive(serverId: UUID, active: Boolean) {
         mcpServerRepository.updateServerActive(serverId, active)
     }
 
+    /**
+     * Удаляет MCP-сервер по его идентификатору.
+     *
+     * @param serverId уникальный идентификатор удаляемого сервера.
+     */
     suspend fun deleteServer(serverId: UUID) {
         mcpServerRepository.deleteServer(serverId = serverId)
     }

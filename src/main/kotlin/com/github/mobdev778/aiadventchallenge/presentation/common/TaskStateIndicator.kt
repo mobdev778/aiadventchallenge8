@@ -21,6 +21,32 @@ private val AUTO_PLAY_ON_COLOR = Color(0xFF70ee7d)
 @Suppress("MagicNumber")
 private val AUTO_PLAY_OFF_COLOR = Color(0xFF777777)
 
+/**
+ * Цвета, соответствующие набору состояний [TaskState] для визуализации прогресса.
+ *
+ * Каждый цвет в списке (по индексу) сопоставлен с элементом перечисления [TaskState] в порядке объявления:
+ * [TaskState.Planning] → [TaskState.Execution] → [TaskState.Validation] → [TaskState.PrintResult] → [TaskState.Result].
+ * Используется компонентом [TaskStateIndicator] для выделения активной стадии среди точек-индикаторов.
+ */
+@Suppress("MagicNumber")
+val taskStateColors = listOf(
+    Color(0xFF7c4eba), Color(0xFF4daced), Color(0xFFf5a551), Color(0xFFF485F8), Color(0xFF70ee7d),
+)
+
+/**
+ * Индикатор состояния задачи с возможностью отображения статуса автоматического режима.
+ *
+ * Компонент визуализирует текущую стадию жизненного цикла задачи ([TaskState]) в виде линейной последовательности
+ * цветных точек ([Dot]), где активная стадия выделяется полной непрозрачностью, а неактивные — полупрозрачны.
+ * При наличии информации об автоматическом воспроизведении отображается соответствующий блок с текстом "Auto Play: ON/OFF".
+ *
+ * @param autoPlay Статус автоматического воспроизведения:
+ * - `true` – автоматический режим включён (надпись "ON" зелёным),
+ * - `false` – автоматический режим выключен (надпись "OFF" серым),
+ * - `null` – блок авто‑воспроизведения не отображается.
+ * @param state Текущее состояние задачи из перечисления [TaskState]. Определяет, какая точка будет активной.
+ * @param modifier Модификатор для корневого контейнера [Row]. По умолчанию [Modifier].
+ */
 @Composable
 fun TaskStateIndicator(
     autoPlay: Boolean?,
@@ -80,9 +106,3 @@ fun TaskStateIndicator(
         }
     }
 }
-
-@Suppress("MagicNumber")
-val taskStateColors = listOf(
-    Color(0xFF7c4eba), Color(0xFF4daced), Color(0xFFf5a551), Color(0xFFF485F8), Color(0xFF70ee7d),
-)
-

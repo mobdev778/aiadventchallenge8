@@ -15,6 +15,21 @@ import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основной редактируемый блок экрана конфигурации RAG.
+ *
+ * Объединяет в одной колонке два логических блока настроек:
+ * - [FilterSettingsBlock] – параметры фильтрации и ранжирования документов;
+ * - [FilePathSettingsBlock] – пути к моделям и токенизаторам.
+ *
+ * Блоки разделены горизонтальным разделителем [Divider] для визуального
+ * отделения.
+ *
+ * @param ragConfig текущая конфигурация RAG, передаваемая дочерним блокам.
+ * @param onEvent обработчик событий экрана, через который дочерние блоки
+ *                передают пользовательские взаимодействия на уровень ViewModel
+ *                или презентера.
+ */
 @Composable
 fun RagConfigEditor(
     ragConfig: RagConfig,
@@ -49,4 +64,3 @@ fun RagConfigEditor(
         )
     }
 }
-

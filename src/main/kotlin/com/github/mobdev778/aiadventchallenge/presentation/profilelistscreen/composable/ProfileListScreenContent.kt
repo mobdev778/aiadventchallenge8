@@ -20,6 +20,22 @@ import com.github.mobdev778.aiadventchallenge.presentation.profilelistscreen.Pro
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основное содержимое экрана списка профилей.
+ *
+ * Отображает заголовок "Профили" с помощью компонента [ScreenHeader], кнопки "Назад" и "Добавить",
+ * а также список профилей, каждый элемент которого представлен [ProfileRow].
+ * Если список профилей пуст, выводится сообщение с подсказкой о необходимости добавления.
+ *
+ * События взаимодействия, такие как выбор, удаление, редактирование или переход назад,
+ * передаются через параметр [onEvent] в виде sealed-интерфейса [ProfileListScreenEvent].
+ *
+ * @param profiles Список профилей, отображаемых на экране. Каждый профиль содержит уникальный идентификатор,
+ *                 имя, содержимое и флаг выбранности.
+ * @param onEvent Колбэк для обработки событий экрана. Принимает экземпляры [ProfileListScreenEvent],
+ *                позволяя вызывающей стороне реагировать на действия пользователя.
+ * @return Ничего не возвращает, является Composable-функцией, описывающей UI.
+ */
 @Composable
 fun ProfileListScreenContent(
     profiles: List<Profile>,

@@ -23,9 +23,24 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Цвет для выделенного заголовка в стиле неонового свечения.
+ */
 @Suppress("MagicNumber")
 private val NeonHighlightedTextColor = Color(0xFF04D9FF)
 
+/**
+ * Основное содержимое экрана списка чатов.
+ *
+ * Компонент объединяет верхнюю панель с кнопкой настроек, заголовок, прокручиваемый список
+ * чатов (через [ChatListItems]) и нижнюю область с полем ввода для создания нового чата.
+ * Все действия пользователя передаются во внешний обработчик в виде событий
+ * [ChatListScreenEvent].
+ *
+ * @param chats Список чатов для отображения.
+ * @param onEvent Обработчик событий экрана чатов (открытие настроек, открытие чата,
+ *   создание нового, удаление и т.п.).
+ */
 @Composable
 fun ChatListScreenContent(
     chats : List<Chat>,
@@ -88,4 +103,3 @@ fun ChatListScreenContent(
         }
     }
 }
-

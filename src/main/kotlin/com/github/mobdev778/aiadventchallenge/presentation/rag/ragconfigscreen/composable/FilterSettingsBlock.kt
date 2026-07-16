@@ -16,6 +16,21 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.Orientation
 import org.jetbrains.jewel.ui.component.Divider
 
+/**
+ * Блок настроек фильтрации для экрана конфигурации RAG.
+ *
+ * Отображает элементы управления параметрами первичного поиска (topK до фильтра),
+ * типом фильтрации, переписыванием исходного запроса, количеством документов после
+ * фильтрации (topK после фильтра), фильтрацией по минимальному сходству и
+ * пороговым значением сходства. Компоненты разделены горизонтальными разделителями
+ * для визуальной группировки.
+ *
+ * @param ragConfig текущая конфигурация RAG, содержащая значения параметров.
+ * @param labelColor цвет текстовых меток для элементов управления.
+ * @param onEvent callback, вызываемый при взаимодействии пользователя с любым из
+ *        элементов управления. Принимает соответствующий экземпляр
+ *        [RagConfigScreenEvent].
+ */
 @Composable
 fun FilterSettingsBlock(
     ragConfig: RagConfig,

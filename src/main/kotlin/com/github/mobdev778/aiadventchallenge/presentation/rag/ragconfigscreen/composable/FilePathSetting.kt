@@ -13,6 +13,17 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Composable-компонент для отображения настройки пути к файлу.
+ *
+ * Предоставляет метку, поле ввода (реализованное через [LabeledTextField]) и кнопку «Выбрать...»,
+ * позволяющую пользователю вручную ввести путь или инициировать диалог выбора файла.
+ *
+ * @param label Отображаемый текст метки над элементом управления.
+ * @param value Текущее значение (путь к файлу), отображаемое в поле ввода.
+ * @param onValueChange Функция обратного вызова, вызываемая при изменении текста в поле ввода.
+ * @param onChooseClick Функция обратного вызова, вызываемая при нажатии на кнопку «Выбрать...».
+ */
 @Composable
 fun FilePathSetting(
     label: String,

@@ -9,6 +9,19 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistsc
 import com.github.mobdev778.aiadventchallenge.presentation.rag.viewragdocumentscreen.composable.ViewRagDocumentScreenContent
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Экран просмотра содержимого документа RAG-системы.
+ *
+ * Отображает детальную информацию о выбранном документе, его фрагменты или другие данные,
+ * связанные с Retrieval-Augmented Generation. Экран управляет жизненным циклом
+ * [ViewRagDocumentScreenStateHolder], обрабатывает навигационные команды и передаёт
+ * события в состояние через [ViewRagDocumentScreenStateHolder.onEvent].
+ *
+ * @param document Модель элемента документа, выбранного из списка. Содержит идентификатор,
+ *                 источник, заголовок и количество чанков.
+ * @param onBack   Колбэк, вызываемый при необходимости вернуться на предыдущий экран,
+ *                 например, при получении команды [ViewRagDocumentScreenCommand.Back].
+ */
 @Composable
 fun ViewRagDocumentScreen(
     document: RagDocumentListItem,

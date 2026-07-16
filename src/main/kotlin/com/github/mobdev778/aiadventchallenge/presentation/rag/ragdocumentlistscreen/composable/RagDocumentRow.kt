@@ -17,6 +17,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistsc
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Composable-компонент, отображающий одну строку в списке RAG-документов.
+ *
+ * Строка содержит основную информацию о документе (заголовок, источник, количество чанков)
+ * и кнопку "Удалить". Вся строка кликабельна, что позволяет выполнить действие при выборе элемента.
+ * Используется на экране просмотра и управления RAG-документами.
+ *
+ * @param document Модель элемента списка RAG-документов, содержащая идентификатор,
+ *                 источник, заголовок и количество чанков.
+ * @param onClick Обработчик клика по строке документа (выполняется при касании в любой области строки).
+ * @param onDeleteClick Обработчик нажатия на кнопку "Удалить".
+ */
 @Composable
 fun RagDocumentRow(
     document: RagDocumentListItem,

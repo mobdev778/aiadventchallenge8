@@ -1,3 +1,19 @@
+/**
+ * Конфигурационный файл сборки для модуля AI Advent Challenge.
+ * Определяет плагины, репозитории, зависимости и задачи Gradle,
+ * необходимые для компиляции и запуска проекта.
+ *
+ * Включает настройки для:
+ * - Kotlin (JVM, сериализация, Compose)
+ * - IntelliJ Platform (последняя доступная версия)
+ * - KSP (Koin, Room)
+ * - статического анализа Detekt
+ * - библиотек для работы с встраиванием и ранжированием (LangChain4J),
+ *   сетевыми запросами (Retrofit, OkHttp), MCP (Model Context Protocol)
+ *   и Ktor-сервером.
+ *
+ * @since 1.0-SNAPSHOT
+ */
 plugins {
     kotlin("plugin.serialization") version "2.3.0"
     id("org.jetbrains.kotlin.jvm") version "2.3.0"
@@ -9,6 +25,7 @@ plugins {
 
     // Static code analysis for Kotlin
     id("io.gitlab.arturbosch.detekt") version "1.23.7"
+    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 ksp {

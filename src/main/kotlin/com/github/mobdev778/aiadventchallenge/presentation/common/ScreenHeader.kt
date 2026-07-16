@@ -14,6 +14,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Экранный заголовок с неоновой подсветкой.
+ *
+ * Компонент, отображающий текст заголовка в прямоугольной рамке со скруглёнными углами,
+ * выровненный по центру и окрашенный в яркий неоновый цвет.
+ * Используется в качестве визуального разделителя и привлечения внимания к ключевым экранам.
+ *
+ * @param modifier Модификатор, применяемый к корневому контейнеру заголовка.
+ * @param text Текст, отображаемый внутри заголовка.
+ */
 @Composable
 fun ScreenHeader(
     modifier: Modifier = Modifier,

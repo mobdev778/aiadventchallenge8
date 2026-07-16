@@ -13,6 +13,22 @@ import org.jetbrains.jewel.ui.component.Text
 @Suppress("MagicNumber")
 private val SimpleTextColor = Color(0xFFA0A0A0)
 
+/**
+ * Composable-функция, отвечающая за отрисовку одного структурного блока разметки Markdown
+ * внутри экрана чата.
+ *
+ * В зависимости от типа [MarkdownBlock] применяет соответствующее оформление, шрифты, отступы
+ * и цвет. Поддерживает абзацы, заголовки (1–3 уровней с каскадным размером текста),
+ * маркированные и нумерованные списки с учётом вложенности, а также блоки кода с подсветкой синтаксиса.
+ * Нижний отступ добавляется только в том случае, если блок не является последним ([isLast] == false),
+ * чтобы избежать лишнего пространства после последнего элемента чата.
+ *
+ * @param block Блок разметки, наследующий [MarkdownBlock] (может быть [MarkdownBlock.Paragraph],
+ *   [MarkdownBlock.Heading], [MarkdownBlock.BulletItem], [MarkdownBlock.NumberedItem] или [MarkdownBlock.CodeFence]).
+ * @param headingColor Цвет, используемый для текста заголовков.
+ * @param isLast Флаг, сигнализирующий о том, что данный блок является последним в списке отрисовки.
+ *   При значении `true` нижний отступ не применяется.
+ */
 @Composable
 fun RenderBlock(
     block: MarkdownBlock,

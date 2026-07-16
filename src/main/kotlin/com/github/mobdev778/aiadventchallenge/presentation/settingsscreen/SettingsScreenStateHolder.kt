@@ -20,6 +20,19 @@ import org.koin.core.annotation.Single
 
 private const val STATE_FLOW_TIMEOUT_MS = 5000L
 
+/**
+ * State Holder экрана настроек.
+ *
+ * Отвечает за подготовку реактивного состояния экрана [SettingsScreenState],
+ * объединяя сохранённые настройки из [SettingsInteractor] и редактируемый черновик.
+ * Формирует поток команд [commands] для навигации и других действий, инициируемых UI.
+ * Использует [SettingsRepository.default] для определения момента первого применения
+ * настроек к черновику (если черновик ещё не изменялся пользователем, он инициализируется
+ * из сохранённых значений).
+ *
+ * @property settingsInteractor интерактор для работы с настройками приложения.
+ * @property scope корутинный скоуп, в котором происходит сборка состояний.
+ */
 @Single
 class SettingsScreenStateHolder(
     private val settingsInteractor: SettingsInteractor,
@@ -36,6 +49,15 @@ class SettingsScreenStateHolder(
             }
         }
 
+    /**
+     * Поток состояния экрана, производный от сохранённых настроек ([savedSettingsFlow]) и
+     * текущего черновика ([draftFlow]).
+     * Содержит флаг [SettingsScreenState.actionEnabled], активирующий кнопку «Сохранить» при
+     * отличии черновика от сохранённых данных, а также список типов управления контекстом,
+     * отображённых в UI.
+     *
+     * @return [StateFlow] с текущим [SettingsScreenState].
+     */
     val uiState: StateFlow<SettingsScreenState> = combine(
         savedSettingsFlow,
         draftFlow,
@@ -74,11 +96,21 @@ class SettingsScreenStateHolder(
             )
         )
 
+    /**
+     * Поток однократных команд ([SettingsScreenCommand]), предназначенных для обработки
+     * слоем UI (например, навигация). Каждая команда буферизируется (extraBufferCapacity=1),
+     * чтобы дождаться готовности Compose-экрана к её приёму.
+     */
     val commands = MutableSharedFlow<SettingsScreenCommand>(
-        // Так команда дождется, пока Compose-экран будет готов ее принять.
         extraBufferCapacity = 1
     )
 
+    /**
+     * Обработчик событий от UI. В зависимости от типа события обновляет черновик,
+     * инициирует сохранение или сброс, либо отправляет команду через [commands].
+     *
+     * @param event событие экрана настроек, соответствующее действию пользователя.
+     */
     fun onEvent(event: SettingsScreenEvent) {
         when (event) {
             is SettingsScreenEvent.OnBackClick -> {

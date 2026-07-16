@@ -6,6 +6,20 @@ import com.github.mobdev778.aiadventchallenge.domain.settings.model.ContextManag
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.SettingsScreenEvent
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.model.ContextManagementTypeUi
 
+/**
+ * Составной блок экрана настроек, который отображает выпадающий список для выбора
+ * способа ограничения контекстного окна и, в зависимости от выбранного типа,
+ * соответствующие поля ввода максимального количества сообщений.
+ *
+ * Блок интегрируется с [SettingsScreenEvent] для обработки действий пользователя.
+ *
+ * @param items список [ContextManagementTypeUi], представляющих доступные типы управления контекстом
+ *   с информацией о текущем выборе.
+ * @param titleColor цвет, используемый для меток и заголовков.
+ * @param maxMessages текущее значение максимального количества сообщений для режима «Скользящее окно».
+ * @param stickyFactsMaxMessages текущее значение максимального количества сообщений для режима «Закреплённые факты».
+ * @param onEvent обработчик событий экрана настроек, принимающий [SettingsScreenEvent].
+ */
 @Composable
 fun ContextManagementTypeTypeBlock(
     items: List<ContextManagementTypeUi>,

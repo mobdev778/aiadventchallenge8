@@ -9,6 +9,23 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.addingragdocument
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscreen.model.AddRagDocumentScreenState
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Главная экранная композиция этапа добавления RAG-документа.
+ *
+ * Управляет жизненным циклом операции загрузки и индексации документа,
+ * связывая состояние экрана [AddingRagDocumentScreenStateHolder] с UI-компонентом
+ * [AddingRagDocumentScreenContent] и навигационными колбэками.
+ *
+ * Экран инициирует процесс добавления документа с заданными параметрами
+ * ([source], [title], [chunkingStrategy]) и отслеживает команды от [stateHolder],
+ * чтобы выполнить возврат к форме добавления или к списку документов.
+ *
+ * @param source Источник документа (URL, путь к файлу или иной идентификатор).
+ * @param title Заголовок документа, введённый пользователем.
+ * @param chunkingStrategy Стратегия разбиения текста на чанки, выбранная пользователем.
+ * @param onBackToAddDocument Колбэк для навигации обратно к экрану добавления документа.
+ * @param onBackToDocumentList Колбэк для навигации к списку документов.
+ */
 @Composable
 fun AddingRagDocumentScreen(
     source: String,

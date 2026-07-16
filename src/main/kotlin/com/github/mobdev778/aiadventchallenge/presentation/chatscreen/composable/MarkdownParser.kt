@@ -16,11 +16,29 @@ private const val REGEX_CONTENT_GROUP_INDEX = 3
 
 private const val INLINE_CODE_BACKGROUND_ARGB = 0x33FFFFFFL
 
+/**
+ * Парсер Markdown-разметки в список визуальных блоков для отображения в чате.
+ *
+ * Преобразует переданную строку с Markdown-разметкой в список экземпляров [MarkdownBlock],
+ * готовых к рендерингу с помощью Compose-компонентов. Поддерживает заголовки (1–3 уровня),
+ * маркированные и нумерованные списки с отступами, ограждённые блоки кода, а также
+ * базовое инлайн-форматирование: жирный, курсив, зачёркнутый текст и встроенный код.
+ *
+ * Используется для оформления сообщений на экране чата.
+ */
 object MarkdownParser {
     private val headingRegex = Regex("^(#{1,3})\\s+(.*)$")
     private val bulletRegex = Regex("^(\\s*)([-*+])\\s+(.*)$")
     private val numberedRegex = Regex("^(\\s*)(\\d+)\\.\\s+(.*)$")
 
+    /**
+     * Разбирает строку Markdown в список блоков для последующей отрисовки.
+     *
+     * @param markdown Исходная строка в формате Markdown.
+     * @return Список блоков [MarkdownBlock], упорядоченных по мере появления в тексте.
+     *         Для пустой или состоящей только из пробелов строки возвращается список
+     *         с одним пустым параграфом.
+     */
     fun parse(markdown: String): List<MarkdownBlock> {
         if (markdown.isBlank()) return listOf(MarkdownBlock.Paragraph(AnnotatedString("")))
 
@@ -144,9 +162,7 @@ object MarkdownParser {
 
     private fun tryParseInlineStyle(text: String, index: Int): InlineStyleResult? {
         return tryParseBoldItalic(text, index, "**", FontWeight.Bold, null)
-            ?: tryParseBoldItalic(text, index, "__", FontWeight.Bold, null)
             ?: tryParseBoldItalic(text, index, "*", null, FontStyle.Italic)
-            ?: tryParseBoldItalic(text, index, "_", null, FontStyle.Italic)
             ?: tryParseInlineCode(text, index)
             ?: tryParseStrikethrough(text, index)
     }

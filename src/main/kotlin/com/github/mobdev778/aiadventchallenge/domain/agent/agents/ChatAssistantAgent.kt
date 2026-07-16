@@ -3,6 +3,7 @@ package com.github.mobdev778.aiadventchallenge.domain.agent.agents
 import com.github.mobdev778.aiadventchallenge.data.chatclient.datasource.model.PlanningResponseDto
 import com.github.mobdev778.aiadventchallenge.data.profile.repository.ProfileRepository
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
+import com.github.mobdev778.aiadventchallenge.domain.agent.AgentOrchestrator
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentContext
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest
 import com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentResponse
@@ -40,6 +41,7 @@ class ChatAssistantAgent(
     private val json: Json by inject(Json::class.java)
 
     override suspend fun handle(
+        orchestrator: AgentOrchestrator,
         context: AgentContext,
         request: AgentRequest
     ): AgentResponse {

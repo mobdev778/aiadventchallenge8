@@ -2,6 +2,14 @@ package com.github.mobdev778.aiadventchallenge.domain.profile.model
 
 import java.util.UUID
 
+/**
+ * Модель данных профиля пользователя, определяющая его идентификатор, имя, содержимое (инструкции/правила) и статус выбранного профиля.
+ *
+ * @property id Уникальный идентификатор профиля.
+ * @property name Отображаемое имя профиля.
+ * @property content Содержимое профиля в формате Markdown, описывающее контекст и стиль поведения ассистента.
+ * @property isSelected Флаг, указывающий, выбран ли профиль в данный момент как активный.
+ */
 data class Profile(
     val id: UUID,
     val name: String,
@@ -9,6 +17,9 @@ data class Profile(
     val isSelected: Boolean,
 ) {
     companion object {
+        /**
+         * Дефолтный профиль с общим предустановленным контекстом, который используется при отсутствии пользовательских профилей.
+         */
         val default: Profile = Profile(
             id = UUID(0, 0),
             name = "Дефолтный",

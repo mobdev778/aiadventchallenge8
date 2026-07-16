@@ -18,6 +18,18 @@ import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.readText
 
+/**
+ * Локальный MCP-сервер, предоставляющий возможность чтения файлов из корневого каталога проекта.
+ *
+ * Наследуется от [BaseMyMcpServer] и добавляет инструмент `readFile`, позволяющий клиентам
+ * запрашивать содержимое произвольного файла по относительному пути. При попытке чтения за пределами
+ * корня проекта, несуществующего файла или директории возвращается пустая строка.
+ *
+ * @param name имя сервера
+ * @param description описание сервера
+ * @param port порт, на котором ожидается запуск (в текущей реализации может не использоваться)
+ * @param launchAtStartup флаг автоматического запуска при старте приложения
+ */
 class MyMcpReadFileServer : BaseMyMcpServer(
     name = "MyMcpReadFileServer",
     description = "Локальный MCP-сервер чтения файлов проекта",
@@ -25,6 +37,14 @@ class MyMcpReadFileServer : BaseMyMcpServer(
     launchAtStartup = false,
 ) {
 
+    /**
+     * Создаёт настроенный экземпляр [Server] с зарегистрированным инструментом `readFile`.
+     *
+     * Инструмент `readFile` принимает параметр `fileName` (относительный путь от корня проекта)
+     * и возвращает содержимое файла в виде текста. Доступ ограничен файлами внутри корневого каталога.
+     *
+     * @return готовый к использованию экземпляр MCP-сервера.
+     */
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(

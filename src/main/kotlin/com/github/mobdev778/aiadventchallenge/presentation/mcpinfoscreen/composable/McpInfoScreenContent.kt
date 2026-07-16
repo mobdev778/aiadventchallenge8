@@ -25,6 +25,18 @@ import org.jetbrains.jewel.foundation.theme.LocalContentColor
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Содержимое экрана информации о MCP-сервере.
+ *
+ * Компонент отображает подробную информацию о выбранном сервере [McpServer], включая
+ * название, URL и список доступных инструментов. Позволяет инициировать проверку
+ * сервера и возврат на предыдущий экран через события [McpInfoScreenEvent].
+ *
+ * @param state Текущее состояние экрана, содержащее данные сервера, флаг загрузки
+ *   и текстовое представление инструментов.
+ * @param onEvent Лямбда-обработчик событий, связанных с действиями пользователя
+ *   на экране.
+ */
 @Composable
 fun McpInfoScreenContent(
     state: McpInfoScreenState,

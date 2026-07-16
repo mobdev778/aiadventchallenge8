@@ -19,6 +19,23 @@ import kotlin.collections.first
 import kotlin.collections.firstOrNull
 import kotlin.collections.map
 
+/**
+ * Репозиторий чата с интеграцией RAG (Retrieval-Augmented Generation).
+ *
+ * Связывает управление чатами и сообщениями с RAG-хранилищем документов и фрагментов.
+ * Каждое сообщение чата преобразуется в векторное представление и сохраняется в виде
+ * [RagDocumentChunk], что позволяет выполнять семантический поиск по истории диалогов.
+ * При создании чата автоматически генерируется соответствующий [RagDocument].
+ *
+ * @property chatRepository Репозиторий для основных CRUD-операций с чатами и сообщениями.
+ * @property documentRepository Репозиторий для управления RAG-документами и их фрагментами.
+ * @property simpleRagSearcher Сервис семантического поиска по фрагментам документов.
+ * @property json Экземпляр [Json] для сериализации/десериализации DTO сообщений.
+ * @property rankerFactory Фабрика для получения моделей эмбеддингов, используемых
+ *                         при вычислении векторных представлений сообщений.
+ * @property ragRussianFilter Фильтр для обработки запросов, содержащих русский текст,
+ *                           с возможностью перевода на английский язык.
+ */
 @Single
 class RagChatRepository(
     private val chatRepository: ChatRepository,
@@ -29,18 +46,40 @@ class RagChatRepository(
     private val ragRussianFilter: RagRussianFilter,
 ) {
 
+    /**
+     * Наблюдает за списком сообщений указанного чата в реальном времени.
+     *
+     * @param chatId Идентификатор чата, сообщения которого отслеживаются.
+     * @return [Flow], эмитирующий актуальный список [ChatMessage] при каждом изменении.
+     */
     fun observeMessages(chatId: UUID): Flow<List<ChatMessage>> {
         return chatRepository.observeMessages(chatId)
     }
 
+    /**
+     * Наблюдает за списком всех чатов в реальном времени.
+     *
+     * @return [Flow], эмитирующий актуальный список [Chat] при каждом изменении.
+     */
     fun observeChats(): Flow<List<Chat>> {
         return chatRepository.observeChats()
     }
 
+    /**
+     * Наблюдает за конкретным чатом в реальном времени.
+     *
+     * @param chatId Идентификатор отслеживаемого чата.
+     * @return [Flow], эмитирующий экземпляр [Chat] или `null`, если чат не найден.
+     */
     fun observeChat(chatId: UUID): Flow<Chat?> {
         return chatRepository.observeChat(chatId)
     }
 
+    /**
+     * Создаёт новый чат и соответствующий RAG-документ для него.
+     *
+     * @param chat Доменная модель создаваемого чата.
+     */
     suspend fun add(chat: Chat) {
         chatRepository.add(chat)
         documentRepository.createDocument(
@@ -52,22 +91,49 @@ class RagChatRepository(
         )
     }
 
+    /**
+     * Выполняет семантический поиск по сообщениям чата.
+     *
+     * Запрос сначала обрабатывается через [ragRussianFilter] для возможного перевода на английский.
+     * Затем с помощью [simpleRagSearcher] ищутся наиболее релевантные фрагменты,
+     * содержимое которых десериализуется в список [RagChatMessageDto].
+     *
+     * @param chatId Идентификатор чата, по истории которого производится поиск.
+     * @param query Текстовый запрос (может содержать русские символы).
+     * @return Список DTO сообщений, релевантных запросу, или пустой список, если результатов нет.
+     */
     suspend fun find(chatId: UUID, query: String): List<RagChatMessageDto> {
         val query = ragRussianFilter.filter(query)
         val searchResult = simpleRagSearcher.search(chatId, query, 5).firstOrNull() ?: return emptyList()
         return json.decodeFromString<List<RagChatMessageDto>>(searchResult.text)
     }
 
+    /**
+     * Удаляет все сообщения чата и все связанные с ним RAG-фрагменты.
+     *
+     * @param chatId Идентификатор очищаемого чата.
+     */
     suspend fun clearMessages(chatId: UUID) {
         chatRepository.clearMessages(chatId)
         documentRepository.deleteChunks(chatId)
     }
 
+    /**
+     * Добавляет новое сообщение в чат и генерирует соответствующий RAG-фрагмент.
+     *
+     * @param message Доменная модель добавляемого сообщения.
+     */
     suspend fun add(message: ChatMessage) {
         chatRepository.add(message)
         addRagMessage(message)
     }
 
+    /**
+     * Добавляет список сообщений в чат и генерирует RAG-фрагменты:
+     * один общий фрагмент для всей группы и отдельные фрагменты для каждого сообщения.
+     *
+     * @param messages Список доменных моделей сообщений для добавления.
+     */
     suspend fun add(messages: List<ChatMessage>) {
         chatRepository.add(messages)
         addRagGroupMessage(messages)
@@ -76,11 +142,21 @@ class RagChatRepository(
         }
     }
 
+    /**
+     * Удаляет сообщение и связанный с ним RAG-фрагмент.
+     *
+     * @param message Доменная модель удаляемого сообщения.
+     */
     suspend fun delete(message: ChatMessage) {
         chatRepository.delete(message)
         documentRepository.deleteChunk(message.id)
     }
 
+    /**
+     * Удаляет чат, все его сообщения и связанный RAG-документ.
+     *
+     * @param chatId Идентификатор удаляемого чата.
+     */
     suspend fun deleteChat(chatId: UUID) {
         chatRepository.deleteChat(chatId)
         documentRepository.deleteDocument(chatId)
@@ -88,22 +164,23 @@ class RagChatRepository(
 
     private suspend fun addRagGroupMessage(messages: List<ChatMessage>) {
         val firstMessage = messages.firstOrNull() ?: return
-        val list = messages.map { convertToDto(it) }
-        val text = json.encodeToString(list)
-
-        val messageVector = RagChunkGenerator(firstMessage.chatId, rankerFactory.embeddingModel)
-            .generate(section = 0, text = text)
-            .vector
-
-        val chunk = RagDocumentChunk(
-            documentId = messages.first().chatId,
-            id = UUID.randomUUID(),
-            section = (firstMessage.time / 1000L).toInt(),
-            text = text,
-            vector = messageVector,
-        )
 
         try {
+            val list = messages.map { convertToDto(it) }
+            val text = json.encodeToString(list)
+
+            val messageVector = RagChunkGenerator(firstMessage.chatId, rankerFactory.embeddingModel)
+                .generate(section = 0, text = text)
+                .vector
+
+            val chunk = RagDocumentChunk(
+                documentId = messages.first().chatId,
+                id = UUID.randomUUID(),
+                section = (firstMessage.time / 1000L).toInt(),
+                text = text,
+                vector = messageVector,
+            )
+
             documentRepository.add(chunk)
         } catch (e: Exception) {
             e.printStackTrace()
@@ -111,21 +188,21 @@ class RagChatRepository(
     }
 
     private suspend fun addRagMessage(message: ChatMessage) {
-        val list = listOf(convertToDto(message))
-        val text = json.encodeToString(list)
-
-        val messageVector = RagChunkGenerator(message.chatId, rankerFactory.embeddingModel)
-            .generate(section = 0, text = text)
-            .vector
-
-        val chunk = RagDocumentChunk(
-            documentId = message.chatId,
-            id = message.id,
-            section = (message.time / 1000L).toInt(),
-            text = text,
-            vector = messageVector,
-        )
         try {
+            val list = listOf(convertToDto(message))
+            val text = json.encodeToString(list)
+
+            val messageVector = RagChunkGenerator(message.chatId, rankerFactory.embeddingModel)
+                .generate(section = 0, text = text)
+                .vector
+
+            val chunk = RagDocumentChunk(
+                documentId = message.chatId,
+                id = message.id,
+                section = (message.time / 1000L).toInt(),
+                text = text,
+                vector = messageVector,
+            )
             documentRepository.add(chunk)
         } catch (e: Exception) {
             e.printStackTrace()

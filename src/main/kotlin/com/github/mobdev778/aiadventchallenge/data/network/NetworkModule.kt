@@ -14,9 +14,22 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import java.util.concurrent.TimeUnit
 
+/**
+ * Модуль Koin, предоставляющий сетевые зависимости: парсер JSON, HTTP-клиент и экземпляр Retrofit.
+ *
+ * Все компоненты настраиваются с использованием значений из репозитория настроек ([SettingsRepository]),
+ * что позволяет динамически подстраивать параметры подключения к API (ключ, базовый URL).
+ */
 @Module
 class NetworkModule {
 
+    /**
+     * Создаёт и предоставляет экземпляр [Json] с предустановленными настройками:
+     * - Игнорирование неизвестных ключей при десериализации (`ignoreUnknownKeys = true`).
+     * - Принудительное приведение значений к ожидаемым типам (`coerceInputValues = true`).
+     *
+     * @return сконфигурированный объект [Json].
+     */
     @Single
     fun provideJson(): Json {
         return Json {
@@ -25,6 +38,17 @@ class NetworkModule {
         }
     }
 
+    /**
+     * Создаёт настроенный HTTP-клиент [OkHttpClient] для использования в Retrofit.
+     *
+     * Настройки включают:
+     * - Логирование тела запросов и ответов через [HttpLoggingInterceptor].
+     * - Автоматическое добавление заголовка `Authorization` с API-ключом, полученным из [SettingsRepository].
+     * - Таймауты подключения, чтения и записи, заданные константами в [NetworkModule.Companion].
+     *
+     * @param settingsRepository репозиторий настроек, откуда извлекается API-ключ.
+     * @return экземпляр [OkHttpClient] с применённой конфигурацией.
+     */
     @Factory
     fun createOkHttpClient(settingsRepository: SettingsRepository): OkHttpClient {
         val httpLogger = LoggerFactory.getLogger("HTTP")
@@ -55,6 +79,20 @@ class NetworkModule {
             .build()
     }
 
+    /**
+     * Создаёт экземпляр [Retrofit], сконфигурированный для работы с API.
+     *
+     * Базовый URL извлекается из настроек через [SettingsRepository]. Если он пуст, используется
+     * локальный адрес `http://127.0.0.1:1234` (локальное LLM-API). К URL добавляется завершающий слеш,
+     * что требуется для корректного формирования запросов.
+     *
+     * В качестве конвертера используется [kotlinx.serialization], настроенный через переданный [Json].
+     *
+     * @param json объект [Json] для сериализации/десериализации.
+     * @param okHttpClient предварительно настроенный HTTP-клиент.
+     * @param settingsRepository репозиторий настроек для получения базового URL.
+     * @return сконфигурированный экземпляр [Retrofit].
+     */
     @Factory
     fun createRetrofit(
         json: Json,
@@ -82,8 +120,11 @@ class NetworkModule {
     }
 
     companion object {
+        /** Таймаут установки соединения в секундах. */
         private const val CONNECT_TIMEOUT_SECONDS = 600L
+        /** Таймаут чтения данных в секундах. */
         private const val READ_TIMEOUT_SECONDS = 600L
+        /** Таймаут записи данных в секундах. */
         private const val WRITE_TIMEOUT_SECONDS = 600L
     }
 }

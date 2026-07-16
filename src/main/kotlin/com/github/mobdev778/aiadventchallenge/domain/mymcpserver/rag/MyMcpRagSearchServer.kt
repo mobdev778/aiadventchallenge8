@@ -23,6 +23,23 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.koin.core.annotation.Single
 
+/**
+ * MCP-сервер семантического поиска по документам в RAG-системе.
+ *
+ * Реализует инструмент "searchKnowledgeBase", который принимает запрос пользователя,
+ * фильтрует русскоязычные запросы через [RagRussianFilter], преобразуя их в английский,
+ * выполняет поиск с использованием [RankedRagSearcher] и фильтрацию по минимальному сходству
+ * через [RankerFactory]. Результаты возвращаются в структурированном JSON-формате
+ * [MyMcpRagSearchResponseDto] с информацией об источнике, секции, тексте и оценке релевантности.
+ *
+ * Наследует базовую функциональность управления HTTP-сервером от [BaseMyMcpServer].
+ *
+ * @property rankerFactory фабрика для создания ранкеров, используемых при фильтрации результатов.
+ * @property ragSearcher компонент многоэтапного поиска с переформулированием запроса и ранжированием.
+ * @property ragRussianFilter фильтр для перевода русскоязычных запросов на английский.
+ * @property documentRepository репозиторий для получения списка документов и их идентификаторов.
+ * @property ragConfigRepository репозиторий конфигурации RAG, определяющий пороги и типы фильтрации.
+ */
 @Single
 class MyMcpRagSearchServer(
     private val rankerFactory: RankerFactory,
@@ -38,6 +55,19 @@ class MyMcpRagSearchServer(
     launchAtStartup = true,
 ) {
 
+    /**
+     * Создаёт и конфигурирует экземпляр MCP-сервера.
+     *
+     * Настраивает сервер с одним инструментом "searchKnowledgeBase", который
+     * принимает поисковый запрос, передаёт его в [executeVectorSearch] и
+     * оборачивает результат в [CallToolResult] с текстовым содержимым.
+     *
+     * Инструкции сервера требуют от модели строго ссылаться на источники,
+     * использовать цитаты и не выдумывать факты. При отсутствии релевантных
+     * результатов модель обязана ответить, что информация не найдена.
+     *
+     * @return готовый к работе объект [Server] с зарегистрированным инструментом.
+     */
     override fun createServer(): Server {
         val server = Server(
             serverInfo = Implementation(
@@ -61,6 +91,17 @@ class MyMcpRagSearchServer(
                     "3. Never invent facts outside the provided 'text' fragments.",
         )
 
+        addSearchTool(server)
+
+        return server
+    }
+
+    /**
+     * Регистрирует инструмент `searchKnoledgeBase`.
+     *
+     * @param server Экземпляр MCP-сервера, на котором регистрируется инструмент.
+     */
+    private fun addSearchTool(server: Server) {
         server.addTool(
             name = "searchKnowledgeBase",
             description = "Searches the document knowledge base using semantic/vector search. " +
@@ -84,8 +125,6 @@ class MyMcpRagSearchServer(
                 textResult(executeVectorSearch(query))
             }
         }
-
-        return server
     }
 
     private suspend fun executeVectorSearch(query: String): String {

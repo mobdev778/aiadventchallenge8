@@ -20,6 +20,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistsc
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Корневое Composable-представление экрана со списком RAG-документов.
+ *
+ * Отображает заголовок, панель управления (кнопки "Назад", "Настройки RAG", "Добавить")
+ * и прокручиваемый список документов с возможностью выбора и удаления.
+ * При отсутствии документов показывает информационное сообщение-подсказку.
+ *
+ * @param documents Список моделей [RagDocumentListItem], представляющих текущие документы RAG-системы.
+ * @param onEvent Лямбда-обработчик, вызываемый при возникновении любого события экрана
+ *                (нажатие кнопок, выбор документа, удаление). Принимает событие
+ *                типа [RagDocumentListScreenEvent].
+ */
 @Composable
 fun RagDocumentListScreenContent(
     documents: List<RagDocumentListItem>,

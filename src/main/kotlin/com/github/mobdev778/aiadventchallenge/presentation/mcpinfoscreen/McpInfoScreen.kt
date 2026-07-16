@@ -9,6 +9,20 @@ import com.github.mobdev778.aiadventchallenge.presentation.mcpinfoscreen.composa
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
 
+/**
+ * Основная точка входа для экрана информации о MCP (Model Context Protocol).
+ * [McpInfoScreen] отображает детали сервера MCP и реализует UI-логику,
+ * связывая компонент [McpInfoScreenContent] с [McpInfoScreenStateHolder] через состояние и события.
+ *
+ * Функция отвечает за:
+ * - Получение [McpInfoScreenStateHolder] через DI Koin для переданного идентификатора сервера.
+ * - Сбор состояния ([state]) и передачу его в контент.
+ * - Прослушивание команд ([McpInfoScreenCommand]) от [McpInfoScreenStateHolder],
+ *   таких как [McpInfoScreenCommand.Back], которая инициирует навигацию назад.
+ *
+ * @param serverId уникальный идентификатор сервера MCP, данные которого необходимо отобразить.
+ * @param onBack колбэк, вызываемый при необходимости вернуться на предыдущий экран (команда Back).
+ */
 @Composable
 fun McpInfoScreen(
     serverId: UUID,

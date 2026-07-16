@@ -11,11 +11,29 @@ import kotlinx.coroutines.runBlocking
 import org.koin.core.annotation.Single
 import java.io.File
 
+/**
+ * Фабрика для создания конкретных реализаций [Ranker] на основе [RagFilterType].
+ *
+ * Отвечает за ленивую инициализацию моделей эмбеддингов ([embeddingModel]) и скоринга
+ * ([scoringModel]), которые используются в [SimilarityRanker] и [ReRanker] соответственно.
+ * Пути к файлам моделей извлекаются из конфигурации RAG через [RagConfigRepository].
+ *
+ * Аннотирована как [Single] для регистрации в Koin-контейнере в качестве singleton-компонента.
+ *
+ * @property ragConfigRepository репозиторий конфигурации RAG, предоставляющий пути к ONNX-моделям
+ */
 @Single
 class RankerFactory(
     private val ragConfigRepository: RagConfigRepository,
 ) {
 
+    /**
+     * Лениво инициализируемая ONNX-модель эмбеддингов.
+     *
+     * Загружается при первом обращении с использованием путей из текущей
+     * конфигурации RAG. Для корректной загрузки в окружении с изолированными
+     * загрузчиками классов временно подменяется контекстный ClassLoader потока.
+     */
     val embeddingModel: OnnxEmbeddingModel by lazy {
         val ragConfig = runBlocking {
             ragConfigRepository.getConfig()
@@ -37,6 +55,12 @@ class RankerFactory(
         }
     }
 
+    /**
+     * Лениво инициализируемая ONNX-модель скоринга (реранкер).
+     *
+     * Аналогично [embeddingModel], загружается при первом обращении с подменой
+     * контекстного ClassLoader для совместимости с окружением загрузки ONNX-библиотек.
+     */
     val scoringModel: OnnxScoringModel by lazy {
         val ragConfig = runBlocking {
             ragConfigRepository.getConfig()
@@ -56,6 +80,15 @@ class RankerFactory(
         }
     }
 
+    /**
+     * Создаёт экземпляр [Ranker], соответствующий переданному типу фильтрации.
+     *
+     * @param filterType тип фильтрации, определяющий используемый алгоритм ранжирования
+     * @return готовый к использованию ранкер:
+     *         - [SimilarityRanker] для [RagFilterType.Similarity],
+     *         - [ReRanker] для [RagFilterType.Reranker],
+     *         - [HeuristicRanker] для [RagFilterType.Heuristic]
+     */
     fun create(filterType: RagFilterType): Ranker {
         return when (filterType) {
             RagFilterType.Reranker -> ReRanker(scoringModel)

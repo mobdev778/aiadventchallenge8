@@ -19,6 +19,23 @@ import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Корневая Composable-функция экрана конфигурации RAG (Retrieval-Augmented Generation).
+ *
+ * Связывает UI с холдером состояния [RagConfigScreenStateHolder], получая доступ к текущей
+ * конфигурации через [RagConfigScreenStateHolder.uiState] и передавая пользовательские события
+ * типа [RagConfigScreenEvent] в [RagConfigScreenStateHolder.onEvent]. Команды навигации,
+ * такие как [RagConfigScreenCommand.Back], обрабатываются с помощью [LaunchedEffect]
+ * и приводят к вызову переданного колбэка [onBack].
+ *
+ * Экран состоит из:
+ * - шапки с кнопкой «Назад»;
+ * - основного редактора параметров RAG [RagConfigEditor], которому делегируется
+ *   отображение текущих значений и обработка изменений.
+ *
+ * @param onBack колбэк, вызываемый для осуществления навигации назад (например, при
+ *               получении команды [RagConfigScreenCommand.Back]).
+ */
 @Composable
 fun RagConfigScreen(
     onBack: () -> Unit,

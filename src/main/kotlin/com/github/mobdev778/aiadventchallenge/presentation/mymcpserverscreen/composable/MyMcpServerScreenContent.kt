@@ -20,6 +20,21 @@ import org.jetbrains.jewel.ui.component.Divider
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основное содержимое экрана «Мои MCP-серверы».
+ *
+ * Отображает кнопку «Назад», неоновый заголовок [ScreenHeader] и прокручиваемый список серверов
+ * с разделителями. Каждый элемент списка представлен компонентом [MyMcpServerStatusBlock],
+ * который показывает информацию о сервере (название, описание, URL, статус) и позволяет
+ * запустить/остановить его.
+ *
+ * @param state Список текущих состояний всех доступных MCP-серверов.
+ *              Каждый элемент типа [MyMcpServerState] содержит имя, описание, URL и флаг
+ *              [MyMcpServerState.isRunning], определяющий, запущен ли сервер.
+ * @param onEvent Коллбек для обработки событий экрана. При нажатии кнопки «Назад»
+ *                отправляется [MyMcpServerScreenEvent.OnBackClick]; при взаимодействии
+ *                с элементами списка — соответствующие события запуска/остановки сервера.
+ */
 @Composable
 fun MyMcpServerScreenContent(
     state: List<MyMcpServerState>,
@@ -73,4 +88,3 @@ fun MyMcpServerScreenContent(
         }
     }
 }
-

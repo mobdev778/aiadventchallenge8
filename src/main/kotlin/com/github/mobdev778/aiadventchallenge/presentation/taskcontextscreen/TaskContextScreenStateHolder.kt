@@ -13,30 +13,55 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import java.util.UUID
 
+/**
+ * Холдер состояния экрана контекста задачи.
+ * Предоставляет текущее состояние экрана через [StateFlow] и канал команд для взаимодействия с Compose-экраном.
+ * Отвечает за загрузку данных из [TaskContextRepository] и обработку пользовательских действий (например, нажатие "Назад").
+ *
+ * @property taskContextRepository репозиторий, из которого загружается контекст задачи.
+ * @property scope CoroutineScope, используемый для запуска асинхронных операций.
+ */
 @Single
 class TaskContextScreenStateHolder(
     private val taskContextRepository: TaskContextRepository,
     private val scope: CoroutineScope,
 ) {
     private val _state = MutableStateFlow(TaskContextScreenState())
+    /**
+     * Неизменяемый поток текущего состояния экрана.
+     * Содержит данные, необходимые для отображения: идентификаторы, объект контекста задачи и т.д.
+     */
     val state: StateFlow<TaskContextScreenState> = _state.asStateFlow()
 
+    /**
+     * Канал для отправки одноразовых команд экрану (например, навигационных действий).
+     * Имеет буферную ёмкость 1, что гарантирует, что команда не будет потеряна, если экран ещё не готов к приёму.
+     */
     val commands = MutableSharedFlow<TaskContextScreenCommand>(
-        // Так команда дождется, пока Compose-экран будет готов ее принять.
         extraBufferCapacity = 1,
     )
 
+    /**
+     * Принимает аргументы навигации экрана: идентификаторы контекста задачи и чата.
+     * Обновляет состояние и запускает загрузку контекста задачи из репозитория в фоновом потоке.
+     *
+     * @param taskContextId идентификатор контекста задачи (пока используется для загрузки конкретного объекта).
+     * @param chatId идентификатор чата, ассоциированного с этим экраном.
+     */
     fun onArgs(taskContextId: UUID, chatId: UUID) {
         _state.update { it.copy(taskContextId = taskContextId, chatId = chatId) }
 
         scope.launch(Dispatchers.IO) {
-            // Сейчас в репозитории хранится один TaskContext (id=0), поэтому просто читаем его.
-            // taskContextId оставляем как входной аргумент (на будущее/для совместимости роутинга).
             val taskContext = taskContextRepository.getTaskContext(taskContextId)
             _state.update { it.copy(taskContext = taskContext) }
         }
     }
 
+    /**
+     * Обрабатывает нажатие кнопки "Назад".
+     * Извлекает из текущего состояния идентификатор чата и, если он присутствует,
+     * отправляет команду [TaskContextScreenCommand.Back] с этим идентификатором.
+     */
     fun onBackClick() {
         val chatId = state.value.chatId ?: return
         commands.tryEmit(TaskContextScreenCommand.Back(chatId))

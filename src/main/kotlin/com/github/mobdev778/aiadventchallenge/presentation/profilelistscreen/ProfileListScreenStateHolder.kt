@@ -15,22 +15,60 @@ import java.util.UUID
 
 private const val STATE_FLOW_TIMEOUT_MS = 5000L
 
+/**
+ * Компонент-держатель состояния экрана списка профилей.
+ *
+ * Отвечает за предоставление UI-слою актуального списка профилей через [profiles],
+ * за обработку событий экрана (см. [ProfileListScreenEvent]) и формирование
+ * команд навигации/действий через [commands].
+ *
+ * Является синглтоном в DI-контейнере Koin и оперирует корутинами в рамках
+ * переданного [scope] (обычно с привязкой к жизненному циклу экрана).
+ *
+ * @param profileRepository репозиторий для работы с профилями.
+ * @param scope корутин-скоуп, в котором выполняются фоновые операции.
+ */
 @Single
 class ProfileListScreenStateHolder(
     private val profileRepository: ProfileRepository,
     private val scope: CoroutineScope,
 ) {
 
+    /**
+     * StateFlow, предоставляющий актуальный список профилей.
+     *
+     * Источником данных является [ProfileRepository.observeProfiles], обновления происходят в
+     * фоновом потоке ([Dispatchers.IO]). Подписка активна пока есть хотя бы один подписчик,
+     * но не более [STATE_FLOW_TIMEOUT_MS] миллисекунд после ухода последнего подписчика.
+     */
     val profiles: StateFlow<List<Profile>> = profileRepository
         .observeProfiles()
         .flowOn(Dispatchers.IO)
         .stateIn(scope, SharingStarted.WhileSubscribed(STATE_FLOW_TIMEOUT_MS), emptyList())
 
+    /**
+     * SharedFlow для команд, адресованных UI (навигация, открытие экранов).
+     *
+     * Буфер ёмкостью 1 гарантирует, что последняя отправленная команда не будет потеряна,
+     * даже если подписчик временно не готов к приёму (например, Compose-экран ещё не подписан).
+     */
     val commands = MutableSharedFlow<ProfileListScreenCommand>(
-        // Так команда дождется, пока Compose-экран будет готов ее принять.
         extraBufferCapacity = 1,
     )
 
+    /**
+     * Основной метод обработки событий, поступающих от UI экрана списка профилей.
+     *
+     * В зависимости от типа события выполняет соответствующие действия:
+     * - [ProfileListScreenEvent.OnBackClick] – эмитит команду [ProfileListScreenCommand.Back];
+     * - [ProfileListScreenEvent.OnAddProfileClick] – эмитит команду [ProfileListScreenCommand.OpenAddProfile];
+     * - [ProfileListScreenEvent.OnDeleteProfileClick] – запускает удаление профиля через [deleteProfile];
+     * - [ProfileListScreenEvent.OnSelectProfile] – запускает выбор профиля через [selectProfile];
+     * - [ProfileListScreenEvent.OnEditProfile] – если профиль не является дефолтным ([Profile.default]),
+     *   эмитит команду [ProfileListScreenCommand.OpenEditProfile].
+     *
+     * @param event событие, которое необходимо обработать.
+     */
     fun onEvent(event: ProfileListScreenEvent) {
         when (event) {
             ProfileListScreenEvent.OnBackClick -> commands.tryEmit(ProfileListScreenCommand.Back)

@@ -26,74 +26,169 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.Settin
 import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.TaskContextScreen
 import java.util.UUID
 
+/**
+ * Запечатанный интерфейс, определяющий все экраны (маршруты) приложения.
+ *
+ * Используется в сочетании с [AppRouter] для декларативного описания текущего места
+ * назначения. Каждый из вложенных классов/объектов представляет конкретный экран и
+ * содержит необходимые для его отображения параметры (например, идентификаторы чата,
+ * профиля, сервера MCP, документа RAG и т.д.).
+ *
+ * Связь с конкретными экранами:
+ * - [ChatList], [Chat] используют [ChatListScreen], [ChatScreen]
+ * - [Settings] — [SettingsScreen]
+ * - [ProfileList], [AddProfile], [EditProfile] — [ProfileListScreen], [AddProfileScreen], [EditProfileScreen]
+ * - [RagDocumentList], [RagConfig], [AddRagDocument], [ViewRagDocument], [AddingRagDocument] — соответствующие
+ *   экраны RAG-системы
+ * - [McpServerList], [MyMcpServer], [AddMcpServer], [McpInfo] — экраны управления MCP-серверами
+ * - [TaskContext] — [TaskContextScreen]
+ */
 @Immutable
 sealed interface Screen {
+    /** Экран списка чатов. */
     data object ChatList : Screen
+    /** Экран конкретного чата. */
     data class Chat(val chatId: UUID) : Screen
+    /** Главный экран настроек. */
     data object Settings : Screen
+    /** Экран списка профилей. */
     data object ProfileList : Screen
+    /** Экран добавления нового профиля. */
     data object AddProfile : Screen
+    /** Экран редактирования существующего профиля. */
     data class EditProfile(val profileId: UUID) : Screen
+    /** Экран списка документов RAG. */
     data object RagDocumentList : Screen
+    /** Экран конфигурации параметров RAG. */
     data object RagConfig : Screen
+    /** Экран добавления нового RAG-документа. */
     data object AddRagDocument : Screen
+    /** Экран просмотра содержимого конкретного RAG-документа. */
     data class ViewRagDocument(val document: RagDocumentListItem) : Screen
+    /** Экран подтверждения и запуска процесса добавления RAG-документа. */
     data class AddingRagDocument(
         val source: String,
         val title: String,
         val chunkingStrategy: AddRagDocumentScreenState.ChunkingStrategy,
     ) : Screen
+    /** Экран списка MCP-серверов. */
     data object McpServerList : Screen
+    /** Экран «Мои MCP-серверы». */
     data object MyMcpServer : Screen
+    /** Экран добавления нового MCP-сервера. */
     data object AddMcpServer : Screen
+    /** Экран с подробной информацией об MCP-сервере. */
     data class McpInfo(val serverId: UUID) : Screen
+    /** Экран контекста задачи, отображающий детали задачи. */
     data class TaskContext(val taskContextId: UUID, val chatId: UUID) : Screen
 }
 
+/**
+ * Маршрутизатор экранов приложения.
+ *
+ * Управляет текущим состоянием навигации, храня текущий экран в виде [Screen].
+ * Предоставляет потокобезопасное (благодаря Compose `mutableStateOf`) чтение и запись
+ * через свойство [screen]. Все методы-переходы (open*) изменяют текущее состояние,
+ * что приводит к перекомпозиции дерева, использующего [AppRouterContent].
+ *
+ * Экземпляр обычно создаётся через [rememberAppRouter] и передаётся как параметр
+ * в корневую композицию.
+ *
+ * @param initial Начальный экран, на котором откроется приложение. По умолчанию [Screen.ChatList].
+ */
 class AppRouter(initial: Screen = Screen.ChatList) {
+    /**
+     * Текущий экран, отображаемый в UI.
+     *
+     * Поддерживается Compose-состоянием, поэтому его изменение автоматически вызывает
+     * перекомпозицию компонентов, читающих это значение.
+     */
     var screen: Screen by mutableStateOf(initial)
         private set
 
+    /**
+     * Переход на экран списка чатов.
+     */
     fun openChatList() {
         screen = Screen.ChatList
     }
 
+    /**
+     * Открытие конкретного чата.
+     *
+     * @param chatId Уникальный идентификатор чата.
+     */
     fun openChat(chatId: UUID) {
         screen = Screen.Chat(chatId)
     }
 
+    /**
+     * Переход на основной экран настроек.
+     */
     fun openSettings() {
         screen = Screen.Settings
     }
 
+    /**
+     * Переход к списку профилей.
+     */
     fun openProfileList() {
         screen = Screen.ProfileList
     }
 
+    /**
+     * Открытие экрана добавления нового профиля.
+     */
     fun openAddProfile() {
         screen = Screen.AddProfile
     }
 
+    /**
+     * Открытие экрана редактирования существующего профиля.
+     *
+     * @param profileId Уникальный идентификатор профиля.
+     */
     fun openEditProfile(profileId: UUID) {
         screen = Screen.EditProfile(profileId)
     }
 
+    /**
+     * Переход к списку документов RAG.
+     */
     fun openRagDocumentList() {
         screen = Screen.RagDocumentList
     }
 
+    /**
+     * Открытие экрана конфигурации RAG.
+     */
     fun openRagConfig() {
         screen = Screen.RagConfig
     }
 
+    /**
+     * Открытие экрана добавления нового документа RAG.
+     */
     fun openAddRagDocument() {
         screen = Screen.AddRagDocument
     }
 
+    /**
+     * Открытие экрана просмотра содержимого конкретного документа RAG.
+     *
+     * @param document Модель элемента списка документов RAG (содержит id, источник, заголовок, количество чанков).
+     */
     fun openViewRagDocument(document: RagDocumentListItem) {
         screen = Screen.ViewRagDocument(document)
     }
 
+    /**
+     * Открытие экрана подтверждения добавления документа RAG с заполненными параметрами.
+     *
+     * @param source Источник документа (URL, путь к файлу и т.п.).
+     * @param title Заголовок документа.
+     * @param chunkingStrategy Выбранная стратегия разбиения на чанки.
+     */
     fun openAddingRagDocument(
         source: String,
         title: String,
@@ -106,30 +201,74 @@ class AppRouter(initial: Screen = Screen.ChatList) {
         )
     }
 
+    /**
+     * Переход к списку MCP-серверов.
+     */
     fun openMcpServerList() {
         screen = Screen.McpServerList
     }
 
+    /**
+     * Переход на экран «Мои MCP-серверы».
+     */
     fun openMyMcpServer() {
         screen = Screen.MyMcpServer
     }
 
+    /**
+     * Открытие экрана добавления нового MCP-сервера.
+     */
     fun openAddMcpServer() {
         screen = Screen.AddMcpServer
     }
 
+    /**
+     * Открытие экрана с подробной информацией об MCP-сервере.
+     *
+     * @param serverId Уникальный идентификатор сервера.
+     */
     fun openMcpInfo(serverId: UUID) {
         screen = Screen.McpInfo(serverId)
     }
 
+    /**
+     * Открытие экрана контекста задачи.
+     *
+     * @param taskContextId Идентификатор контекста задачи.
+     * @param chatId Идентификатор чата, связанного с задачей.
+     */
     fun openTaskContext(taskContextId: UUID, chatId: UUID) {
         screen = Screen.TaskContext(taskContextId = taskContextId, chatId = chatId)
     }
 }
 
+/**
+ * Создаёт и запоминает экземпляр [AppRouter] на всё время жизни композиции.
+ *
+ * Используйте эту функцию на верхнем уровне вашей Compose-иерархии для инициализации
+ * навигатора с заданным начальным экраном [initial]. Возвращаемый объект передаётся
+ * в [AppRouterContent] для отображения контента.
+ *
+ * @param initial Начальный экран, на котором откроется приложение (по умолчанию [Screen.ChatList]).
+ * @return Запомненный экземпляр [AppRouter].
+ */
 @Composable
 fun rememberAppRouter(initial: Screen = Screen.ChatList): AppRouter = remember { AppRouter(initial) }
 
+/**
+ * Корневая Composable-функция, отображающая контент текущего экрана на основе состояния [AppRouter].
+ *
+ * Анализирует текущий экран из [router.screen] и делегирует отрисовку соответствующим
+ * Composable-функциям экранов (например, [ChatListScreen], [ChatScreen], [SettingsScreen]).
+ * Для вложенных групп экранов (профили, RAG, MCP, контекст задачи) передаёт управление
+ * внутренним приватным функциям ([SecondaryScreenContent]), которые осуществляют
+ * дальнейшую диспетчеризацию.
+ *
+ * Все колбэки навигации, передаваемые экранам, замыкаются на вызовах методов [AppRouter],
+ * таким образом создавая замкнутую систему навигации.
+ *
+ * @param router Экземпляр маршрутизатора, предоставляющий текущий экран и методы переходов.
+ */
 @Composable
 fun AppRouterContent(
     router: AppRouter,

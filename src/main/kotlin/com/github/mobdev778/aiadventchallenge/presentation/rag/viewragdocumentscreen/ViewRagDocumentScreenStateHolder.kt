@@ -23,6 +23,21 @@ import kotlin.math.sqrt
 private const val SEARCH_PAGE_SIZE = 10
 private const val MAX_SEARCH_RESULTS = 3
 
+/**
+ * Компонент управления состоянием экрана просмотра конкретного RAG-документа.
+ *
+ * Отвечает за загрузку информации о документе, обработку пользовательских событий
+ * ([ViewRagDocumentScreenEvent]) и выполнение семантического поиска по фрагментам
+ * документа с использованием эмбеддингов из [RankerFactory] и косинусного сходства
+ * ([cosineSimilarity]).
+ *
+ * Результаты поиска обновляются в наблюдаемом свойстве [state],
+ * а навигационные команды помещаются в [commands].
+ *
+ * @property ragDocumentRepository репозиторий для доступа к документам и их чанкам
+ * @property scope корутин-скоуп, в котором выполняются долгие операции (например, поиск)
+ * @property ragRankerFactory фабрика ранкеров, предоставляющая модель эмбеддингов
+ */
 @Factory
 class ViewRagDocumentScreenStateHolder(
     private val ragDocumentRepository: RagDocumentRepository,
@@ -30,18 +45,32 @@ class ViewRagDocumentScreenStateHolder(
     private val ragRankerFactory: RankerFactory,
 ) {
     private val _state = MutableStateFlow(ViewRagDocumentScreenState())
+    /** Текущее состояние экрана, доступное только для чтения. */
     val state: StateFlow<ViewRagDocumentScreenState> = _state.asStateFlow()
 
+    /** Поток команд, отправляемых из UI-логики (например, навигация). */
     val commands = MutableSharedFlow<ViewRagDocumentScreenCommand>(
         extraBufferCapacity = 1,
     )
 
+    /**
+     * Инициализирует экран для отображения указанного документа.
+     * Если документ уже выбран и его идентификатор совпадает, состояние не изменяется.
+     *
+     * @param document элемент списка RAG-документов, выбранный пользователем
+     */
     fun start(document: RagDocumentListItem) {
         _state.update { current ->
             if (current.document?.id == document.id) current else current.copy(document = document)
         }
     }
 
+    /**
+     * Обрабатывает пользовательское событие, пришедшее с UI.
+     *
+     * @param event событие ([ViewRagDocumentScreenEvent]), такое как клик назад,
+     * изменение поискового запроса или запуск поиска.
+     */
     fun onEvent(event: ViewRagDocumentScreenEvent) {
         when (event) {
             ViewRagDocumentScreenEvent.OnBackClick -> commands.tryEmit(ViewRagDocumentScreenCommand.Back)

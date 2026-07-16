@@ -9,6 +9,16 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscr
 import com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentscreen.model.AddRagDocumentScreenState
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Экран добавления нового документа в RAG (Retrieval-Augmented Generation).
+ *
+ * Управляет отображением формы ввода данных документа, делегирует управление состоянием
+ * [AddRagDocumentScreenStateHolder] и обрабатывает одноразовые навигационные команды.
+ *
+ * @param onBack Колбэк для перехода назад (закрытие экрана).
+ * @param onOpenAddingDocument Колбэк для открытия диалога или экрана подтверждения добавления
+ * с переданными параметрами: источник, заголовок и стратегия разбиения на чанки.
+ */
 @Composable
 fun AddRagDocumentScreen(
     onBack: () -> Unit,

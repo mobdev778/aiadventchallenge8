@@ -9,6 +9,17 @@ import com.github.mobdev778.aiadventchallenge.presentation.editprofilescreen.com
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
 
+/**
+ * Composable-функция, представляющая экран редактирования профиля.
+ *
+ * Отвечает за связь UI с бизнес-логикой через [EditProfileScreenStateHolder],
+ * обработку пользовательских событий и навигацию.
+ * Подписывается на команды ([EditProfileScreenCommand]) от state holder'а,
+ * чтобы выполнить обратный вызов [onBack] при получении команды [EditProfileScreenCommand.Back].
+ *
+ * @param profileId Уникальный идентификатор профиля, для которого открывается экран.
+ * @param onBack Колбэк, вызываемый при необходимости вернуться на предыдущий экран.
+ */
 @Composable
 fun EditProfileScreen(
     profileId: UUID,

@@ -65,7 +65,7 @@ class SettingsRepository(
         val default = AppSettings(
             contextManagementType = ContextManagementType.None,
             maxMessages = 6,
-            maxTokens = 4096,
+            maxTokens = 32768, // для больших Kotlin файлов
             recursiveSummationMaxMessages = 6,
             stickyFactsMaxMessages = 6,
             apiKey = "",

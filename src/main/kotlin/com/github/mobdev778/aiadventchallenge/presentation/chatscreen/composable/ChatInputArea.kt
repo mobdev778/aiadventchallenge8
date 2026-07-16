@@ -29,6 +29,18 @@ import org.jetbrains.jewel.foundation.theme.LocalTextStyle
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Область ввода сообщений для экрана чата.
+ *
+ * Компонент отображает текстовое поле, стилизованное под тему Jewel, и кнопку "Отправить".
+ * При изменении текста вызывается [onInputTextChanged]; по нажатию Enter или кнопки — [onSendClick].
+ * Поле ввода синхронизируется с внешним состоянием [inputText] через [SyncFieldValueWithInput].
+ *
+ * @param inputText Текущий текст в поле ввода, управляемый внешним состоянием.
+ * @param modifier Модификатор для контейнера [Row], объединяющего поле и кнопку.
+ * @param onInputTextChanged Callback, вызываемый при каждом изменении текста.
+ * @param onSendClick Callback, вызываемый при отправке сообщения (кнопка или Enter).
+ */
 @Composable
 fun ChatInputArea(
     inputText: String,

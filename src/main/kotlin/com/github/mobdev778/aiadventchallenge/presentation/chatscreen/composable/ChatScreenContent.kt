@@ -12,6 +12,18 @@ import androidx.compose.ui.unit.dp
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreenEvent
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 
+/**
+ * Главная компоновка экрана чата, объединяющая заголовок, список сообщений,
+ * кнопки действий и область ввода.
+ *
+ * Функция собирает все основные части интерфейса и передаёт единый обработчик событий [onEvent]
+ * в дочерние компоненты. Служит корневым элементом для экрана чата и определяет
+ * вертикальную структуру с отступами.
+ *
+ * @param state текущее состояние экрана чата, содержащее все данные для отображения.
+ * @param onEvent обработчик событий, который передаётся вложенным компонентам,
+ *        позволяет централизованно реагировать на действия пользователя.
+ */
 @Composable
 fun ChatScreenContent(
     state: ChatScreenState,
@@ -44,4 +56,3 @@ fun ChatScreenContent(
         )
     }
 }
-

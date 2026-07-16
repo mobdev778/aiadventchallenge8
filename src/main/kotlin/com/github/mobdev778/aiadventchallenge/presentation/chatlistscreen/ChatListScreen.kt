@@ -9,6 +9,19 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatlistscreen.compos
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
 
+/**
+ * Composable-функция экрана списка чатов.
+ *
+ * Отвечает за композицию UI и связывание управления состоянием с визуальным представлением.
+ * Использует внедрение зависимостей (Koin) для получения [ChatListScreenStateHolder],
+ * который предоставляет состояние чатов и обрабатывает пользовательские события.
+ * Также подписывается на команды от stateHolder с помощью [LaunchedEffect],
+ * преобразуя их в вызовы переданных колбэков для навигации.
+ *
+ * @param onOpenChat Колбэк, вызываемый при необходимости открыть конкретный чат.
+ *                   Принимает [UUID] идентификатор чата.
+ * @param onOpenSettings Колбэк, вызываемый при необходимости открыть экран настроек.
+ */
 @Composable
 fun ChatListScreen(
     onOpenChat: (UUID) -> Unit,

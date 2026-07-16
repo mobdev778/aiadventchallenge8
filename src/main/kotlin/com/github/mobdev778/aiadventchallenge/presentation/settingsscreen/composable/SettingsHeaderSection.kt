@@ -11,6 +11,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.Settin
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Заголовочная секция экрана настроек.
+ *
+ * Содержит кнопку «Назад», обёрнутую в [Row] с выравниванием по ширине, которая при нажатии отправляет событие
+ * [SettingsScreenEvent.OnBackClick]. Ниже отображается экранный заголовок [ScreenHeader] с текстом «Настройки».
+ * Компонент используется как верхняя часть пользовательского интерфейса экрана настроек, обеспечивая навигацию
+ * и визуальное отделение заголовка.
+ *
+ * @param onEvent лямбда-приёмник событий экрана настроек. Вызывается при взаимодействии с элементами управления,
+ * передавая соответствующий экземпляр [SettingsScreenEvent] для обработки во ViewModel или другом компоненте
+ * слоя представления.
+ */
 @Composable
 fun SettingsHeaderSection(onEvent: (SettingsScreenEvent) -> Unit) {
     Row(

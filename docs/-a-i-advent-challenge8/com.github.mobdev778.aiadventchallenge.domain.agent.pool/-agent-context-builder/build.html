@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>build</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            AIAdventChallenge8
+                    </a>
+            </div>
+            <div class="library-version">
+1.0-SNAPSHOT            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageIds="AIAdventChallenge8::com.github.mobdev778.aiadventchallenge.domain.agent.pool/AgentContextBuilder/build/#com.github.mobdev778.aiadventchallenge.domain.agent.model.AgentRequest/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">AIAdventChallenge8</a><span class="delimiter">/</span><a href="../index.html">com.github.mobdev778.aiadventchallenge.domain.agent.pool</a><span class="delimiter">/</span><a href="index.html">AgentContextBuilder</a><span class="delimiter">/</span><span class="current">build</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>build</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="build.html"><span class="token function">build</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">request<span class="token operator">: </span><a href="../../com.github.mobdev778.aiadventchallenge.domain.agent.model/-agent-request/index.html">AgentRequest</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../com.github.mobdev778.aiadventchallenge.domain.agent.model/-agent-context/index.html">AgentContext</a></div><p class="paragraph">Строит полный <a href="../../com.github.mobdev778.aiadventchallenge.domain.agent.model/-agent-context/index.html">AgentContext</a> на основе запроса агента.</p><p class="paragraph">Процесс сборки:</p><ol><li><p class="paragraph">Получает выбранный профиль через <a href="../../com.github.mobdev778.aiadventchallenge.data.profile.repository/-profile-repository/get-selected-profile.html">ProfileRepository.getSelectedProfile</a>.</p></li><li><p class="paragraph">Если в запросе передан идентификатор контекста задачи (<a href="../../com.github.mobdev778.aiadventchallenge.domain.agent.model/-agent-request/task-context-id.html">AgentRequest.taskContextId</a>),     загружает соответствующий TaskContext из <a href="../../com.github.mobdev778.aiadventchallenge.data.taskcontext.repository/-task-context-repository/index.html">TaskContextRepository</a>.</p></li><li><p class="paragraph">Запрашивает текущий список сообщений окна через <a href="../../com.github.mobdev778.aiadventchallenge.domain.chat/-observe-window-messages-use-case/index.html">ObserveWindowMessagesUseCase</a> и     берёт первое значение из потока.</p></li><li><p class="paragraph">Извлекает все зарегистрированные инварианты из <a href="../../com.github.mobdev778.aiadventchallenge.domain.invariant/-invariant-registry/index.html">InvariantRegistry</a>.</p></li><li><p class="paragraph">Получает актуальный список активных инструментов MCP-серверов через     <a href="../../com.github.mobdev778.aiadventchallenge.domain.mcpserver/-mcp-server-interactor/active-tools-flow.html">McpServerInteractor.activeToolsFlow</a> (первое значение потока).</p></li></ol><p class="paragraph">Полученные данные объединяются в неизменяемый объект <a href="../../com.github.mobdev778.aiadventchallenge.domain.agent.model/-agent-context/index.html">AgentContext</a>.</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph">Сформированный контекст агента, готовый к использованию в процессе выполнения шага.</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>request</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Запрос, содержащий идентификаторы чата, задачи, родительского сообщения,     текст запроса и метаданные.</p></div></div></div></div></div></div></div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2026 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

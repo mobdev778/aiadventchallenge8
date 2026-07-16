@@ -7,6 +7,19 @@ import androidx.compose.runtime.remember
 import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.composable.SettingsScreenContent
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Главная точка входа экрана настроек.
+ *
+ * Создаёт или получает [SettingsScreenStateHolder] через Koin-инъекцию, связывает
+ * его состояние с UI-композицией и реагирует на команды, определённые в [SettingsScreenCommand],
+ * перенаправляя навигационные действия обратно через переданные колбэки.
+ *
+ * @param onBack Колбэк, вызываемый при запросе возврата на предыдущий экран.
+ * @param onOpenProfiles Колбэк для открытия экрана профилей.
+ * @param onOpenRag Колбэк для открытия экрана RAG (Retrieval-Augmented Generation).
+ * @param onOpenMcp Колбэк для открытия экрана конфигурации MCP.
+ * @param onOpenMyMcp Колбэк для открытия экрана "Мой MCP".
+ */
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -37,4 +50,3 @@ fun SettingsScreen(
         }
     }
 }
-

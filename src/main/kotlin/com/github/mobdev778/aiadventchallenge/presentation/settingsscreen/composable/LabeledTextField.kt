@@ -9,6 +9,26 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Составной компонент, объединяющий текстовую метку и тематизированное текстовое поле
+ * [ThemedOutlinedTextField] в единую структуру. Обеспечивает визуальное согласование
+ * с текущей темой IDE и упрощает построение форм в экранах настроек.
+ *
+ * Компонент отрисовывает переданную текстовую метку (если она не пуста),
+ * а под ней — многоцелевое поле ввода, адаптированное под контурный стиль
+ * и цветовую схему IntelliJ Jewel.
+ *
+ * @param label Текстовая метка, отображаемая над полем ввода. Если строка пустая,
+ *   метка не рисуется.
+ * @param value Текущее текстовое значение поля ввода.
+ * @param onValueChange Callback, вызываемый при каждом изменении текста пользователем.
+ * @param modifier [Modifier], применяемый к корневому контейнеру [Column].
+ *   По умолчанию — [Modifier.Companion] (без дополнительных модификаторов).
+ * @param singleLine Флаг, ограничивающий поле ввода одной строкой.
+ *   По умолчанию `true`.
+ * @param visualTransformation Визуальная трансформация отображаемого текста
+ *   (например, маскирование пароля). По умолчанию — [VisualTransformation.None].
+ */
 @Composable
 fun LabeledTextField(
     label: String,

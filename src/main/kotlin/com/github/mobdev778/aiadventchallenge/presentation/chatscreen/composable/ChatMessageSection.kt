@@ -9,6 +9,29 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.ChatScreen
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ChatScreenState
 import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.ContextManagementState
 
+/**
+ * Секция отображения списка сообщений чата в рамках [ColumnScope].
+ *
+ * Компонент объединяет автоматическую прокрутку к последнему сообщению
+ * и рендеринг иерархического списка сообщений с поддержкой ветвления.
+ * Используется как дочерний элемент вертикальной компоновки и должен
+ * располагаться внутри [androidx.compose.foundation.layout.Column].
+ *
+ * Автоматическая прокрутка реализуется через [AutoScrollToBottom],
+ * которая отслеживает изменения списка сообщений и гарантирует видимость
+ * последнего элемента. Список сообщений рендерится с помощью [ChatMessageList],
+ * при этом режим ветвления включается, если текущее состояние управления
+ * контекстом соответствует [ContextManagementState.Branching].
+ *
+ * @param state Текущее состояние экрана чата, содержащее список сообщений
+ *              и параметры управления контекстом.
+ * @param listState Состояние прокрутки [LazyListState], используемое
+ *                  для сохранения и управления позицией скролла внутри
+ *                  списка сообщений.
+ * @param onEvent Обработчик событий экрана чата, принимающий
+ *                [ChatScreenEvent] для передачи пользовательских
+ *                намерений в вышестоящий слой (например, ViewModel).
+ */
 @Composable
 fun ColumnScope.ChatMessageSection(
     state: ChatScreenState,

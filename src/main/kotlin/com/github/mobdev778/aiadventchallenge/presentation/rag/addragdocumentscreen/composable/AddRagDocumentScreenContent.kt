@@ -21,6 +21,31 @@ import com.github.mobdev778.aiadventchallenge.presentation.settingsscreen.compos
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основное содержимое экрана добавления RAG-документа.
+ *
+ * Формирует пользовательский интерфейс, который позволяет задать параметры
+ * нового документа для Retrieval-Augmented Generation: источник (путь к файлу),
+ * заголовок и стратегию разбиения текста на чанки.
+ *
+ * Экран реализует паттерн UDF (Unidirectional Data Flow): принимает текущее
+ * состояние [state] и функцию [onEvent] для отправки событий
+ * [AddRagDocumentScreenEvent] в вышестоящий слой (ViewModel).
+ *
+ * Основные элементы интерфейса:
+ * - кнопка "Назад" — вызывает событие [AddRagDocumentScreenEvent.OnBackClick];
+ * - заголовок [ScreenHeader];
+ * - текстовое поле для пути к файлу и кнопка "Выбрать...", отправляющая
+ *   [AddRagDocumentScreenEvent.OnChooseSourceClick];
+ * - поле для ввода названия документа ([AddRagDocumentScreenEvent.OnTitleChange]);
+ * - выпадающий список [LabeledDropdown] для выбора стратегии чанкинга
+ *   ([AddRagDocumentScreenEvent.OnChunkingStrategyChange]);
+ * - кнопка "Добавить", инициирующая сохранение документа
+ *   ([AddRagDocumentScreenEvent.OnAddClick]).
+ *
+ * @param state Текущее состояние экрана, содержащее значения полей ввода.
+ * @param onEvent Callback-функция для обработки событий, производимых пользователем.
+ */
 @Composable
 fun AddRagDocumentScreenContent(
     state: AddRagDocumentScreenState,
@@ -46,7 +71,7 @@ fun AddRagDocumentScreenContent(
 
         Spacer(modifier = Modifier.size(16.dp))
 
-        Text("Путь к файлу")
+        Text("Путь к файлу или папке")
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,

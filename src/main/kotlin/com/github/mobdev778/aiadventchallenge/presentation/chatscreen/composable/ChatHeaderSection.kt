@@ -16,6 +16,21 @@ import com.github.mobdev778.aiadventchallenge.presentation.common.TaskStateIndic
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Заголовок экрана чата, агрегирующий навигационные, контекстные и статусные элементы.
+ *
+ * Компонует в единую структуру:
+ * - кнопку «Назад», отправляющую событие [ChatScreenEvent.OnBackClick];
+ * - индикатор управления контекстом диалога ([ContextManagementIndicator]), отображающий текущую стратегию
+ *   и заполненность окна;
+ * - экранный заголовок ([ScreenHeader]) с именем чата, взятым из [state][ChatScreenState.chat];
+ * - индикатор состояния задачи ([TaskStateIndicator]), если в [state] присутствует [TaskContext][ChatScreenState.taskContext].
+ *   При клике на индикатор генерируется событие [ChatScreenEvent.OnTaskStateIndicatorClick], позволяющее
+ *   переключать режим автоматического воспроизведения (autoPlay).
+ *
+ * @param state Текущее состояние экрана чата ([ChatScreenState]), содержащее все необходимые данные для отображения.
+ * @param onEvent Функция-обработчик событий, принимающая [ChatScreenEvent] и передающая намерения в слой ViewModel.
+ */
 @Composable
 fun ChatHeaderSection(
     state: ChatScreenState,

@@ -20,6 +20,18 @@ import com.github.mobdev778.aiadventchallenge.presentation.mcpserverlistscreen.M
 import org.jetbrains.jewel.ui.component.DefaultButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Основное содержимое экрана со списком MCP-серверов.
+ *
+ * Отображает панель инструментов с кнопками «Назад» и «Добавить», заголовок «MCP серверы»,
+ * а также список доступных серверов. Каждый элемент списка представляет собой строку
+ * [McpServerRow], которая позволяет управлять активностью сервера, просматривать детали
+ * и удалять его. При отсутствии серверов выводится информационное сообщение.
+ *
+ * @param servers Список объектов [McpServer], отображаемых на экране.
+ * @param onEvent Колбэк для обработки событий [McpServerListScreenEvent], инициированных
+ *                пользователем (возврат, добавление, изменение активности, выбор или удаление сервера).
+ */
 @Composable
 fun McpServerListScreenContent(
     servers: List<McpServer>,

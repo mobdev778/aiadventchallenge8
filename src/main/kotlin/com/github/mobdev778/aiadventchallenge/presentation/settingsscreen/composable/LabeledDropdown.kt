@@ -20,6 +20,23 @@ import org.jetbrains.jewel.foundation.theme.LocalContentColor
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Легковесный выпадающий список на основе [OutlinedButton], не зависящий от API Dropdown библиотеки Jewel
+ * (которое может различаться между версиями).
+ *
+ * Компонент отображает метку, кнопку с текущим выбранным значением и раскрывающуюся панель
+ * со списком доступных вариантов. При выборе элемента вызывается callback [onItemSelected],
+ * после чего панель сворачивается.
+ *
+ * Используется на экране настроек для предоставления пользователю возможности выбора
+ * из фиксированного набора значений.
+ *
+ * @param label Текстовая метка, отображаемая над выпадающим списком.
+ * @param labelColor Цвет текста метки.
+ * @param selectedText Текст, отображаемый на кнопке и представляющий текущий выбранный элемент.
+ * @param items Список строк — доступных для выбора вариантов.
+ * @param onItemSelected Callback, вызываемый при выборе элемента. Принимает индекс выбранного элемента в списке [items].
+ */
 @Composable
 fun LabeledDropdown(
     label: String,

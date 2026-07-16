@@ -8,6 +8,16 @@ import androidx.compose.runtime.remember
 import com.github.mobdev778.aiadventchallenge.presentation.addprofilescreen.composable.AddProfileScreenContent
 import org.koin.java.KoinJavaComponent.inject
 
+/**
+ * Корневая composable-функция экрана добавления нового профиля.
+ *
+ * Отвечает за создание и привязку [AddProfileScreenStateHolder] через DI (Koin),
+ * подписку на текущее состояние экрана и передачу его в [AddProfileScreenContent].
+ * Также обрабатывает команды, поступающие от [AddProfileScreenStateHolder.commands],
+ * преобразуя [AddProfileScreenCommand.Back] в вызов колбека [onBack] для навигации назад.
+ *
+ * @param onBack лямбда, вызываемая при необходимости вернуться на предыдущий экран.
+ */
 @Composable
 fun AddProfileScreen(
     onBack: () -> Unit,

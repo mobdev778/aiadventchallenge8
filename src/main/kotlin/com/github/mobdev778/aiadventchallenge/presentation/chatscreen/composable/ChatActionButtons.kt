@@ -13,6 +13,17 @@ import com.github.mobdev778.aiadventchallenge.presentation.chatscreen.model.Chat
 import org.jetbrains.jewel.ui.component.OutlinedButton
 import org.jetbrains.jewel.ui.component.Text
 
+/**
+ * Компонент, отображающий панель кнопок действий для экрана чата.
+ *
+ * Позволяет очистить все сообщения, а также управлять автоматическим проигрыванием диалога:
+ * запустить или поставить на паузу в зависимости от текущего состояния [state].
+ *
+ * @param state текущее состояние чата, содержащее флаг [ChatScreenState.autoPlay] для определения
+ *              отображаемой кнопки управления проигрыванием.
+ * @param onEvent колбэк для отправки событий [ChatScreenEvent], инициируемых нажатием на
+ *                соответствующую кнопку.
+ */
 @Composable
 fun ChatActionButtons(
     state: ChatScreenState,

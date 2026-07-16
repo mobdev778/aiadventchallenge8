@@ -9,6 +9,7 @@ import com.github.mobdev778.aiadventchallenge.domain.agent.pool.AgentContextBuil
 import com.github.mobdev778.aiadventchallenge.domain.agent.pool.AgentPool
 import com.github.mobdev778.aiadventchallenge.domain.task.TaskState
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
@@ -25,7 +26,9 @@ class AgentOrchestrator(
     )
 
     val onResponseReady: suspend (AgentResponse) -> Unit = { response ->
-        responses.tryEmit(response)
+        scope.launch {
+            responses.emit(response)
+        }
     }
 
     private val pools by lazy {
@@ -41,21 +44,21 @@ class AgentOrchestrator(
     }
 
     private companion object {
-        const val AGENTS_PER_POOL = 3
+        const val AGENTS_PER_POOL = 5
     }
 
     /**
      * Маршрутизация: отправляет сообщение конкретному пулу агентов
      */
     fun asyncRequest(request: AgentRequest) {
-        scope.launch {
+        scope.launch(Dispatchers.Default) {
             println("Оркестратору поступил запрос: ${request.query}")
             val context = contextBuilder.build(request)
-            val agentType = getAgentType(context)
+            val agentType = getAgentType(context, request.query)
             println("Определен тип агента: $agentType")
             val pool = pools[agentType] ?: throw IllegalArgumentException("Unknown agent type")
             println("Выбран пул агентов: $pool")
-            pool.enqueue(context, request)
+            pool.enqueue(this@AgentOrchestrator, context, request)
         }
     }
 
@@ -77,15 +80,21 @@ class AgentOrchestrator(
         }
     }
 
-    private fun getAgentType(context: AgentContext): AgentType {
+    private fun getAgentType(context: AgentContext, query: String): AgentType {
         val taskState = context.taskContext?.state
-        return when (taskState) {
-            null -> AgentType.ChatAssistant
-            TaskState.Planning -> AgentType.Planner
-            TaskState.Execution -> AgentType.Executor
-            TaskState.Validation -> AgentType.Validator
-            TaskState.PrintResult -> AgentType.Summarizer
-            TaskState.Done -> AgentType.ChatAssistant
+        return when {
+            query.startsWith("/document-project") -> AgentType.DocumentProject
+            query.startsWith("/draft-document-file ") -> AgentType.DraftDocumentFile
+            query.startsWith("/document-file ") -> AgentType.DocumentFile
+            query.startsWith("/help ") -> AgentType.Help
+            taskState == null -> AgentType.ChatAssistant
+            else -> when (taskState) {
+                TaskState.Planning -> AgentType.Planner
+                TaskState.Execution -> AgentType.Executor
+                TaskState.Validation -> AgentType.Validator
+                TaskState.PrintResult -> AgentType.Summarizer
+                TaskState.Done -> AgentType.ChatAssistant
+            }
         }
     }
 }

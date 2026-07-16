@@ -9,6 +9,17 @@ import com.github.mobdev778.aiadventchallenge.presentation.taskcontextscreen.com
 import org.koin.java.KoinJavaComponent.inject
 import java.util.UUID
 
+/**
+ * Экран контекста задачи.
+ *
+ * Отображает детали задачи и обеспечивает взаимодействие с пользователем.
+ * Использует [TaskContextScreenStateHolder] для управления состоянием и навигацией.
+ *
+ * @param taskContextId Идентификатор контекста задачи.
+ * @param chatId Идентификатор чата, связанного с задачей.
+ * @param onBack Колбэк для обработки события возврата на предыдущий экран.
+ *               Принимает идентификатор чата, для которого выполняется возврат.
+ */
 @Composable
 fun TaskContextScreen(
     taskContextId: UUID,
