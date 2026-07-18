@@ -86,6 +86,7 @@ class MyMcpServerSaveToFileServer : BaseMyMcpServer(
      * @param markdown Текст в формате Markdown для сохранения.
      * @return Сообщение о результате операции (успех или причина ошибки).
      */
+    @Suppress("TooGenericExceptionCaught")
     private fun saveToFile(fileName: String, markdown: String): String {
         println("!!! MyMCP: saveToFile($fileName)")
         if (fileName.isBlank()) return "File name is empty"

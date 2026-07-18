@@ -180,6 +180,7 @@ class MyMcpProjectServer(
      * @param relativePath Относительный путь от корня проекта.
      * @return JSON-строка с деревом файлов или сообщение об ошибке.
      */
+    @Suppress("TooGenericExceptionCaught")
     private fun buildProjectTree(relativePath: String): String {
         val projectPath = getProjectRootPath()
             ?: return "Error: No project is currently open. Unable to determine the project root directory."
@@ -190,19 +191,17 @@ class MyMcpProjectServer(
             File(projectPath, relativePath)
         }
 
-        if (!targetDir.exists()) {
-            return "Error: Path '$relativePath' does not exist in the project."
-        }
-
-        if (!targetDir.isDirectory) {
-            return "Error: Path '$relativePath' is not a directory. Use 'read_file' to read file contents."
-        }
-
-        return try {
-            val treeJson = buildTreeNode(targetDir, projectPath)
-            treeJson.toString()
-        } catch (e: Exception) {
-            "Error: Failed to build project tree for '$relativePath': ${e.message}"
+        return when {
+            !targetDir.exists() -> "Error: Path '$relativePath' does not exist in the project."
+            !targetDir.isDirectory -> {
+                "Error: Path '$relativePath' is not a directory. " +
+                    "Use 'read_file' to read file contents."
+            }
+            else -> try {
+                buildTreeNode(targetDir, projectPath).toString()
+            } catch (e: Exception) {
+                "Error: Failed to build project tree for '$relativePath': ${e.message}"
+            }
         }
     }
 
@@ -219,6 +218,7 @@ class MyMcpProjectServer(
      * @param depth Текущая глубина рекурсии (по умолчанию 0).
      * @return [JsonObject] — JSON-представление узла.
      */
+    @Suppress("MagicNumber")
     private fun buildTreeNode(file: File, projectRoot: String, depth: Int = 0): JsonObject {
         val maxDepth = 10
 
@@ -257,24 +257,24 @@ class MyMcpProjectServer(
      * @param relativePath Относительный путь к файлу от корня проекта.
      * @return Текстовое содержимое файла или сообщение об ошибке.
      */
+    @Suppress("TooGenericExceptionCaught")
     private fun readFileContent(relativePath: String): String {
         val projectPath = getProjectRootPath()
             ?: return "Error: No project is currently open. Unable to determine the project root directory."
 
         val file = File(projectPath, relativePath)
 
-        if (!file.exists()) {
-            return "Error: File '$relativePath' does not exist in the project."
-        }
-
-        if (file.isDirectory) {
-            return "Error: '$relativePath' is a directory, not a file. Use 'project_tree' to explore directories."
-        }
-
-        return try {
-            file.readText()
-        } catch (e: Exception) {
-            "Error: Failed to read file '$relativePath': ${e.message}"
+        return when {
+            !file.exists() -> "Error: File '$relativePath' does not exist in the project."
+            file.isDirectory -> {
+                "Error: '$relativePath' is a directory, not a file. " +
+                    "Use 'project_tree' to explore directories."
+            }
+            else -> try {
+                file.readText()
+            } catch (e: Exception) {
+                "Error: Failed to read file '$relativePath': ${e.message}"
+            }
         }
     }
 

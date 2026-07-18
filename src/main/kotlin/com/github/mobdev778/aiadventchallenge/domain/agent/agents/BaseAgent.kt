@@ -154,6 +154,7 @@ abstract class BaseAgent(
         return currentMessages
     }
 
+    @Suppress("TooGenericExceptionCaught")
     private suspend fun executeAgentLoop(
         context: AgentContext,
         currentMessages: ArrayList<Message>,

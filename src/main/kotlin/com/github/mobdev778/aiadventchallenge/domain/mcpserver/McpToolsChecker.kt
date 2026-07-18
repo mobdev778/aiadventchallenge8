@@ -35,6 +35,7 @@ class McpToolsChecker {
      * @throws IllegalStateException если произошла ошибка соединения или любая другая нештатная ситуация,
      *         с локализованным читаемым сообщением, содержащим детали корневой причины.
      */
+    @Suppress("MagicNumber", "TooGenericExceptionCaught")
     suspend fun loadTools(url: String): List<Tool> = withContext(Dispatchers.IO) {
         val normalizedUrl = url.trim().removeSuffix("/")
         require(normalizedUrl.isNotEmpty()) { "MCP server URL must not be blank" }

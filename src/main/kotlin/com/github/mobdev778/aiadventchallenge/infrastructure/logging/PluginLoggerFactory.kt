@@ -45,6 +45,7 @@ class PluginLoggerFactory : ILoggerFactory, KoinComponent {
  * @param name имя логгера, используемое в записях
  * @param logFileManager менеджер лог-файлов для записи сообщений
  */
+@Suppress("TooManyFunctions")
 private class PluginSlf4jLogger(
     name: String,
     private val logFileManager: PluginLogFileManager,

@@ -79,6 +79,7 @@ class RagConfigScreenStateHolder(
      *
      * @param event Пользовательское событие, требующее реакции.
      */
+    @Suppress("CyclomaticComplexMethod")
     fun onEvent(event: RagConfigScreenEvent) {
         when (event) {
             RagConfigScreenEvent.OnBackClick -> {

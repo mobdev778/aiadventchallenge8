@@ -53,7 +53,9 @@ class RagRussianFilter(
                     messages = listOf(
                         Message(
                             role = Role.User,
-                            content = "Переведи текст из запроса пользователя на английский. Верни только перевод, без комментариев и дополнительных рассуждений. Вот текст: $query",
+                            content = "Переведи текст из запроса пользователя на английский. " +
+                                "Верни только перевод, без комментариев и дополнительных рассуждений. " +
+                                "Вот текст: $query",
                         ),
                     )
                 )
@@ -67,7 +69,7 @@ class RagRussianFilter(
     /**
      * Множество всех русских букв (заглавных и строчных) для быстрой проверки наличия кириллицы.
      */
-    private val RUSSIAN_LETTERS = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя".toSet()
+    private val russianLetters = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя".toSet()
 
     /**
      * Проверяет, содержит ли строка хотя бы одну русскую букву.
@@ -77,7 +79,7 @@ class RagRussianFilter(
      */
     private fun hasRussianLetters(query: String): Boolean {
         for (c in query) {
-            if (RUSSIAN_LETTERS.contains(c)) {
+            if (russianLetters.contains(c)) {
                 return true
             }
         }

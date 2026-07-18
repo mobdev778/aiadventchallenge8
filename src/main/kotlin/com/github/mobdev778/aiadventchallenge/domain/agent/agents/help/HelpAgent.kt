@@ -1,6 +1,5 @@
 package com.github.mobdev778.aiadventchallenge.domain.agent.agents.help
 
-import com.github.mobdev778.aiadventchallenge.presentation.app.ProjectContainer
 import com.github.mobdev778.aiadventchallenge.data.settings.repository.SettingsRepository
 import com.github.mobdev778.aiadventchallenge.domain.agent.AgentOrchestrator
 import com.github.mobdev778.aiadventchallenge.domain.agent.agents.BaseAgent
@@ -12,6 +11,7 @@ import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import kotlinx.coroutines.CoroutineScope
 
+@Suppress("LongParameterList")
 class HelpAgent(
     id: String,
     invariantRegistry: InvariantRegistry,
@@ -19,7 +19,6 @@ class HelpAgent(
     chatClient: ChatClient,
     mcpServerInteractor: McpServerInteractor,
     scope: CoroutineScope,
-    private val projectContainer: ProjectContainer,
 ) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     override suspend fun getAgentRules(): String = ""

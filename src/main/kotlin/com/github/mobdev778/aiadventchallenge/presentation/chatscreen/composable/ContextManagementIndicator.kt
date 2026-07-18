@@ -114,7 +114,8 @@ private fun indicatorText(state: ContextManagementState): String {
  * Применимо только для стратегий [ContextManagementState.SlidingWindow] и [ContextManagementState.StickFacts].
  *
  * @param state состояние контекста.
- * @return доля заполненности или null, если расчёт невозможен (например, [ContextManagementState.None], [ContextManagementState.Branching] или maxMessages ≤ 0).
+ * @return доля заполненности или null, если расчёт невозможен
+ *   (например, [ContextManagementState.None], [ContextManagementState.Branching] или maxMessages ≤ 0).
  */
 private fun usedRatio(state: ContextManagementState): Double? {
     return when (state) {

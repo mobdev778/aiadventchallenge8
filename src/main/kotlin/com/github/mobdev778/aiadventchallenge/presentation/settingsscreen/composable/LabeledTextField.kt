@@ -30,6 +30,7 @@ import org.jetbrains.jewel.ui.component.Text
  *   (например, маскирование пароля). По умолчанию — [VisualTransformation.None].
  */
 @Composable
+@Suppress("LongParameterList")
 fun LabeledTextField(
     label: String,
     value: String,

@@ -21,6 +21,7 @@ import java.util.UUID
  * Использует Koin-аннотацию [Single] для предоставления единственного экземпляра в графе зависимостей.
  */
 @Single
+@Suppress("TooManyFunctions")
 class RagDocumentRepository(
     private val ragDocumentDao: RagDocumentDao,
 ) {

@@ -30,6 +30,7 @@ class AgentPool<A : Agent>(
         queue.enqueue(agentOrchestrator, context, request)
     }
 
+    @Suppress("TooGenericExceptionCaught")
     fun start(scope: CoroutineScope) {
         if (activeJobs.isNotEmpty()) {
             return
@@ -39,19 +40,18 @@ class AgentPool<A : Agent>(
             val job = scope.launch(Dispatchers.Default) {
                 try {
                     while (isActive) {
-                        val (orchestrator, context, request) = queue.dequeue() // Берут задачу по очереди (кто первый успел)
+                        // Берут задачу по очереди (кто первый успел)
+                        val (orchestrator, context, request) = queue.dequeue()
                         println("Агенту: $agent пришло новое сообщение: ${request.query}")
                         try {
                             val response = agent.handle(orchestrator, context, request)
                             onResponseReady(response)
                         } catch (e: Exception) {
-                            println("[Система] Исключение при обработке запроса: $e. Агент ${agent::class.simpleName} #${agent.id}")
+                            println("[Система] Исключение при обработке запроса: $e. " +
+                                "Агент ${agent::class.simpleName} #${agent.id}")
                             e.printStackTrace()
                         }
                     }
-                } catch (e: CancellationException) {
-                    throw e
-                    // Нормальное завершение при остановке
                 } finally {
                     println("[Система] Агент ${agent::class.simpleName} #${agent.id} остановлен.")
                 }

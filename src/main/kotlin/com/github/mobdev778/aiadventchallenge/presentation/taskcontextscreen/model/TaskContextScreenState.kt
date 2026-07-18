@@ -9,7 +9,8 @@ import java.util.UUID
  *
  * @property taskContextId Идентификатор контекста задачи. Может быть null, если контекст ещё не создан или не выбран.
  * @property chatId Идентификатор чата, связанного с контекстом задачи. Может быть null, если чат не инициализирован.
- * @property taskContext Объект контекста задачи, полученный из доменного слоя. Может быть null, если данные ещё не загружены.
+ * @property taskContext Объект контекста задачи, полученный из доменного слоя.
+ *   Может быть null, если данные ещё не загружены.
  */
 data class TaskContextScreenState(
     val taskContextId: UUID? = null,

@@ -58,7 +58,8 @@ class AddingRagDocumentScreenStateHolder(
      * Создаёт запись документа, подсчитывает общее количество чанков для расчёта прогресса,
      * последовательно читает чанки с помощью [FileChunkerFactory], векторизует их через
      * [RagChunkGenerator] и сохраняет через [ragDocumentRepository]. Прогресс обновляется
-     * в реальном времени в [state]. По завершении отправляет команду [AddingRagDocumentScreenCommand.BackToDocumentList].
+     * в реальном времени в [state].
+     * По завершении отправляет команду [AddingRagDocumentScreenCommand.BackToDocumentList].
      *
      * Если операция уже выполняется ([progressJob] не равен null), повторный вызов игнорируется.
      *
@@ -66,6 +67,7 @@ class AddingRagDocumentScreenStateHolder(
      * @param title заголовок документа
      * @param chunkingStrategy стратегия разбиения файла на чанки
      */
+    @Suppress("MagicNumber")
     fun start(
         source: String,
         title: String,

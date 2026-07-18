@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
  * @see AgentOrchestrator
  * @see TaskState
  */
+@Suppress("LongParameterList")
 class ValidatorAgent(
     id: String,
     invariantRegistry: InvariantRegistry,

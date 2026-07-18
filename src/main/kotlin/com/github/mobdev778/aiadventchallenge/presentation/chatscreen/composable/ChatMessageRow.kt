@@ -135,6 +135,7 @@ private fun formatMessageTime(epochMillis: Long): String {
  * @param onEvent лямбда-обработчик событий экрана чата, используется для передачи пользовательских действий.
  */
 @Composable
+@Suppress("LongMethod")
 fun ChatMessageRow(
     message: ChatUiMessage,
     isBranchingEnabled: Boolean,

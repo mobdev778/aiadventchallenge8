@@ -143,56 +143,57 @@ class MyMcpRagChatServer(
      * @param query Поисковый запрос на естественном языке.
      * @return JSON-строка, представляющая [MyMcpRagChatSearchResponseDto].
      */
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private suspend fun executeChatSearch(chatIdStr: String, query: String): String {
         println("!!! MyMCP Chat Search: executeChatSearch(chatId='$chatIdStr', query='$query')")
 
-        if (chatIdStr.isBlank() || query.isBlank()) {
-            return Json.encodeToString(
-                MyMcpRagChatSearchResponseDto.serializer(),
-                MyMcpRagChatSearchResponseDto(
-                    status = if (chatIdStr.isBlank()) "EMPTY_CHAT_ID" else "EMPTY_QUERY",
-                    messages = emptyList(),
-                )
-            )
+        val chatId: UUID? = if (chatIdStr.isNotBlank() && query.isNotBlank()) {
+            try {
+                UUID.fromString(chatIdStr)
+            } catch (e: IllegalArgumentException) {
+                null
+            }
+        } else {
+            null
         }
 
-        val chatId = try {
-            UUID.fromString(chatIdStr)
-        } catch (e: IllegalArgumentException) {
-            return Json.encodeToString(
-                MyMcpRagChatSearchResponseDto.serializer(),
-                MyMcpRagChatSearchResponseDto(
-                    status = "INVALID_CHAT_ID",
-                    message = "Invalid chat ID format: $chatIdStr",
-                    messages = emptyList(),
-                )
-            )
-        }
-
-        val foundMessages: List<RagChatMessageDto> = try {
-            ragChatRepository.find(chatId, query)
-        } catch (e: Exception) {
-            println("!!! MyMCP Error during chat search: ${e.message}")
-            emptyList()
-        }
-
-        val response = if (foundMessages.isEmpty()) {
-            MyMcpRagChatSearchResponseDto(
-                status = "NO_RESULTS",
-                message = "No messages matched the query in chat $chatId",
+        val response = when {
+            chatIdStr.isBlank() || query.isBlank() -> MyMcpRagChatSearchResponseDto(
+                status = if (chatIdStr.isBlank()) "EMPTY_CHAT_ID" else "EMPTY_QUERY",
                 messages = emptyList(),
             )
-        } else {
-            MyMcpRagChatSearchResponseDto(
-                status = "SUCCESS",
-                messages = foundMessages.map { msg ->
-                    MyMcpRagChatMessageDto(
-                        text = msg.text,
-                        time = msg.time,
-                        role = msg.role,
-                    )
-                },
+            chatId == null -> MyMcpRagChatSearchResponseDto(
+                status = "INVALID_CHAT_ID",
+                message = "Invalid chat ID format: $chatIdStr",
+                messages = emptyList(),
             )
+            else -> {
+                val foundMessages: List<RagChatMessageDto> = try {
+                    ragChatRepository.find(chatId, query)
+                } catch (e: Exception) {
+                    println("!!! MyMCP Error during chat search: ${e.message}")
+                    emptyList()
+                }
+
+                if (foundMessages.isEmpty()) {
+                    MyMcpRagChatSearchResponseDto(
+                        status = "NO_RESULTS",
+                        message = "No messages matched the query in chat $chatId",
+                        messages = emptyList(),
+                    )
+                } else {
+                    MyMcpRagChatSearchResponseDto(
+                        status = "SUCCESS",
+                        messages = foundMessages.map { msg ->
+                            MyMcpRagChatMessageDto(
+                                text = msg.text,
+                                time = msg.time,
+                                role = msg.role,
+                            )
+                        },
+                    )
+                }
+            }
         }
 
         return Json.encodeToString(MyMcpRagChatSearchResponseDto.serializer(), response)

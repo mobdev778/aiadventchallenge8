@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param mcpServerInteractor интерактор для работы с MCP-серверами.
  * @param scope корутин-скоуп для асинхронных операций.
  */
+@Suppress("LongParameterList")
 class PlannerAgent(
     id: String,
     invariantRegistry: InvariantRegistry,

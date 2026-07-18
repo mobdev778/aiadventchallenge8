@@ -35,7 +35,8 @@ import org.jetbrains.jewel.ui.component.Text
  * @param labelColor Цвет текста метки.
  * @param selectedText Текст, отображаемый на кнопке и представляющий текущий выбранный элемент.
  * @param items Список строк — доступных для выбора вариантов.
- * @param onItemSelected Callback, вызываемый при выборе элемента. Принимает индекс выбранного элемента в списке [items].
+ * @param onItemSelected Callback, вызываемый при выборе элемента.
+ *   Принимает индекс выбранного элемента в списке [items].
  */
 @Composable
 fun LabeledDropdown(

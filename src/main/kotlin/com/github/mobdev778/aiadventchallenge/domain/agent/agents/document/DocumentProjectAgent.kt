@@ -18,6 +18,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFileSystemItem
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiRecursiveElementWalkingVisitor
+import com.intellij.psi.PsiReference
 import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.jetbrains.rd.util.UUID
@@ -48,6 +49,7 @@ import kotlin.collections.sortedBy
  * @constructor Создаёт экземпляр агента с переданными зависимостями.
  *   [projectContainer] обязателен для доступа к PSI-дереву проекта.
  */
+@Suppress("LongParameterList")
 internal class DocumentProjectAgent(
     id: String,
     invariantRegistry: InvariantRegistry,
@@ -74,6 +76,7 @@ internal class DocumentProjectAgent(
      * @param request Исходный запрос пользователя, содержащий идентификаторы чата и задачи.
      * @return Ответ [AgentResponse] с сообщением о количестве обработанных файлов.
      */
+    @Suppress("MagicNumber", "ReturnCount")
     override suspend fun handle(
         orchestrator: AgentOrchestrator,
         context: AgentContext,
@@ -278,10 +281,8 @@ internal class DocumentProjectAgent(
             node.item.accept(object : PsiRecursiveElementWalkingVisitor() {
                 override fun visitElement(element: PsiElement) {
                     for (reference in element.references) {
-                        val resolvedTarget = reference.resolve()
-                        val targetFile = resolvedTarget?.containingFile ?: continue
-                        val child = nodes[targetFile.virtualFile.canonicalPath] ?: continue
-                        if (child !== node) {
+                        val child = resolveReferenceNode(reference, nodes)
+                        if (child != null && child !== node) {
                             children.add(child)
                         }
                     }
@@ -295,6 +296,13 @@ internal class DocumentProjectAgent(
             visitNode(nodes, child)
             node.links.add(child)
         }
+    }
+
+    @Suppress("ReturnCount")
+    private fun resolveReferenceNode(reference: PsiReference, nodes: HashMap<String, KtGraphNode>): KtGraphNode? {
+        val resolvedTarget = reference.resolve() ?: return null
+        val targetFile = resolvedTarget.containingFile ?: return null
+        return nodes[targetFile.virtualFile.canonicalPath]
     }
 
     private fun findKotlinFileType(): FileType? {

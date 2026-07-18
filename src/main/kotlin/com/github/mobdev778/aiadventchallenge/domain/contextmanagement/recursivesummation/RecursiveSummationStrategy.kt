@@ -20,9 +20,28 @@ class RecursiveSummationStrategy(
     ): List<ChatMessage> {
         val history = history.filter { it.parentId == null }
 
-        // если лимит по сообщениям пока не достигнут - все ок, двигаемся дальше
-        if (history.size < maxMessages) return history
+        return if (history.size < maxMessages) {
+            history
+        } else {
+            compressMessages(history)
+        }
+    }
 
+    /**
+     * Выполняет сжатие истории сообщений через рекурсивную суммаризацию.
+     *
+     * Алгоритм:
+     * 1. Выбирает левую половину сообщений (ранние сообщения).
+     * 2. В этой половине находит несжатые сообщения (rank == 0, 1, ...).
+     * 3. Если найдено только одно сообщение — повышает его ранг и возвращает историю как есть.
+     * 4. Выполняет суммаризацию через [getSummaryUseCase].
+     * 5. Повышает ранг summary, связывает исходные сообщения как дочерние.
+     * 6. Сохраняет всё в БД и возвращает обновлённую историю.
+     */
+    @Suppress("UnusedParameter")
+    private suspend fun compressMessages(
+        history: List<ChatMessage>,
+    ): List<ChatMessage> {
         // 1) выбираем левую, возможно бОльшую половину - ранние сообщения
         // Важно: мы не выбираем "history.take(maxMessages / 2)", потому что пользователь мог уменьшить
         // размер окна в настройках и для малых чисел нам придется делать слишком много сжатий "маленькой"
@@ -41,36 +60,37 @@ class RecursiveSummationStrategy(
         // это означает, что мы уже "апнули" несколько сообщений левее, а текущее сжимать нет смысла -
         // потому что оно только одно.
         // В этом случае нам нужно просто поднять ранг оставшегося сообщения и начать заново:
-        if (uncompressed.size == 1) {
+        return if (uncompressed.size == 1) {
             chatRepository.add(uncompressed.first().copy(rank = rank))
             // возвращаем историю "как есть" предполагая, что на следующем цикле мы получим сжатие
-            return history
+            history
+        } else {
+            // 3) выполняем суммаризацию
+            var summary = getSummaryUseCase.invoke(uncompressed)
+
+            // 4) обрабатываем ошибки
+            // TODO для упрощения пока в случае ошибки возвращаем исходную историю
+            // TODO нужно будет переделать этот механизм - делать несколько попыток сжатия, а если не получилось,
+            // пытаться просто применить "Sliding Window"
+            if (summary == null) {
+                history
+            } else {
+                // 5) повышаем ранг у "summary" - он должен быть на 1 выше, чем у детей
+                summary = summary.copy(rank = rank)
+
+                // 6) записываем "uncompressed" сообщения как "детей" summary
+                uncompressed = uncompressed.map {
+                    it.copy(parentId = summary.id)
+                }
+
+                // 7) сохраняем все в БД
+                chatRepository.add(uncompressed + summary)
+
+                // 8) возвращаем обновленный чат - удаляем блок из "сжатых сообщений" и добавляем "summary"
+                val compressedIds = uncompressed.map { it.id }
+                (history.filter { !compressedIds.contains(it.id) } + summary).sortedBy { it.time }
+            }
         }
-
-        // 3) выполняем суммаризацию
-        var summary = getSummaryUseCase.invoke(uncompressed)
-
-        // 4) обрабатываем ошибки
-        // TODO для упрощения пока в случае ошибки возвращаем исходную историю
-        // TODO нужно будет переделать этот механизм - делать несколько попыток сжатия, а если не получилось,
-        // пытаться просто применить "Sliding Window"
-        if (summary == null) return history
-
-        // 5) повышаем ранг у "summary" - он должен быть на 1 выше, чем у детей
-        summary = summary.copy(rank = rank)
-
-        // 6) записываем "uncompressed" сообщения как "детей" summary
-        uncompressed = uncompressed.map {
-            it.copy(parentId = summary.id)
-        }
-
-        // 7) сохраняем все в БД
-        chatRepository.add(uncompressed + summary)
-
-        // 8) возвращаем обновленный чат - удаляем блок из "сжатых сообщений" и добавляем "summary"
-        val compressedIds = uncompressed.map { it.id }
-
-        return (history.filter { !compressedIds.contains(it.id) } + summary).sortedBy { it.time }
     }
 
     override suspend fun clear(chatId: UUID) {

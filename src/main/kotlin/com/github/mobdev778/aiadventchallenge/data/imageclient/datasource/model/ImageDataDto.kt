@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
  * @property b64Json строка изображения, закодированная в формате Base64.
  * @property url URL-адрес, по которому доступно изображение.
  */
+@Suppress("EmptyClassBlock")
 @Serializable
 class ImageDataDto(
     @SerialName("b64_json")
