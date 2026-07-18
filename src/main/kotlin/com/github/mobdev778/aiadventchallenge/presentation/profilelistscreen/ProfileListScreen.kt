@@ -19,7 +19,8 @@ import java.util.UUID
  *
  * @param onBack вызывается при необходимости вернуться на предыдущий экран.
  * @param onOpenAddProfile вызывается для открытия экрана добавления нового профиля.
- * @param onOpenEditProfile вызывается для открытия экрана редактирования профиля; принимает [UUID] идентификатор профиля.
+ * @param onOpenEditProfile вызывается для открытия экрана редактирования профиля;
+ *   принимает [UUID] идентификатор профиля.
  */
 @Composable
 fun ProfileListScreen(

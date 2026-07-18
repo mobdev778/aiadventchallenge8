@@ -10,7 +10,6 @@ import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import com.github.mobdev778.aiadventchallenge.presentation.app.ProjectContainer
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VfsUtilCore
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +34,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param scope Корутин-скоуп для выполнения асинхронных операций.
  * @param projectContainer Контейнер текущего проекта IntelliJ IDEA, необходим для доступа к VFS.
  */
+@Suppress("LongParameterList", "UnusedPrivateProperty")
 class DraftDocumentFileAgent(
     id: String,
     invariantRegistry: InvariantRegistry,
@@ -42,7 +42,6 @@ class DraftDocumentFileAgent(
     chatClient: ChatClient,
     mcpServerInteractor: McpServerInteractor,
     scope: CoroutineScope,
-    private val projectContainer: ProjectContainer,
 ) : BaseAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope) {
 
     /**

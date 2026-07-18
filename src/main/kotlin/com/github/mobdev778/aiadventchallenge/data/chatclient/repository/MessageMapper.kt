@@ -5,7 +5,8 @@ import com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Message
 import org.koin.core.annotation.Single
 
 /**
- * Маппер, отвечающий за двустороннее преобразование между доменной моделью [Message] и её DTO-представлением [MessageDto].
+ * Маппер, отвечающий за двустороннее преобразование между доменной моделью [Message]
+ * и её DTO-представлением [MessageDto].
  *
  * Изолирует слой данных от доменной логики, используя [RoleMapper] для конвертации ролей
  * и [ToolCallMapper] для преобразования вложенных вызовов инструментов.

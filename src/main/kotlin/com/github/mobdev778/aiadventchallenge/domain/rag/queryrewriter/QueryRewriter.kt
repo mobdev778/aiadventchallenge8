@@ -49,6 +49,7 @@ class QueryRewriter(
      * @param count Количество альтернативных формулировок, которое должна сгенерировать модель.
      * @return Список строк — переписанных вариантов запроса. В случае сбоя возвращает `listOf(query)`.
      */
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     suspend fun getQueries(query: String, count: Int): List<String> {
         val appSettings = settingsInteractor.observeSettings().first()
 

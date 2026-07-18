@@ -111,6 +111,7 @@ class SettingsScreenStateHolder(
      *
      * @param event событие экрана настроек, соответствующее действию пользователя.
      */
+    @Suppress("CyclomaticComplexMethod")
     fun onEvent(event: SettingsScreenEvent) {
         when (event) {
             is SettingsScreenEvent.OnBackClick -> {

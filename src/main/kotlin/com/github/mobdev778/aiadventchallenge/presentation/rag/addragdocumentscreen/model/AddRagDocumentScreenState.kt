@@ -8,7 +8,8 @@ package com.github.mobdev778.aiadventchallenge.presentation.rag.addragdocumentsc
  *
  * @property source Источник документа (URL, путь к файлу или иной идентификатор).
  * @property title Заголовок документа, задаваемый пользователем.
- * @property chunkingStrategy Стратегия разбиения текста документа на чанки. По умолчанию — [ChunkingStrategy.FixedSize].
+ * @property chunkingStrategy Стратегия разбиения текста документа на чанки.
+ *   По умолчанию — [ChunkingStrategy.FixedSize].
  */
 data class AddRagDocumentScreenState(
     val source: String = "",

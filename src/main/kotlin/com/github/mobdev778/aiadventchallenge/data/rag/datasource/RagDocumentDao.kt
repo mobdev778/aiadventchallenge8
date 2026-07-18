@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.Flow
  * Все операции выполняются асинхронно (suspend или Flow) в контексте базы данных Room.
  */
 @Dao
+@Suppress("TooManyFunctions")
 interface RagDocumentDao {
 
     /**

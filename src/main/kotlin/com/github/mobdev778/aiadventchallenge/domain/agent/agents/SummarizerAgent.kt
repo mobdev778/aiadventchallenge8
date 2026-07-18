@@ -26,6 +26,7 @@ import kotlinx.coroutines.CoroutineScope
  * @param mcpServerInteractor Интерактор для вызова инструментов, предоставляемых MCP-серверами.
  * @param scope Контекст корутины, в котором будут запущены асинхронные операции агента.
  */
+@Suppress("LongParameterList")
 class SummarizerAgent(
     id: String,
     invariantRegistry: InvariantRegistry,

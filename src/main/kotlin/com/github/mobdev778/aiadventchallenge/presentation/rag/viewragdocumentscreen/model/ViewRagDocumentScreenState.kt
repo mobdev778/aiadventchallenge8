@@ -10,7 +10,8 @@ import com.github.mobdev778.aiadventchallenge.presentation.rag.ragdocumentlistsc
  * @property document Текущий документ, отображаемый на экране. Может быть null, если документ ещё не загружен.
  * @property query Поисковый запрос, введённый пользователем для поиска по фрагментам документа.
  * @property isSearching Флаг, указывающий на то, что в данный момент выполняется поиск по фрагментам.
- * @property results Список результатов поиска, каждый из которых представляет фрагмент документа, соответствующий запросу.
+ * @property results Список результатов поиска,
+ *   каждый из которых представляет фрагмент документа, соответствующий запросу.
  */
 data class ViewRagDocumentScreenState(
     val document: RagDocumentListItem? = null,

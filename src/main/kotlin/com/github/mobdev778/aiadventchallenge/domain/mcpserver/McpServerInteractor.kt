@@ -73,6 +73,7 @@ class McpServerInteractor(
      * Одновременно заполняет [toolUrlMap] для последующего использования в [sendRequest].
      * В случае ошибки загрузки инструментов для конкретного сервера, он пропускается (возвращается пустой список).
      */
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     val activeToolsFlow : Flow<List<Tool>> = allServersFlow
         .map { servers ->
             val jobs = servers
@@ -102,6 +103,7 @@ class McpServerInteractor(
      * @param toolCall информация о вызове инструмента, включая имя и аргументы.
      * @return [ToolResponse] с результатом выполнения инструмента, или `null`, если сервер не определён.
      */
+    @Suppress("MagicNumber")
     suspend fun sendRequest(toolCall: ToolCall): ToolResponse? {
         println("!!! sendRequest($toolCall)")
 
@@ -127,6 +129,7 @@ class McpServerInteractor(
         return result
     }
 
+    @Suppress("TooGenericExceptionCaught", "SwallowedException")
     private suspend fun sendRequest(client: Client, toolCall: ToolCall): ToolResponse? {
         println("sendRequest($client, $toolCall)")
 

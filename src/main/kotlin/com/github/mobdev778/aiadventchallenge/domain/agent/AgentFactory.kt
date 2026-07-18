@@ -17,7 +17,6 @@ import com.github.mobdev778.aiadventchallenge.domain.chatclient.ChatClient
 import com.github.mobdev778.aiadventchallenge.domain.invariant.InvariantRegistry
 import com.github.mobdev778.aiadventchallenge.domain.mcpserver.McpServerInteractor
 import com.github.mobdev778.aiadventchallenge.presentation.app.ProjectContainer
-import com.intellij.openapi.project.Project
 import com.jetbrains.rd.util.UUID
 import kotlinx.coroutines.CoroutineScope
 import org.koin.core.annotation.Single
@@ -34,6 +33,7 @@ import org.koin.core.annotation.Single
  * фабрики в рамках приложения.
  */
 @Single
+@Suppress("LongParameterList")
 class AgentFactory(
     private val invariantRegistry: InvariantRegistry,
     private val settingsRepository: SettingsRepository,
@@ -56,74 +56,39 @@ class AgentFactory(
      */
     fun create(type: AgentType): Agent {
         val id = UUID.randomUUID().toString().replace("-", "")
-        return when (type) {
-            AgentType.ChatAssistant -> {
-                ChatAssistantAgent(
-                    id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
-                    profileRepository
-                )
-            }
+        return createAgent(id, type)
+    }
 
-            AgentType.Planner -> {
-                PlannerAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)
-            }
-            AgentType.Executor -> {
-                ExecutorAgent(id,invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)
-            }
-            AgentType.Validator -> {
-                ValidatorAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)
-            }
-            AgentType.Summarizer -> {
-                SummarizerAgent(id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope)
-            }
-
-            AgentType.DocumentProject -> {
-                DocumentProjectAgent(
-                    id,
-                    invariantRegistry,
-                    settingsRepository,
-                    chatClient,
-                    mcpServerInteractor,
-                    scope,
-                    projectContainer
-                )
-            }
-
-            AgentType.DraftDocumentFile -> {
-                DraftDocumentFileAgent(
-                    id,
-                    invariantRegistry,
-                    settingsRepository,
-                    chatClient,
-                    mcpServerInteractor,
-                    scope,
-                    projectContainer
-                )
-            }
-
-            AgentType.DocumentFile -> {
-                DocumentFileAgent(
-                    id,
-                    invariantRegistry,
-                    settingsRepository,
-                    chatClient,
-                    mcpServerInteractor,
-                    scope,
-                    projectContainer
-                )
-            }
-
-            AgentType.Help -> {
-                HelpAgent(
-                    id,
-                    invariantRegistry,
-                    settingsRepository,
-                    chatClient,
-                    mcpServerInteractor,
-                    scope,
-                    projectContainer
-                )
-            }
-        }
+    private fun createAgent(id: String, type: AgentType): Agent = when (type) {
+        AgentType.ChatAssistant -> ChatAssistantAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+            profileRepository
+        )
+        AgentType.Planner -> PlannerAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope
+        )
+        AgentType.Executor -> ExecutorAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope
+        )
+        AgentType.Validator -> ValidatorAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope
+        )
+        AgentType.Summarizer -> SummarizerAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope
+        )
+        AgentType.DocumentProject -> DocumentProjectAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+            projectContainer
+        )
+        AgentType.DraftDocumentFile -> DraftDocumentFileAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+        )
+        AgentType.DocumentFile -> DocumentFileAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+            projectContainer
+        )
+        AgentType.Help -> HelpAgent(
+            id, invariantRegistry, settingsRepository, chatClient, mcpServerInteractor, scope,
+        )
     }
 }

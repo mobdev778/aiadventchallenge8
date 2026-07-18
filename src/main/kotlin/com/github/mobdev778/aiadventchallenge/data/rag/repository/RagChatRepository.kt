@@ -37,6 +37,7 @@ import kotlin.collections.map
  *                           с возможностью перевода на английский язык.
  */
 @Single
+@Suppress("TooManyFunctions")
 class RagChatRepository(
     private val chatRepository: ChatRepository,
     private val documentRepository: RagDocumentRepository,
@@ -102,6 +103,7 @@ class RagChatRepository(
      * @param query Текстовый запрос (может содержать русские символы).
      * @return Список DTO сообщений, релевантных запросу, или пустой список, если результатов нет.
      */
+    @Suppress("MagicNumber")
     suspend fun find(chatId: UUID, query: String): List<RagChatMessageDto> {
         val query = ragRussianFilter.filter(query)
         val searchResult = simpleRagSearcher.search(chatId, query, 5).firstOrNull() ?: return emptyList()
@@ -162,6 +164,7 @@ class RagChatRepository(
         documentRepository.deleteDocument(chatId)
     }
 
+    @Suppress("TooGenericExceptionCaught", "PrintStackTrace")
     private suspend fun addRagGroupMessage(messages: List<ChatMessage>) {
         val firstMessage = messages.firstOrNull() ?: return
 
@@ -187,6 +190,7 @@ class RagChatRepository(
         }
     }
 
+    @Suppress("TooGenericExceptionCaught", "PrintStackTrace")
     private suspend fun addRagMessage(message: ChatMessage) {
         try {
             val list = listOf(convertToDto(message))

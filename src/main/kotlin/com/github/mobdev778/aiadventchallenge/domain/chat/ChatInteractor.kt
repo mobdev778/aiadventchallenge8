@@ -41,6 +41,7 @@ import java.util.UUID
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 @Single
+@Suppress("TooManyFunctions")
 class ChatInteractor(
     private val ragChatRepository: RagChatRepository,
     private val observeWindowMessagesUseCase: ObserveWindowMessagesUseCase,

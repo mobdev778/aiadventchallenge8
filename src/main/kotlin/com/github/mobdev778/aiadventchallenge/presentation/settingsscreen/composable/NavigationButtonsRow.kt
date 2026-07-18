@@ -17,7 +17,8 @@ import org.jetbrains.jewel.ui.component.Text
  * Ряд кнопок навигации для экрана настроек.
  * Включает кнопки для открытия разделов "Профили", "RAG", "MCP" и "MyMCP".
  *
- * @param onEvent обработчик событий экрана настроек; при нажатии на кнопку вызывает соответствующее событие из [SettingsScreenEvent].
+ * @param onEvent обработчик событий экрана настроек;
+ *   при нажатии на кнопку вызывает соответствующее событие из [SettingsScreenEvent].
  */
 @Composable
 fun NavigationButtonsRow(onEvent: (SettingsScreenEvent) -> Unit) {

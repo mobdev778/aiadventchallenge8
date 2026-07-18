@@ -15,7 +15,8 @@ import java.nio.charset.StandardCharsets
  *
  * @property file файл, подлежащий разбиению на фрагменты.
  * @property bufferedReader читатель, открытый для файла [file] с кодировкой UTF-8.
- * @property index порядковый номер следующего фрагмента (начинается с 0). Увеличивается при каждой успешной выдаче фрагмента.
+ * @property index порядковый номер следующего фрагмента (начинается с 0).
+ *   Увеличивается при каждой успешной выдаче фрагмента.
  */
 class ParagraphsFileChunker(val file: File) : FileChunker {
 
@@ -63,20 +64,22 @@ class ParagraphsFileChunker(val file: File) : FileChunker {
         builder.append(firstLine)
 
         val prefixSize = getSpacePrefixSize(firstLine)
-
-        while (true) {
-            val line = readLine() ?: break
-            if (prefixSize == getSpacePrefixSize(line)) {
-                if (builder.length > 0) {
-                    builder.append("\n")
-                }
-                builder.append(line)
-            } else {
-                pushBackLine(line)
-                break
-            }
-        }
+        appendLinesWithSamePrefix(builder, prefixSize)
         return builder.toString()
+    }
+
+    private fun appendLinesWithSamePrefix(builder: StringBuilder, prefixSize: Int) {
+        var nextLine = readLine()
+        while (nextLine != null && prefixSize == getSpacePrefixSize(nextLine)) {
+            if (builder.length > 0) {
+                builder.append("\n")
+            }
+            builder.append(nextLine)
+            nextLine = readLine()
+        }
+        if (nextLine != null) {
+            pushBackLine(nextLine)
+        }
     }
 
     /**
@@ -101,7 +104,8 @@ class ParagraphsFileChunker(val file: File) : FileChunker {
     /**
      * Помещает строку во внутренний кэш, чтобы она была возвращена следующим вызовом [readLine].
      *
-     * Используется для возврата «лишней» считанной строки, когда при чтении абзаца встретилась строка с другим отступом.
+     * Используется для возврата «лишней» считанной строки,
+     * когда при чтении абзаца встретилась строка с другим отступом.
      *
      * @param line строка для сохранения в кэше.
      */

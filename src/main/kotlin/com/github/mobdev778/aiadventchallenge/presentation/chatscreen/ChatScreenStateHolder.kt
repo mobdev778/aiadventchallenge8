@@ -53,7 +53,8 @@ private const val STATE_FLOW_TIMEOUT_MS = 5000L
  * @property chatInteractor Интерактор для управления диалогами, сообщениями и автопродолжением.
  * @property settingsInteractor Интерактор для наблюдения и обновления настроек приложения.
  * @property taskContextRepository Репозиторий для доступа к контексту выполняемой задачи.
- * @property scope CoroutineScope, в котором запускаются все асинхронные операции (обычно привязан к жизненному циклу экрана).
+ * @property scope CoroutineScope, в котором запускаются все асинхронные операции
+ *   (обычно привязан к жизненному циклу экрана).
  */
 @Single
 class ChatScreenStateHolder(

@@ -127,6 +127,7 @@ class MyMcpRagSearchServer(
         }
     }
 
+    @Suppress("LongMethod", "MagicNumber", "UseCheckOrError", "TooGenericExceptionCaught")
     private suspend fun executeVectorSearch(query: String): String {
         println("!!! MyMCP Vector Search: executeVectorSearch(query='$query')")
         if (query.isBlank()) return Json.encodeToString(
@@ -184,7 +185,8 @@ class MyMcpRagSearchServer(
             // 2. Если ничего не нашли выше порога — возвращаем специальный маркер для LLM
             MyMcpRagSearchResponseDto(
                 status = "LOW_RELEVANCE",
-                message = "No documents matched the query above the required relevance threshold (${config.minSimilarity}). Min score: $minScore",
+                message = "No documents matched the query above the required relevance " +
+                    "threshold (${config.minSimilarity}). Min score: $minScore",
                 chunks = emptyList(),
             )
         } else {

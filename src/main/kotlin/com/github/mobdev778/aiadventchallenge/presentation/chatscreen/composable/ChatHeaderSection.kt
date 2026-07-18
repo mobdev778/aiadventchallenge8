@@ -24,7 +24,8 @@ import org.jetbrains.jewel.ui.component.Text
  * - индикатор управления контекстом диалога ([ContextManagementIndicator]), отображающий текущую стратегию
  *   и заполненность окна;
  * - экранный заголовок ([ScreenHeader]) с именем чата, взятым из [state][ChatScreenState.chat];
- * - индикатор состояния задачи ([TaskStateIndicator]), если в [state] присутствует [TaskContext][ChatScreenState.taskContext].
+ * - индикатор состояния задачи ([TaskStateIndicator]),
+ *   если в [state] присутствует [TaskContext][ChatScreenState.taskContext].
  *   При клике на индикатор генерируется событие [ChatScreenEvent.OnTaskStateIndicatorClick], позволяющее
  *   переключать режим автоматического воспроизведения (autoPlay).
  *

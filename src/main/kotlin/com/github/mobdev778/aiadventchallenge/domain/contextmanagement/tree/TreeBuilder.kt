@@ -60,27 +60,29 @@ class TreeBuilder {
 
         for (message in messages) {
             val node = idNodeMap[message.id]
-
             val parentNode = if (message.parentId == null) null else idNodeMap[message.parentId]
 
             if (parentNode != null) {
-                val left = parentNode.left
-
-                if (left == null) {
-                    parentNode.left = node
-                } else {
-                    if (left.value.time < message.time) {
-                        parentNode.right = node
-                    } else {
-                        parentNode.right = left
-                        parentNode.left = node
-                    }
-                }
+                insertChildNode(parentNode, node!!)
             } else {
                 root = node
             }
         }
 
         return root
+    }
+
+    private fun insertChildNode(parent: TreeNode, child: TreeNode) {
+        val left = parent.left
+        if (left == null) {
+            parent.left = child
+        } else {
+            if (left.value.time < child.value.time) {
+                parent.right = child
+            } else {
+                parent.right = left
+                parent.left = child
+            }
+        }
     }
 }

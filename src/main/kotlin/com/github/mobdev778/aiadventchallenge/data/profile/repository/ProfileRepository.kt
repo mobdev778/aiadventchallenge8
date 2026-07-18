@@ -10,6 +10,7 @@ import org.koin.core.annotation.Single
 import java.util.UUID
 
 @Single
+@Suppress("TooManyFunctions")
 class ProfileRepository(
     private val profileDao: ProfileDao,
 ) {

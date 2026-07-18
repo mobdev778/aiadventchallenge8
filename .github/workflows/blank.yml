@@ -1,0 +1,75 @@
+name: Pushed commit check
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  detekt-analysis:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      # Runs a single command using the runners shell
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
+      - name: Run detekt static analysis
+        run: ./gradlew detekt
+
+  vps-validation:
+    # Запускаем эту работу только для событий Pull Request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send validation request to VPS
+        run: |
+          # Отправляем POST-запрос и сохраняем тело ответа в response.json
+          # Переменные github.event.pull_request.head.ref и base.ref содержат имена веток
+          HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.json \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"source": "${{ github.event.pull_request.head.ref }}", "target": "${{ github.event.pull_request.base.ref }}"}' \
+            http://150.241.79.134:8088)
+
+          echo "HTTP Server Response Code: $HTTP_STATUS"
+          echo "Response Body:"
+          cat response.json
+
+          # Проверяем HTTP статус ответа сервера
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Error: VPS returned HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+
+          # Извлекаем статус и сообщение из JSON с помощью jq
+          STATUS=$(jq -r '.status' response.json)
+          MESSAGE=$(jq -r '.message' response.json)
+
+          # Логируем результат проверки в GitHub Actions
+          if [ "$STATUS" = "success" ]; then
+            echo "Validation successful: $MESSAGE"
+          else
+            echo "::error::Validation failed! Details: $MESSAGE"
+            exit 1
+          fi

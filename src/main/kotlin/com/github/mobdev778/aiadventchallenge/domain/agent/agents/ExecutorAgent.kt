@@ -33,6 +33,7 @@ import kotlinx.coroutines.CoroutineScope
  * @property mcpServerInteractor Интерактор для взаимодействия с MCP-серверами (инструментами).
  * @property scope Корутин-скоуп, в котором исполняется асинхронная работа.
  */
+@Suppress("LongParameterList")
 class ExecutorAgent(
     id: String,
     invariantRegistry: InvariantRegistry,

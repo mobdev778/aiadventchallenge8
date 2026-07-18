@@ -96,6 +96,7 @@ sealed interface Screen {
  *
  * @param initial Начальный экран, на котором откроется приложение. По умолчанию [Screen.ChatList].
  */
+@Suppress("TooManyFunctions")
 class AppRouter(initial: Screen = Screen.ChatList) {
     /**
      * Текущий экран, отображаемый в UI.

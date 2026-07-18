@@ -30,8 +30,10 @@ class ChatClient(
      * Функция принимает полностью сформированный объект [ChatRequest], включающий модель,
      * историю сообщений, температуру и другие параметры (см. [ChatRequest]),
      * и транслирует его в репозиторий. Результатом является [ChatResponse], который содержит
-     * список вариантов ответа ([Choice][com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Choice])
-     * и метаданные об использованных токенах ([Usage][com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Usage]).
+     * список вариантов ответа
+     * ([Choice][com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Choice])
+     * и метаданные об использованных токенах
+     * ([Usage][com.github.mobdev778.aiadventchallenge.domain.chatclient.model.Usage]).
      *
      * @param request Запрос к языковой модели, подготовленный в соответствии с требованиями API.
      * @return Ответ от Chat API, включающий сгенерированные сообщения и информацию о затраченных токенах.

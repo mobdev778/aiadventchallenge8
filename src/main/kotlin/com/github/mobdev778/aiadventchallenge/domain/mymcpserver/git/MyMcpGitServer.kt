@@ -107,6 +107,7 @@ class MyMcpGitServer(
      *
      * @param server Экземпляр MCP-сервера, на котором регистрируется инструмент.
      */
+    @Suppress("MagicNumber", "SpreadOperator")
     private fun addGitDiffTool(server: Server) {
         server.addTool(
             name = "git_diff",
@@ -159,6 +160,7 @@ class MyMcpGitServer(
      *
      * @param server Экземпляр MCP-сервера, на котором регистрируется инструмент.
      */
+    @Suppress("MagicNumber")
     private fun addGitLogTool(server: Server) {
         server.addTool(
             name = "git_log",
@@ -221,6 +223,7 @@ class MyMcpGitServer(
      * @param args Аргументы Git-команды (например, "status", "diff", "log -n 10 --oneline").
      * @return Текстовый вывод выполненной команды или сообщение об ошибке.
      */
+    @Suppress("TooGenericExceptionCaught")
     private fun executeGitCommand(vararg args: String): String {
         val projectPath = projectContainer.project?.basePath
             ?: return "Error: No project is currently open. Unable to determine the project root directory."

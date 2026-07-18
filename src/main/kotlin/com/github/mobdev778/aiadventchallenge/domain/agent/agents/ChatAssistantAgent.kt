@@ -28,6 +28,7 @@ import kotlin.getValue
  * На каждом сообщении проверяет, озадачился ли пользователь выполнением большой задачи.
  * И если "видит", что задача создана, то создает контекст и планирует шаги.
  */
+@Suppress("LongParameterList")
 class ChatAssistantAgent(
     id: String,
     invariantRegistry: InvariantRegistry,
@@ -40,6 +41,7 @@ class ChatAssistantAgent(
 
     private val json: Json by inject(Json::class.java)
 
+    @Suppress("ReturnCount")
     override suspend fun handle(
         orchestrator: AgentOrchestrator,
         context: AgentContext,
@@ -68,7 +70,9 @@ class ChatAssistantAgent(
                 .build()
         } else {
             // Если рабочей памяти нет, используем стандартный профиль
-            "${context.profile.content}\nПользователь просто общается, помогай в свободном режиме. ChatId текущего чата: ${request.chatId}"
+            "${context.profile.content}\n" +
+                "Пользователь просто общается, помогай в свободном режиме. " +
+                "ChatId текущего чата: ${request.chatId}"
         }
 
         // 3. Запрос к модели
@@ -113,6 +117,7 @@ class ChatAssistantAgent(
     /**
      * Создает начальный TaskContext.
      */
+    @Suppress("TooGenericExceptionCaught", "PrintStackTrace")
     suspend fun createContext(userQuery: String): TaskContext? {
         val planningPrompt = buildPlanningPrompt(userQuery)
         val baseModel = settingsRepository.getSettings().baseModel
@@ -128,17 +133,14 @@ class ChatAssistantAgent(
 
         return try {
             val planResult: PlanningResponseDto = json.decodeFromString<PlanningResponseDto>(jsonResponse)
-            if (
-                planResult.isTask && planResult.taskName != null && planResult.plan != null &&
-                !profileRepository.getSelectedProfile().content.contains("[IGNORE TASK CONTEXT]")
-            ) {
+            if (isValidTask(planResult)) {
                 // Инициализируем слой РАБОЧЕЙ ПАМЯТИ
                 TaskContext(
                     id = UUID.randomUUID(),
-                    task = planResult.taskName,
+                    task = planResult.taskName!!,
                     state = TaskState.Planning,
                     step = 1,
-                    plan = planResult.plan,
+                    plan = planResult.plan!!,
                     done = emptyList(),
                     current = planResult.plan.firstOrNull() ?: "Начало задачи"
                 )
@@ -151,9 +153,19 @@ class ChatAssistantAgent(
         }
     }
 
+    @Suppress("ReturnCount")
+    private suspend fun isValidTask(planResult: PlanningResponseDto): Boolean {
+        if (!planResult.isTask) return false
+        if (planResult.taskName == null) return false
+        if (planResult.plan == null) return false
+        if (profileRepository.getSelectedProfile().content.contains("[IGNORE TASK CONTEXT]")) return false
+        return true
+    }
+
     /**
      * Создает новый TaskContext для повторного планирования по задаче
      */
+    @Suppress("TooGenericExceptionCaught", "PrintStackTrace")
     suspend fun recreateContext(context: TaskContext, userQuery: String): TaskContext? {
         val planningPrompt = buildReplanningPrompt(context, userQuery)
         val baseModel = settingsRepository.getSettings().baseModel
