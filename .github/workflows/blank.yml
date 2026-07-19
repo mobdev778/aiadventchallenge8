@@ -53,9 +53,10 @@ jobs:
 
           # Отправляем POST-запрос
           HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.json \
+            --max-time 600 \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"source": "${{ github.event.pull_request.head.ref }}", "target": "${{ github.event.pull_request.base.ref }}"}' \
+            -d "{\"source\":\"$SRC_REF\",\"target\":\"$TGT_REF\"}" \
             http://150.241.79.134:8080/codereview)
 
           echo "HTTP Server Response Code: $HTTP_STATUS"
