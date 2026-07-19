@@ -36,3 +36,40 @@ jobs:
 
       - name: Run detekt static analysis
         run: ./gradlew detekt
+
+  vps-validation:
+    # Запускаем эту работу только для событий Pull Request
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send validation request to VPS
+        run: |
+          # Отправляем POST-запрос и сохраняем тело ответа в response.json
+          # Переменные github.event.pull_request.head.ref и base.ref содержат имена веток
+          HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.json \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"source": "${{ github.event.pull_request.head.ref }}", "target": "${{ github.event.pull_request.base.ref }}"}' \
+            http://150.241.79.134:8088)
+
+          echo "HTTP Server Response Code: $HTTP_STATUS"
+          echo "Response Body:"
+          cat response.json
+
+          # Проверяем HTTP статус ответа сервера
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "Error: VPS returned HTTP status $HTTP_STATUS"
+            exit 1
+          fi
+
+          # Извлекаем статус и сообщение из JSON с помощью jq
+          STATUS=$(jq -r '.status' response.json)
+          MESSAGE=$(jq -r '.message' response.json)
+
+          # Логируем результат проверки в GitHub Actions
+          if [ "$STATUS" = "success" ]; then
+            echo "Validation successful: $MESSAGE"
+          else
+            echo "::error::Validation failed! Details: $MESSAGE"
+            exit 1
+          fi
