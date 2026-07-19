@@ -44,7 +44,7 @@ class McpToolsChecker {
             install(SSE)
             install(HttpTimeout) {
                 requestTimeoutMillis = 300_000
-                connectTimeoutMillis = 30_000
+                connectTimeoutMillis = 300_000
                 socketTimeoutMillis = 300_000
             }
         }

@@ -39,18 +39,25 @@ jobs:
 
   vps-validation:
     # Запускаем эту работу только для событий Pull Request
+    name: VPS Code Review Validation
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Send validation request to VPS
+        env:
+          SRC_REF: ${{ github.event.pull_request.head.ref }}
+          TGT_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           # Отправляем POST-запрос и сохраняем тело ответа в response.json
           # Переменные github.event.pull_request.head.ref и base.ref содержат имена веток
+
+          # Отправляем POST-запрос
           HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.json \
+            --max-time 600 \
             -X POST \
             -H "Content-Type: application/json" \
-            -d '{"source": "${{ github.event.pull_request.head.ref }}", "target": "${{ github.event.pull_request.base.ref }}"}' \
-            http://150.241.79.134:8088)
+            -d "{\"source\":\"$SRC_REF\",\"target\":\"$TGT_REF\"}" \
+            http://150.241.79.134:8080/codereview)
 
           echo "HTTP Server Response Code: $HTTP_STATUS"
           echo "Response Body:"
@@ -58,7 +65,7 @@ jobs:
 
           # Проверяем HTTP статус ответа сервера
           if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "Error: VPS returned HTTP status $HTTP_STATUS"
+            echo "::error::VPS returned HTTP status $HTTP_STATUS"
             exit 1
           fi
 
@@ -68,7 +75,7 @@ jobs:
 
           # Логируем результат проверки в GitHub Actions
           if [ "$STATUS" = "success" ]; then
-            echo "Validation successful: $MESSAGE"
+            echo "::notice::Validation successful: $MESSAGE"
           else
             echo "::error::Validation failed! Details: $MESSAGE"
             exit 1
