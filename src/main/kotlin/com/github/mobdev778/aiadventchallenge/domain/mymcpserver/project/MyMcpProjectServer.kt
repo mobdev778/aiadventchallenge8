@@ -23,10 +23,10 @@ import java.io.File
 
 /**
  * Локальный MCP-сервер, предоставляющий AI-агенту инструменты для навигации по файловой
- * структуре проекта и чтения содержимого файлов в контексте текущего проекта IntelliJ IDEA.
+ * структуре проекта, чтения и записи содержимого файлов в контексте текущего проекта IntelliJ IDEA.
  *
  * Сервер работает поверх протокола [Model Context Protocol](https://modelcontextprotocol.io)
- * и предоставляет два инструмента: "project_tree" и "read_file".
+ * и предоставляет три инструмента: "project_tree", "read_file" и "write_file".
  * Каждый инструмент оперирует относительными путями (относительно корня проекта),
  * полученного через [ProjectContainer].
  *
@@ -40,7 +40,7 @@ class MyMcpProjectServer(
     private val projectContainer: ProjectContainer,
 ) : BaseMyMcpServer(
     name = "MyMcpProjectServer",
-    description = "Локальный MCP-сервер для навигации по файловой структуре проекта и чтения файлов",
+    description = "Локальный MCP-сервер для навигации по файловой структуре проекта, чтения и записи файлов",
     port = 3008,
     launchAtStartup = true,
 ) {
@@ -51,9 +51,10 @@ class MyMcpProjectServer(
      * В процессе создания:
      * - Устанавливаются метаданные сервера (название, версия).
      * - Объявляются поддерживаемые возможности (tools).
-     * - Регистрируются два инструмента:
+     * - Регистрируются три инструмента:
      *   - `project_tree` — возвращает дерево файлов проекта в виде JSON-структуры.
      *   - `read_file` — возвращает содержимое файла проекта в виде текста.
+     *   - `write_file` — записывает содержимое в файл проекта.
      * - Задаются инструкции для AI-ассистента.
      *
      * @return Сконфигурированный и готовый к запуску экземпляр [Server].
@@ -69,17 +70,20 @@ class MyMcpProjectServer(
                     tools = ServerCapabilities.Tools(listChanged = false),
                 ),
             ),
-            instructions = "Local MCP server for project file navigation and reading. " +
+            instructions = "Local MCP server for project file navigation, reading, and writing. " +
                     "CRITICAL RULES FOR THE ASSISTANT:\n" +
                     "1. Use 'project_tree' to explore the project file structure.\n" +
                     "2. Use 'read_file' to read the contents of a specific file.\n" +
-                    "3. All paths are relative to the project root directory.\n" +
-                    "4. 'project_tree' returns a JSON structure with 'name', 'type' (file/directory), " +
-                    "and 'children' (for directories).",
+                    "3. Use 'write_file' to save modified content to a project file.\n" +
+                    "4. All paths are relative to the project root directory.\n" +
+                    "5. 'project_tree' returns a JSON structure with 'name', 'type' (file/directory), " +
+                    "and 'children' (for directories).\n" +
+                    "6. 'write_file' creates parent directories automatically if they don't exist.",
         )
 
         addProjectTreeTool(server)
         addReadFileTool(server)
+        addWriteFileTool(server)
 
         return server
     }
@@ -156,6 +160,60 @@ class MyMcpProjectServer(
                 ?: return@addTool textResult("Error: 'path' parameter is required.")
             runBlocking(Dispatchers.IO) {
                 textResult(readFileContent(relativePath))
+            }
+        }
+    }
+
+    /**
+     * Регистрирует инструмент `write_file` — записывает текстовое содержимое в файл проекта.
+     *
+     * Принимает два параметра:
+     * - `path` — относительный путь к файлу от корня проекта (обязательный).
+     * - `content` — текстовое содержимое для записи (обязательный).
+     *
+     * Родительские директории создаются автоматически, если они не существуют.
+     * Инструмент защищён от атак path traversal (выхода за пределы корня проекта).
+     *
+     * @param server Экземпляр MCP-сервера, на котором регистрируется инструмент.
+     */
+    private fun addWriteFileTool(server: Server) {
+        server.addTool(
+            name = "write_file",
+            description = "Writes text content to a project file. " +
+                    "Creates parent directories automatically if they don't exist. " +
+                    "Returns a success message or an error description.",
+            inputSchema = ToolSchema(
+                properties = buildJsonObject {
+                    put("path", buildJsonObject {
+                        put("type", JsonPrimitive("string"))
+                        put(
+                            "description",
+                            JsonPrimitive("Relative path to the file from the project root.")
+                        )
+                    })
+                    put("content", buildJsonObject {
+                        put("type", JsonPrimitive("string"))
+                        put(
+                            "description",
+                            JsonPrimitive("Text content to write into the file.")
+                        )
+                    })
+                },
+                required = listOf("path", "content"),
+            ),
+        ) { request: CallToolRequest ->
+            val relativePath = request.params.arguments
+                ?.get("path")
+                ?.jsonPrimitive
+                ?.content
+                ?: return@addTool textResult("Error: 'path' parameter is required.")
+            val content = request.params.arguments
+                ?.get("content")
+                ?.jsonPrimitive
+                ?.content
+                ?: return@addTool textResult("Error: 'content' parameter is required.")
+            runBlocking(Dispatchers.IO) {
+                textResult(writeFileContent(relativePath, content))
             }
         }
     }
@@ -274,6 +332,45 @@ class MyMcpProjectServer(
                 file.readText()
             } catch (e: Exception) {
                 "Error: Failed to read file '$relativePath': ${e.message}"
+            }
+        }
+    }
+
+    /**
+     * Записывает текстовое содержимое в файл проекта.
+     *
+     * Алгоритм:
+     * 1. Получает базовый путь проекта через [ProjectContainer].
+     * 2. Разрешает целевой файл относительно корня проекта и нормализует путь.
+     * 3. Проверяет, что итоговый путь не выходит за пределы корня проекта (защита от path traversal).
+     * 4. Проверяет, что целевой путь не является существующей директорией.
+     * 5. Создаёт родительские директории, если они отсутствуют.
+     * 6. Записывает содержимое в файл.
+     *
+     * @param relativePath Относительный путь к файлу от корня проекта.
+     * @param content Текстовое содержимое для записи.
+     * @return Сообщение о результате операции (успех или причина ошибки).
+     */
+    @Suppress("TooGenericExceptionCaught")
+    private fun writeFileContent(relativePath: String, content: String): String {
+        val projectPath = getProjectRootPath()
+            ?: return "Error: No project is currently open. Unable to determine the project root directory."
+
+        val projectRoot = File(projectPath).canonicalFile
+        val file = File(projectPath, relativePath).canonicalFile
+
+        return when {
+            !file.toPath().startsWith(projectRoot.toPath()) ->
+                "Error: Access denied. Path '$relativePath' attempts to escape the project root directory."
+            file.exists() && file.isDirectory ->
+                "Error: '$relativePath' is a directory, not a file. " +
+                    "Use 'project_tree' to explore directories."
+            else -> try {
+                file.parentFile?.mkdirs()
+                file.writeText(content)
+                "Successfully wrote ${content.length} bytes to '$relativePath'"
+            } catch (e: Exception) {
+                "Error: Failed to write file '$relativePath': ${e.message}"
             }
         }
     }

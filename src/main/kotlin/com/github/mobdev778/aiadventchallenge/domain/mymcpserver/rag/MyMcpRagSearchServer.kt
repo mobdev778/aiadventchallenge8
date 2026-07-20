@@ -52,7 +52,7 @@ class MyMcpRagSearchServer(
     description = "Локальный MCP-сервер семантического RAG-поиска по документам " +
             "с верификацией источников",
     port = 3004,
-    launchAtStartup = true,
+    launchAtStartup = false,
 ) {
 
     /**

@@ -163,7 +163,7 @@ abstract class BaseAgent(
 
         var totalPromptTokens = 0
         var totalCompletionTokens = 0
-        var finalAnswer = "- no response -"
+        var finalAnswer = "выполнено"
         var maxIterations = MAX_AGENT_ITERATIONS
         var shouldContinue = true
 
@@ -197,7 +197,7 @@ abstract class BaseAgent(
                     executeToolCalls(currentMessages, toolCalls)
                 } else {
                     finalAnswer = assistantMessage?.content?.takeIf { it.isNotBlank() }
-                        ?: "- no response -"
+                        ?: "выполнено"
                     shouldContinue = false
                 }
             }
