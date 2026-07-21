@@ -23,10 +23,25 @@
 
     <resource-bundle>messages.MessageBundle</resource-bundle>
 
+    <actions>
+        <action id="YourPlugin.AddKdocAction"
+                class="com.github.mobdev778.aiadventchallenge.presentation.actions.AddKDocAction"
+                text="Добавить KDoc-документацию"
+                description="Добавляет KDoc документацию для текущего элемента">
+
+            <!-- Привязка к контекстному меню редактора -->
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+
+            <!-- Привязка к контекстному меню дерева проектов -->
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+
     <!-- Extensions defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <postStartupActivity implementation="com.github.mobdev778.aiadventchallenge.presentation.app.PluginInitializer"/>
+        <postStartupActivity
+                implementation="com.github.mobdev778.aiadventchallenge.presentation.app.PluginInitializer"/>
         <toolWindow
                 id="AiAdventChallenge8"
                 factoryClass="com.github.mobdev778.aiadventchallenge.presentation.app.AppToolWindowFactory"
